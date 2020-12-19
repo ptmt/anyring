@@ -1,0 +1,1068 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		246396CB258D21E300866E74 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396CA258D21E300866E74 /* Tests_iOS.swift */; };
+		246396D6258D21E300866E74 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396D5258D21E300866E74 /* Tests_macOS.swift */; };
+		246396D8258D21E300866E74 /* AnyRingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396AF258D21E200866E74 /* AnyRingApp.swift */; };
+		246396D9258D21E300866E74 /* AnyRingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396AF258D21E200866E74 /* AnyRingApp.swift */; };
+		246396DA258D21E300866E74 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396B0258D21E200866E74 /* ContentView.swift */; };
+		246396DB258D21E300866E74 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396B0258D21E200866E74 /* ContentView.swift */; };
+		246396DC258D21E300866E74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 246396B1258D21E300866E74 /* Assets.xcassets */; };
+		246396DD258D21E300866E74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 246396B1258D21E300866E74 /* Assets.xcassets */; };
+		246396F8258D24CD00866E74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 246396F7258D24CD00866E74 /* Assets.xcassets */; };
+		246396FF258D24CD00866E74 /* AnyRingWatch Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 246396FE258D24CD00866E74 /* AnyRingWatch Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		24639704258D24CD00866E74 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24639703258D24CD00866E74 /* ContentView.swift */; };
+		24639706258D24CD00866E74 /* AnyRingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24639705258D24CD00866E74 /* AnyRingApp.swift */; };
+		24639708258D24CD00866E74 /* ComplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24639707258D24CD00866E74 /* ComplicationController.swift */; };
+		2463970A258D24CE00866E74 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 24639709258D24CE00866E74 /* Assets.xcassets */; };
+		2463970D258D24CE00866E74 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2463970C258D24CE00866E74 /* Preview Assets.xcassets */; };
+		24639711258D24CE00866E74 /* AnyRingWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 246396F5258D24CD00866E74 /* AnyRingWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
+		24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
+		24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
+		24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
+		24AA5485258D2812002CD4A6 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA5484258D2812002CD4A6 /* DataSource.swift */; };
+		24AA5486258D2812002CD4A6 /* DataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA5484258D2812002CD4A6 /* DataSource.swift */; };
+		24AA5490258D29EE002CD4A6 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24AA548F258D29EE002CD4A6 /* HealthKit.framework */; };
+		24AA54A4258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */; };
+		24AA54A5258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */; };
+		24AA54AD258E0CC5002CD4A6 /* Rings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54AC258E0CC5002CD4A6 /* Rings.swift */; };
+		24AA54AE258E0CC5002CD4A6 /* Rings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54AC258E0CC5002CD4A6 /* Rings.swift */; };
+		24AA54B6258E0D39002CD4A6 /* MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54B5258E0D39002CD4A6 /* MainScreen.swift */; };
+		24AA54B7258E0D39002CD4A6 /* MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54B5258E0D39002CD4A6 /* MainScreen.swift */; };
+		24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
+		24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
+		24AA54C8258E56E6002CD4A6 /* MultiRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54C7258E56E6002CD4A6 /* MultiRing.swift */; };
+		24AA54C9258E56E6002CD4A6 /* MultiRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54C7258E56E6002CD4A6 /* MultiRing.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		246396C7258D21E300866E74 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 246396AA258D21E200866E74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 246396B5258D21E300866E74;
+			remoteInfo = "AnyRing (iOS)";
+		};
+		246396D2258D21E300866E74 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 246396AA258D21E200866E74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 246396BD258D21E300866E74;
+			remoteInfo = "AnyRing (macOS)";
+		};
+		24639700258D24CD00866E74 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 246396AA258D21E200866E74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 246396FD258D24CD00866E74;
+			remoteInfo = "AnyRingWatch Extension";
+		};
+		2463970F258D24CE00866E74 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 246396AA258D21E200866E74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 246396F4258D24CD00866E74;
+			remoteInfo = AnyRingWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		24639715258D24CE00866E74 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				246396FF258D24CD00866E74 /* AnyRingWatch Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		24639719258D24CE00866E74 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				24639711258D24CE00866E74 /* AnyRingWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		246396AF258D21E200866E74 /* AnyRingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingApp.swift; sourceTree = "<group>"; };
+		246396B0258D21E200866E74 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		246396B1258D21E300866E74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		246396B6258D21E300866E74 /* AnyRing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnyRing.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		246396B9258D21E300866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		246396BE258D21E300866E74 /* AnyRing.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnyRing.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		246396C0258D21E300866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		246396C1258D21E300866E74 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
+		246396C6258D21E300866E74 /* Tests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		246396CA258D21E300866E74 /* Tests_iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_iOS.swift; sourceTree = "<group>"; };
+		246396CC258D21E300866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		246396D1258D21E300866E74 /* Tests macOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests macOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		246396D5258D21E300866E74 /* Tests_macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests_macOS.swift; sourceTree = "<group>"; };
+		246396D7258D21E300866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		246396F5258D24CD00866E74 /* AnyRingWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnyRingWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		246396F7258D24CD00866E74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		246396F9258D24CD00866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		246396FE258D24CD00866E74 /* AnyRingWatch Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "AnyRingWatch Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		24639703258D24CD00866E74 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		24639705258D24CD00866E74 /* AnyRingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingApp.swift; sourceTree = "<group>"; };
+		24639707258D24CD00866E74 /* ComplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationController.swift; sourceTree = "<group>"; };
+		24639709258D24CE00866E74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2463970C258D24CE00866E74 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		2463970E258D24CE00866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		24AA546B258D25B4002CD4A6 /* RingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingProvider.swift; sourceTree = "<group>"; };
+		24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestHRProvider.swift; sourceTree = "<group>"; };
+		24AA5484258D2812002CD4A6 /* DataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSource.swift; sourceTree = "<group>"; };
+		24AA548D258D29EE002CD4A6 /* AnyRing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnyRing.entitlements; sourceTree = "<group>"; };
+		24AA548F258D29EE002CD4A6 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.3.sdk/System/Library/Frameworks/HealthKit.framework; sourceTree = DEVELOPER_DIR; };
+		24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHttpProvider.swift; sourceTree = "<group>"; };
+		24AA54AC258E0CC5002CD4A6 /* Rings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rings.swift; sourceTree = "<group>"; };
+		24AA54B5258E0D39002CD4A6 /* MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreen.swift; sourceTree = "<group>"; };
+		24AA54BE258E16DB002CD4A6 /* RIng.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RIng.swift; sourceTree = "<group>"; };
+		24AA54C7258E56E6002CD4A6 /* MultiRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiRing.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		246396B3258D21E300866E74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24AA5490258D29EE002CD4A6 /* HealthKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396BB258D21E300866E74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396C3258D21E300866E74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396CE258D21E300866E74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396FB258D24CD00866E74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		246396A9258D21E200866E74 = {
+			isa = PBXGroup;
+			children = (
+				24AA548D258D29EE002CD4A6 /* AnyRing.entitlements */,
+				246396AE258D21E200866E74 /* Shared */,
+				246396B8258D21E300866E74 /* iOS */,
+				246396BF258D21E300866E74 /* macOS */,
+				246396C9258D21E300866E74 /* Tests iOS */,
+				246396D4258D21E300866E74 /* Tests macOS */,
+				246396F6258D24CD00866E74 /* AnyRingWatch */,
+				24639702258D24CD00866E74 /* AnyRingWatch Extension */,
+				246396B7258D21E300866E74 /* Products */,
+				24AA548E258D29EE002CD4A6 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		246396AE258D21E200866E74 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				24AA5483258D27B6002CD4A6 /* HealthKit */,
+				24AA546A258D258E002CD4A6 /* RingProviders */,
+				246396AF258D21E200866E74 /* AnyRingApp.swift */,
+				246396B0258D21E200866E74 /* ContentView.swift */,
+				246396B1258D21E300866E74 /* Assets.xcassets */,
+				24AA54AC258E0CC5002CD4A6 /* Rings.swift */,
+				24AA54B5258E0D39002CD4A6 /* MainScreen.swift */,
+				24AA54BE258E16DB002CD4A6 /* RIng.swift */,
+				24AA54C7258E56E6002CD4A6 /* MultiRing.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		246396B7258D21E300866E74 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				246396B6258D21E300866E74 /* AnyRing.app */,
+				246396BE258D21E300866E74 /* AnyRing.app */,
+				246396C6258D21E300866E74 /* Tests iOS.xctest */,
+				246396D1258D21E300866E74 /* Tests macOS.xctest */,
+				246396F5258D24CD00866E74 /* AnyRingWatch.app */,
+				246396FE258D24CD00866E74 /* AnyRingWatch Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		246396B8258D21E300866E74 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				246396B9258D21E300866E74 /* Info.plist */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		246396BF258D21E300866E74 /* macOS */ = {
+			isa = PBXGroup;
+			children = (
+				246396C0258D21E300866E74 /* Info.plist */,
+				246396C1258D21E300866E74 /* macOS.entitlements */,
+			);
+			path = macOS;
+			sourceTree = "<group>";
+		};
+		246396C9258D21E300866E74 /* Tests iOS */ = {
+			isa = PBXGroup;
+			children = (
+				246396CA258D21E300866E74 /* Tests_iOS.swift */,
+				246396CC258D21E300866E74 /* Info.plist */,
+			);
+			path = "Tests iOS";
+			sourceTree = "<group>";
+		};
+		246396D4258D21E300866E74 /* Tests macOS */ = {
+			isa = PBXGroup;
+			children = (
+				246396D5258D21E300866E74 /* Tests_macOS.swift */,
+				246396D7258D21E300866E74 /* Info.plist */,
+			);
+			path = "Tests macOS";
+			sourceTree = "<group>";
+		};
+		246396F6258D24CD00866E74 /* AnyRingWatch */ = {
+			isa = PBXGroup;
+			children = (
+				246396F7258D24CD00866E74 /* Assets.xcassets */,
+				246396F9258D24CD00866E74 /* Info.plist */,
+			);
+			path = AnyRingWatch;
+			sourceTree = "<group>";
+		};
+		24639702258D24CD00866E74 /* AnyRingWatch Extension */ = {
+			isa = PBXGroup;
+			children = (
+				24639703258D24CD00866E74 /* ContentView.swift */,
+				24639705258D24CD00866E74 /* AnyRingApp.swift */,
+				24639707258D24CD00866E74 /* ComplicationController.swift */,
+				24639709258D24CE00866E74 /* Assets.xcassets */,
+				2463970E258D24CE00866E74 /* Info.plist */,
+				2463970B258D24CE00866E74 /* Preview Content */,
+			);
+			path = "AnyRingWatch Extension";
+			sourceTree = "<group>";
+		};
+		2463970B258D24CE00866E74 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				2463970C258D24CE00866E74 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		24AA546A258D258E002CD4A6 /* RingProviders */ = {
+			isa = PBXGroup;
+			children = (
+				24AA546B258D25B4002CD4A6 /* RingProvider.swift */,
+				24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */,
+				24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */,
+			);
+			path = RingProviders;
+			sourceTree = "<group>";
+		};
+		24AA5483258D27B6002CD4A6 /* HealthKit */ = {
+			isa = PBXGroup;
+			children = (
+				24AA5484258D2812002CD4A6 /* DataSource.swift */,
+			);
+			path = HealthKit;
+			sourceTree = "<group>";
+		};
+		24AA548E258D29EE002CD4A6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				24AA548F258D29EE002CD4A6 /* HealthKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		246396B5258D21E300866E74 /* AnyRing (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 246396E0258D21E300866E74 /* Build configuration list for PBXNativeTarget "AnyRing (iOS)" */;
+			buildPhases = (
+				246396B2258D21E300866E74 /* Sources */,
+				246396B3258D21E300866E74 /* Frameworks */,
+				246396B4258D21E300866E74 /* Resources */,
+				24639719258D24CE00866E74 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				24639710258D24CE00866E74 /* PBXTargetDependency */,
+			);
+			name = "AnyRing (iOS)";
+			productName = "AnyRing (iOS)";
+			productReference = 246396B6258D21E300866E74 /* AnyRing.app */;
+			productType = "com.apple.product-type.application";
+		};
+		246396BD258D21E300866E74 /* AnyRing (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 246396E3258D21E300866E74 /* Build configuration list for PBXNativeTarget "AnyRing (macOS)" */;
+			buildPhases = (
+				246396BA258D21E300866E74 /* Sources */,
+				246396BB258D21E300866E74 /* Frameworks */,
+				246396BC258D21E300866E74 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "AnyRing (macOS)";
+			productName = "AnyRing (macOS)";
+			productReference = 246396BE258D21E300866E74 /* AnyRing.app */;
+			productType = "com.apple.product-type.application";
+		};
+		246396C5258D21E300866E74 /* Tests iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 246396E6258D21E300866E74 /* Build configuration list for PBXNativeTarget "Tests iOS" */;
+			buildPhases = (
+				246396C2258D21E300866E74 /* Sources */,
+				246396C3258D21E300866E74 /* Frameworks */,
+				246396C4258D21E300866E74 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				246396C8258D21E300866E74 /* PBXTargetDependency */,
+			);
+			name = "Tests iOS";
+			productName = "Tests iOS";
+			productReference = 246396C6258D21E300866E74 /* Tests iOS.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		246396D0258D21E300866E74 /* Tests macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 246396E9258D21E300866E74 /* Build configuration list for PBXNativeTarget "Tests macOS" */;
+			buildPhases = (
+				246396CD258D21E300866E74 /* Sources */,
+				246396CE258D21E300866E74 /* Frameworks */,
+				246396CF258D21E300866E74 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				246396D3258D21E300866E74 /* PBXTargetDependency */,
+			);
+			name = "Tests macOS";
+			productName = "Tests macOS";
+			productReference = 246396D1258D21E300866E74 /* Tests macOS.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		246396F4258D24CD00866E74 /* AnyRingWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 24639716258D24CE00866E74 /* Build configuration list for PBXNativeTarget "AnyRingWatch" */;
+			buildPhases = (
+				246396F3258D24CD00866E74 /* Resources */,
+				24639715258D24CE00866E74 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				24639701258D24CD00866E74 /* PBXTargetDependency */,
+			);
+			name = AnyRingWatch;
+			productName = AnyRingWatch;
+			productReference = 246396F5258D24CD00866E74 /* AnyRingWatch.app */;
+			productType = "com.apple.product-type.application.watchapp2";
+		};
+		246396FD258D24CD00866E74 /* AnyRingWatch Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 24639712258D24CE00866E74 /* Build configuration list for PBXNativeTarget "AnyRingWatch Extension" */;
+			buildPhases = (
+				246396FA258D24CD00866E74 /* Sources */,
+				246396FB258D24CD00866E74 /* Frameworks */,
+				246396FC258D24CD00866E74 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "AnyRingWatch Extension";
+			productName = "AnyRingWatch Extension";
+			productReference = 246396FE258D24CD00866E74 /* AnyRingWatch Extension.appex */;
+			productType = "com.apple.product-type.watchkit2-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		246396AA258D21E200866E74 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1230;
+				LastUpgradeCheck = 1230;
+				TargetAttributes = {
+					246396B5258D21E300866E74 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+					246396BD258D21E300866E74 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+					246396C5258D21E300866E74 = {
+						CreatedOnToolsVersion = 12.3;
+						TestTargetID = 246396B5258D21E300866E74;
+					};
+					246396D0258D21E300866E74 = {
+						CreatedOnToolsVersion = 12.3;
+						TestTargetID = 246396BD258D21E300866E74;
+					};
+					246396F4258D24CD00866E74 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+					246396FD258D24CD00866E74 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+				};
+			};
+			buildConfigurationList = 246396AD258D21E200866E74 /* Build configuration list for PBXProject "AnyRing" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 246396A9258D21E200866E74;
+			productRefGroup = 246396B7258D21E300866E74 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				246396B5258D21E300866E74 /* AnyRing (iOS) */,
+				246396BD258D21E300866E74 /* AnyRing (macOS) */,
+				246396C5258D21E300866E74 /* Tests iOS */,
+				246396D0258D21E300866E74 /* Tests macOS */,
+				246396F4258D24CD00866E74 /* AnyRingWatch */,
+				246396FD258D24CD00866E74 /* AnyRingWatch Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		246396B4258D21E300866E74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				246396DC258D21E300866E74 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396BC258D21E300866E74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				246396DD258D21E300866E74 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396C4258D21E300866E74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396CF258D21E300866E74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396F3258D24CD00866E74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				246396F8258D24CD00866E74 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396FC258D24CD00866E74 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2463970D258D24CE00866E74 /* Preview Assets.xcassets in Resources */,
+				2463970A258D24CE00866E74 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		246396B2258D21E300866E74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24AA54B6258E0D39002CD4A6 /* MainScreen.swift in Sources */,
+				24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */,
+				246396DA258D21E300866E74 /* ContentView.swift in Sources */,
+				24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */,
+				24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
+				24AA54C8258E56E6002CD4A6 /* MultiRing.swift in Sources */,
+				24AA54A4258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */,
+				24AA5485258D2812002CD4A6 /* DataSource.swift in Sources */,
+				24AA54AD258E0CC5002CD4A6 /* Rings.swift in Sources */,
+				246396D8258D21E300866E74 /* AnyRingApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396BA258D21E300866E74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24AA54B7258E0D39002CD4A6 /* MainScreen.swift in Sources */,
+				24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */,
+				246396DB258D21E300866E74 /* ContentView.swift in Sources */,
+				24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */,
+				24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
+				24AA54C9258E56E6002CD4A6 /* MultiRing.swift in Sources */,
+				24AA54A5258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */,
+				24AA5486258D2812002CD4A6 /* DataSource.swift in Sources */,
+				24AA54AE258E0CC5002CD4A6 /* Rings.swift in Sources */,
+				246396D9258D21E300866E74 /* AnyRingApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396C2258D21E300866E74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				246396CB258D21E300866E74 /* Tests_iOS.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396CD258D21E300866E74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				246396D6258D21E300866E74 /* Tests_macOS.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		246396FA258D24CD00866E74 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				24639706258D24CD00866E74 /* AnyRingApp.swift in Sources */,
+				24639704258D24CD00866E74 /* ContentView.swift in Sources */,
+				24639708258D24CD00866E74 /* ComplicationController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		246396C8258D21E300866E74 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 246396B5258D21E300866E74 /* AnyRing (iOS) */;
+			targetProxy = 246396C7258D21E300866E74 /* PBXContainerItemProxy */;
+		};
+		246396D3258D21E300866E74 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 246396BD258D21E300866E74 /* AnyRing (macOS) */;
+			targetProxy = 246396D2258D21E300866E74 /* PBXContainerItemProxy */;
+		};
+		24639701258D24CD00866E74 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 246396FD258D24CD00866E74 /* AnyRingWatch Extension */;
+			targetProxy = 24639700258D24CD00866E74 /* PBXContainerItemProxy */;
+		};
+		24639710258D24CE00866E74 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 246396F4258D24CD00866E74 /* AnyRingWatch */;
+			targetProxy = 2463970F258D24CE00866E74 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		246396DE258D21E300866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		246396DF258D21E300866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		246396E1258D21E300866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AnyRing.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing;
+				PRODUCT_NAME = AnyRing;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		246396E2258D21E300866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AnyRing.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = iOS/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing;
+				PRODUCT_NAME = AnyRing;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		246396E4258D21E300866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing;
+				PRODUCT_NAME = AnyRing;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		246396E5258D21E300866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = macOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing;
+				PRODUCT_NAME = AnyRing;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		246396E7258D21E300866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				INFOPLIST_FILE = "Tests iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.potomushto.Tests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "AnyRing (iOS)";
+			};
+			name = Debug;
+		};
+		246396E8258D21E300866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				INFOPLIST_FILE = "Tests iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.potomushto.Tests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "AnyRing (iOS)";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		246396EA258D21E300866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				INFOPLIST_FILE = "Tests macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.potomushto.Tests-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "AnyRing (macOS)";
+			};
+			name = Debug;
+		};
+		246396EB258D21E300866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				INFOPLIST_FILE = "Tests macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.potomushto.Tests-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "AnyRing (macOS)";
+			};
+			name = Release;
+		};
+		24639713258D24CE00866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"AnyRingWatch Extension/Preview Content\"";
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = "AnyRingWatch Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 7.2;
+			};
+			name = Debug;
+		};
+		24639714258D24CE00866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "\"AnyRingWatch Extension/Preview Content\"";
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = "AnyRingWatch Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 7.2;
+			};
+			name = Release;
+		};
+		24639717258D24CE00866E74 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				IBSC_MODULE = AnyRingWatch_Extension;
+				INFOPLIST_FILE = AnyRingWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 7.2;
+			};
+			name = Debug;
+		};
+		24639718258D24CE00866E74 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 49PJNAT2WC;
+				IBSC_MODULE = AnyRingWatch_Extension;
+				INFOPLIST_FILE = AnyRingWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 7.2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		246396AD258D21E200866E74 /* Build configuration list for PBXProject "AnyRing" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				246396DE258D21E300866E74 /* Debug */,
+				246396DF258D21E300866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		246396E0258D21E300866E74 /* Build configuration list for PBXNativeTarget "AnyRing (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				246396E1258D21E300866E74 /* Debug */,
+				246396E2258D21E300866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		246396E3258D21E300866E74 /* Build configuration list for PBXNativeTarget "AnyRing (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				246396E4258D21E300866E74 /* Debug */,
+				246396E5258D21E300866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		246396E6258D21E300866E74 /* Build configuration list for PBXNativeTarget "Tests iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				246396E7258D21E300866E74 /* Debug */,
+				246396E8258D21E300866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		246396E9258D21E300866E74 /* Build configuration list for PBXNativeTarget "Tests macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				246396EA258D21E300866E74 /* Debug */,
+				246396EB258D21E300866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		24639712258D24CE00866E74 /* Build configuration list for PBXNativeTarget "AnyRingWatch Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24639713258D24CE00866E74 /* Debug */,
+				24639714258D24CE00866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		24639716258D24CE00866E74 /* Build configuration list for PBXNativeTarget "AnyRingWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24639717258D24CE00866E74 /* Debug */,
+				24639718258D24CE00866E74 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 246396AA258D21E200866E74 /* Project object */;
+}
