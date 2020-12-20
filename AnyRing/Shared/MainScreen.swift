@@ -8,13 +8,22 @@
 import SwiftUI
 
 struct MainScreen: View {
+    let rings: RingViewModel?
     @State var slider = 0.5
     @State var isOn = 0.5
+    @State var bgColor = Color.red
     var body: some View {
         Form {
             Section {
-                Rings()
+                MultiRingView(size: 100, ring1: rings!).padding()
             }
+            if let progress = rings?.progress {
+                Text("\(progress.absolute)")
+            }
+            if let error = rings?.error {
+                Text("\(error.localizedDescription)")
+            }
+            
             Section(header: Text("Ring 1")) {
                 HStack {
                     Text("Setting 1")
@@ -22,9 +31,7 @@ struct MainScreen: View {
             }
             
             Section(header: Text("Ring 2")) {
-                Text("Setting 1")
-                
-                Text("Setting 2")
+                ColorPicker("Main Color", selection: $bgColor)
                 
                 HStack {
                     Text("Threshold")
@@ -51,7 +58,7 @@ struct MainScreen: View {
 
 struct MainScreen_Preview: PreviewProvider {
     static var previews: some View {
-        MainScreen()
+        MainScreen(rings: nil)
     }
 }
 
