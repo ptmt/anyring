@@ -10,17 +10,31 @@ import HealthKit
 import Combine
 
 class RestHRProvider: RingProvider {
+    let name = "Min Heart Rate"
+    let description = """
+    This allows to track what was the lowest heart-rate at night for set period of days.
+    """
+    let units = "BPM"
+    
     private let dataSource: HealthKitDataSource
-    let name = "Rest Heart-rate provider"
     let numberOfNights: Double = 3
     
     init(dataSource: HealthKitDataSource) {
         self.dataSource = dataSource
     }
     
+    private let configurationMax = 100.0
+    private let configurationMin = 40.0
+    private let reversed = true
+    private let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
+    
     func calculateProgress() -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
-            Progress(absolute: 50, maxAbsolute: 45, units: "HR")
+            print(">> calculate progress", sample)
+            return Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
+                            maxAbsolute: self.configurationMax,
+                            minAbsolute: self.configurationMin,
+                            reversed: self.reversed)
         }.eraseToAnyPublisher()
     }
     
@@ -30,17 +44,11 @@ class RestHRProvider: RingProvider {
         RingViewModel(provider: self)
     }
     
-    func fetchSamples() -> AnyPublisher<HKSample?, Error> {
-        //        let calendar = NSCalendar.current
-        //        let now = NSDate()
-        //        let components = calendar.dateComponents([.year, .month, .day], from: now as Date)
-        //
-        //        guard let startDate:NSDate = calendar.date(from: components) as NSDate? else { return }
-        //        var dayComponent    = DateComponents()
-        //        dayComponent.day    = 1
-        //        let endDate:NSDate? = calendar.date(byAdding: dayComponent, to: startDate as Date) as NSDate?
-        //
-        let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
+    func requestNeededPermissions() -> Future<Bool, Error> {
+        dataSource.requestPermissions()
+    }
+    
+    private func fetchSamples() -> AnyPublisher<HKSample?, Error> {
         let hr = HKObjectType.quantityType(forIdentifier: .heartRate)!
         let m = dataSource.fetchSamples(
             withStart: Date().addingTimeInterval(TimeInterval(-numberOfNights * secondsInDayApprox)),
@@ -48,7 +56,7 @@ class RestHRProvider: RingProvider {
             ofType: hr)
             .tryMap { results -> HKSample? in
                 let minHR = results.min { (sample1, sample2) -> Bool in
-                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: unit)
+                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: self.unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: self.unit)
                 }
                 return minHR
             }.eraseToAnyPublisher()

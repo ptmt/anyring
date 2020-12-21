@@ -18,7 +18,10 @@ struct ContentView: View {
     let dataSource = DeviceHealthKitDataSource()
     #endif
     
+    @State var showingAlert = false
     @State var rings: RingViewModel?
+    @State var initTask: AnyCancellable? = nil
+    
     var body: some View {
         NavigationView {
             if (dataSource.isAvailable()) {
@@ -28,6 +31,8 @@ struct ContentView: View {
                 } else {
                     ProgressView().onAppear {
                         initViewModels()
+                    }.alert(isPresented: $showingAlert) {
+                        Alert(title: Text("Error"), message: Text("Permission to HealthKit is denided"), dismissButton: .default(Text("OK")))
                     }.navigationTitle(Text("AnyRing"))
                 }
                 
@@ -40,11 +45,18 @@ struct ContentView: View {
     
     private func initViewModels() {
         // instanitiate all ring providers
+        let providers = RestHRProvider(dataSource: dataSource)
         
         // collect all permissions for healthkit
-        
-        // instanitiate all view models
-        rings = RestHRProvider(dataSource: dataSource).viewModel()
+        initTask = providers.requestNeededPermissions().sink { _ in } receiveValue: { success in
+            print("requestNeededPermissions", success)
+            if (!success) {
+                showingAlert = true
+            } else {
+                // instanitiate all view models
+                rings = providers.viewModel()
+            }
+        }
     }
 }
 

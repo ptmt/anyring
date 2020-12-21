@@ -8,19 +8,12 @@
 import Foundation
 import Combine
 
-struct Progress {
-    let absolute: Double
-    let maxAbsolute: Double
-    let units: String
-    
-    var progress: Double {
-        absolute / maxAbsolute
-    }
-}
-
 protocol RingProvider {
     var name: String { get }
+    var description: String { get }
+    var units: String { get }
     
+    func requestNeededPermissions() -> Future<Bool, Error>
     func viewModel() -> RingViewModel
     func calculateProgress() -> AnyPublisher<Progress, Error>
 }

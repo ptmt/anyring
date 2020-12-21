@@ -8,20 +8,14 @@
 import SwiftUI
 
 struct MainScreen: View {
-    let rings: RingViewModel?
+    @ObservedObject var rings: RingViewModel
     @State var slider = 0.5
     @State var isOn = 0.5
     @State var bgColor = Color.red
     var body: some View {
         Form {
             Section {
-                MultiRingView(size: 100, ring1: rings!).padding()
-            }
-            if let progress = rings?.progress {
-                Text("\(progress.absolute)")
-            }
-            if let error = rings?.error {
-                Text("\(error.localizedDescription)")
+                MultiRingView(size: 150, ring1: rings).padding()
             }
             
             Section(header: Text("Ring 1")) {
@@ -58,7 +52,7 @@ struct MainScreen: View {
 
 struct MainScreen_Preview: PreviewProvider {
     static var previews: some View {
-        MainScreen(rings: nil)
+        MainScreen(rings: DemoProvider().viewModel())
     }
 }
 

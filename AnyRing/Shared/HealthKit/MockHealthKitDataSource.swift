@@ -26,7 +26,7 @@ class MockHealthKitDataSource: HealthKitDataSource {
     func fetchSamples(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType) -> Future<HKSamples, Error> {
         
         return Future() { promise in
-            promise(.success([]))
+            promise(.success([HKQuantitySample(type: HKQuantityType.quantityType(forIdentifier: .heartRate)!, quantity: HKQuantity(unit: HKUnit.count().unitDivided(by: HKUnit.minute()), doubleValue: 55), start: Date(), end: Date())]))
         }
     }
 }

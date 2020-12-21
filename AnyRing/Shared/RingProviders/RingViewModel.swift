@@ -8,9 +8,16 @@
 import Foundation
 import Combine
 
-class RingViewModel: ObservableObject {
-    @Published var progress: Progress? = nil
+class RingViewModel: ObservableObject, CustomStringConvertible {
+    @Published var progress: Progress = Progress.Empty
     @Published var error: Error? = nil
+    
+    var units: String {
+        provider.units
+    }
+    var name: String {
+        provider.name
+    }
     
     private let provider: RingProvider
     private var cancellables = Set<AnyCancellable>()
@@ -18,11 +25,15 @@ class RingViewModel: ObservableObject {
     init(provider: RingProvider) {
         self.provider = provider
         defer {
-        provider.calculateProgress().sink { [weak self] err in
-            
-        } receiveValue: { [weak self] value in
-            self?.progress = value
-        }.store(in: &cancellables)
+            provider.calculateProgress().sink { _ in }
+                receiveValue: { [weak self] value in
+                    print("get value", value)
+                    self?.progress = value
+                }.store(in: &cancellables)
         }
+    }
+    
+    var description: String {
+        return progress.description + units
     }
 }

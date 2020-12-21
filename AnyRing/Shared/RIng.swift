@@ -28,7 +28,7 @@ struct RingShape: Shape {
 struct RingView: View {
     var size: CGFloat
     var color: Color
-    var progress: CGFloat
+    var progress: Double
     var lineWidth: CGFloat
     var body: some View {
         
@@ -36,16 +36,16 @@ struct RingView: View {
             ZStack {
                 Circle()
                     .stroke(style: StrokeStyle.init(lineWidth: lineWidth, lineCap: .round))
-                    .opacity(0.3)
+                    .opacity(0.2)
                     .foregroundColor(color)
-                RingShape(angle: Double(progress * 360))
+                RingShape(angle: progress * 360)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(color)
                     
                 if progress > 1 {
                     let offsetRadius = geometry.size.width / 2
                     
-                    let angleForFinalSegment = -CGFloat(Double.pi / 2) + progress.truncatingRemainder(dividingBy: 1) * (CGFloat(Double.pi))
+                    let angleForFinalSegment = -CGFloat(Double.pi / 2) + CGFloat(progress.truncatingRemainder(dividingBy: 1)) * (CGFloat(Double.pi))
                     let angleForOffsetInRadians = angleForFinalSegment + CGFloat(Double.pi / 2)
                     let relativeXOffset = cos(angleForOffsetInRadians)
                     let relativeYOffset = sin(angleForOffsetInRadians)
@@ -58,8 +58,8 @@ struct RingView: View {
                                alignment: .center)
                         .offset(x: offsetRadius * cos(angleForFinalSegment),
                                 y: offsetRadius * sin(angleForFinalSegment))
-                        .shadow(color: Color.black.opacity(0.2),
-                                radius: 5,
+                        .shadow(color: Color.black.opacity(0.3),
+                                radius: 4,
                                 x: xOffset,
                                 y: yOffset)
                 }
