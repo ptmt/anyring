@@ -7,37 +7,19 @@
 
 import SwiftUI
 
-struct RingLabel: View {
-    let name: String
-    let value: String
-    let units: String
-    let color: Color
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text(name).font(.footnote)
-            (
-                Text(String(describing: value)).bold() +
-                    Text(" " + units).font(.footnote)
-            ).foregroundColor(color)
-        }
-    }
-}
-
-struct MultiRingView: View {
+struct RingDashboard: View {
     let size: CGFloat
     @ObservedObject var ring1: RingViewModel
     @ObservedObject var ring2: RingViewModel
     @ObservedObject var ring3: RingViewModel
-    private let margin: CGFloat = 1.0
     
     var body: some View {
         HStack(alignment: .center, spacing: 10) {
-            ZStack {
-                let lineWidth = size / 9
-                RingView(size: size, color: Color.green, progress: ring1.progress.normalized, lineWidth: lineWidth)
-                RingView(size: size - 2 * (lineWidth + margin), color: Color.yellow, progress: ring2.progress.normalized, lineWidth: lineWidth)
-                RingView(size: size - 4 * (lineWidth + margin), color: Color.blue, progress: ring3.progress.normalized, lineWidth: lineWidth)
-            }
+            TripleRingView(size: size,
+                           ring1: .init(progress: ring1.progress.normalized, color: Color.green),
+                           ring2: .init(progress: ring2.progress.normalized, color: Color.yellow),
+                           ring3: .init(progress: ring3.progress.normalized, color:
+                                            Color.blue))
             Spacer()
             VStack(alignment: .leading, spacing: 10) {
                 RingLabel(name: ring1.name,
@@ -62,7 +44,7 @@ struct MultiRingView: View {
 
 struct MultiRingView_Preview: PreviewProvider {
     static var previews: some View {
-        MultiRingView(size: 150,
+        RingDashboard(size: 150,
                       ring1: DemoProvider("HRV", initValue: 120, units: "ms").viewModel(),
                       ring2: DemoProvider("Heart Rate", initValue: 60, units: "bpm").viewModel(),
                       ring3: DemoProvider("Activity", initValue: 30, units: "min").viewModel())

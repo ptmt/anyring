@@ -15,7 +15,7 @@ struct MainScreen: View {
     var body: some View {
         Form {
             Section {
-                MultiRingView(size: 150,
+                RingDashboard(size: 150,
                               ring1: rings.first,
                               ring2: rings.second,
                               ring3: rings.third).padding()
