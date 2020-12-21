@@ -1,22 +1,21 @@
 //
-//  RestHRProvider.swift
+//  HRVProvider.swift
 //  AnyRing
 //
-//  Created by Dmitriy Loktev on 18.12.2020.
+//  Created by Dmitriy Loktev on 21.12.2020.
 //
 
 import Foundation
 import HealthKit
 import Combine
 
-class RestHRProvider: RingProvider {
+class HRVProvider: RingProvider {
     
-    let name = "Min Heart Rate"
+    let name = "Max HRV"
     let description = """
-    This allows to track what was the lowest heart-rate at night for set period of days.
+    Last available value for Heart Rate Variability
     """
-    let units = "BPM"
-    let requiredHKPermission: HKSampleType? = HKObjectType.quantityType(forIdentifier: .heartRate)!
+    let units = "MS"
     
     private let dataSource: HealthKitDataSource
     let numberOfNights: Double = 3
@@ -26,9 +25,9 @@ class RestHRProvider: RingProvider {
     }
     
     private let configurationMax = 100.0
-    private let configurationMin = 40.0
-    private let reversed = true
-    private let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
+    private let configurationMin = 10.0
+    private let reversed = false
+    private let unit = HKUnit.secondUnit(with: .milli) // HKUnit.count().unitDivided(by: HKUnit.minute()) // HKUnit.secondUnit(with: .milli)
     
     func calculateProgress() -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
@@ -45,20 +44,21 @@ class RestHRProvider: RingProvider {
         RingViewModel(provider: self)
     }
     
+    private let hrvType = HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!
+    
+    var requiredHKPermission: HKSampleType? { hrvType }
+    
     private func fetchSamples() -> AnyPublisher<HKSample?, Error> {
-        let hr = HKObjectType.quantityType(forIdentifier: .heartRate)!
         let m = dataSource.fetchSamples(
             withStart: Date().addingTimeInterval(TimeInterval(-numberOfNights * secondsInDayApprox)),
             to: Date(),
-            ofType: hr)
+            ofType: hrvType)
             .tryMap { results -> HKSample? in
                 let minHR = results.min { (sample1, sample2) -> Bool in
-                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: self.unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: self.unit)
+                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: self.unit) > (sample2 as! HKQuantitySample).quantity.doubleValue(for: self.unit)
                 }
                 return minHR
             }.eraseToAnyPublisher()
         return m
     }
 }
-
-let secondsInDayApprox: Double = 60 * 60 * 24

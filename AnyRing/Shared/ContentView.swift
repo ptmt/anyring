@@ -19,7 +19,7 @@ struct ContentView: View {
     #endif
     
     @State var showingAlert = false
-    @State var rings: RingViewModel?
+    @State var rings: RingWrapper<RingViewModel>?
     @State var initTask: AnyCancellable? = nil
     
     var body: some View {
@@ -45,18 +45,40 @@ struct ContentView: View {
     
     private func initViewModels() {
         // instanitiate all ring providers
-        let providers = RestHRProvider(dataSource: dataSource)
+        let providers: [RingProvider] = [
+            RestHRProvider(dataSource: dataSource),
+            HRVProvider(dataSource: dataSource),
+            ActivityProvider(dataSource: dataSource),
+        ]
         
         // collect all permissions for healthkit
-        initTask = providers.requestNeededPermissions().sink { _ in } receiveValue: { success in
-            print("requestNeededPermissions", success)
+        let permissions = providers.compactMap { $0.requiredHKPermission }
+        
+        initTask = dataSource.requestPermissions(permissions: Set(permissions)).sink { _ in } receiveValue: { success in
             if (!success) {
                 showingAlert = true
             } else {
                 // instanitiate all view models
-                rings = providers.viewModel()
+                rings = RingWrapper(providers.map { $0.viewModel() })
             }
         }
+    }
+}
+
+struct RingWrapper<T> {
+    private let list: [T]
+    init(_ list: [T]) {
+        precondition(list.count == 3)
+        self.list = list
+    }
+    var first: T {
+        list.first!
+    }
+    var second: T {
+        list[1]
+    }
+    var third: T {
+        list[2]
     }
 }
 

@@ -17,10 +17,10 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
         return HKHealthStore.isHealthDataAvailable()
     }
     
-    func requestPermissions() -> Future<Bool, Error> {
-        let allTypes = Set([HKObjectType.quantityType(forIdentifier: .heartRate)!])
+    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
+    
         return Future() { promise in
-            self.healthStore.requestAuthorization(toShare: [], read: allTypes) { (success, error) in
+            self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
                 if let error = error {
                     promise(.failure(error))
                 } else {

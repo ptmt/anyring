@@ -48,6 +48,10 @@
 		24AA54F9258FA576002CD4A6 /* DemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54F7258FA576002CD4A6 /* DemoProvider.swift */; };
 		24AA550125909863002CD4A6 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA550025909863002CD4A6 /* Progress.swift */; };
 		24AA550225909863002CD4A6 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA550025909863002CD4A6 /* Progress.swift */; };
+		24AA550A2590AC82002CD4A6 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
+		24AA550B2590AC82002CD4A6 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
+		24AA55132590D74A002CD4A6 /* ActivityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* ActivityProvider.swift */; };
+		24AA55142590D74A002CD4A6 /* ActivityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* ActivityProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -145,6 +149,8 @@
 		24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingViewModel.swift; sourceTree = "<group>"; };
 		24AA54F7258FA576002CD4A6 /* DemoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoProvider.swift; sourceTree = "<group>"; };
 		24AA550025909863002CD4A6 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
+		24AA55092590AC82002CD4A6 /* HRVProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HRVProvider.swift; sourceTree = "<group>"; };
+		24AA55122590D74A002CD4A6 /* ActivityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -305,6 +311,8 @@
 				24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */,
 				24AA54F7258FA576002CD4A6 /* DemoProvider.swift */,
 				24AA550025909863002CD4A6 /* Progress.swift */,
+				24AA55092590AC82002CD4A6 /* HRVProvider.swift */,
+				24AA55122590D74A002CD4A6 /* ActivityProvider.swift */,
 			);
 			path = RingProviders;
 			sourceTree = "<group>";
@@ -554,10 +562,12 @@
 				24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
 				24AA54C8258E56E6002CD4A6 /* MultiRing.swift in Sources */,
+				24AA55132590D74A002CD4A6 /* ActivityProvider.swift in Sources */,
 				24AA54E6258F6925002CD4A6 /* MockHealthKitDataSource.swift in Sources */,
 				24AA550125909863002CD4A6 /* Progress.swift in Sources */,
 				24AA54A4258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */,
 				24AA5485258D2812002CD4A6 /* DeviceHealthKitDataSource.swift in Sources */,
+				24AA550A2590AC82002CD4A6 /* HRVProvider.swift in Sources */,
 				246396D8258D21E300866E74 /* AnyRingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -575,10 +585,12 @@
 				24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
 				24AA54C9258E56E6002CD4A6 /* MultiRing.swift in Sources */,
+				24AA55142590D74A002CD4A6 /* ActivityProvider.swift in Sources */,
 				24AA54E7258F6925002CD4A6 /* MockHealthKitDataSource.swift in Sources */,
 				24AA550225909863002CD4A6 /* Progress.swift in Sources */,
 				24AA54A5258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */,
 				24AA5486258D2812002CD4A6 /* DeviceHealthKitDataSource.swift in Sources */,
+				24AA550B2590AC82002CD4A6 /* HRVProvider.swift in Sources */,
 				246396D9258D21E300866E74 /* AnyRingApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

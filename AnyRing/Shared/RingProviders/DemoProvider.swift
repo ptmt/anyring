@@ -7,14 +7,20 @@
 
 import Foundation
 import Combine
+import HealthKit
 
 class DemoProvider: RingProvider {
-    
-    
     var units: String = "KCAL"
     
     var name: String = "Demo"
     var description: String = "Demo provider"
+    
+    private let initValue: Double
+    init(_ name: String = "Demo", initValue: Double = 20, units: String = "KCAL") {
+        self.name = name
+        self.initValue = initValue
+        self.units = units
+    }
     
     func viewModel() -> RingViewModel {
         RingViewModel(provider: self)
@@ -27,8 +33,8 @@ class DemoProvider: RingProvider {
     }
     
     func calculateProgress() -> AnyPublisher<Progress, Error> {
-        Result<Progress, Error>.Publisher(.success(Progress(absolute: 20, maxAbsolute: 100, minAbsolute: 0))).eraseToAnyPublisher()
+        Result<Progress, Error>.Publisher(.success(Progress(absolute: initValue, maxAbsolute: 100, minAbsolute: 0))).eraseToAnyPublisher()
     }
     
-    
+    var requiredHKPermission: HKSampleType? = nil
 }

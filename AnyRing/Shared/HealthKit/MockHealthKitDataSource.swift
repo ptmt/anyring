@@ -16,8 +16,7 @@ class MockHealthKitDataSource: HealthKitDataSource {
         return true
     }
     
-    func requestPermissions() -> Future<Bool, Error> {
-        // let allTypes = Set([HKObjectType.quantityType(forIdentifier: .heartRate)!])
+    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
         return Future() { promise in
             promise(.success(true))
         }

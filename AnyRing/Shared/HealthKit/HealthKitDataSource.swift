@@ -14,6 +14,6 @@ typealias HKSamples = [HKSample]
 
 protocol HealthKitDataSource {
     func isAvailable() -> Bool
-    func requestPermissions() -> Future<Bool, Error>
+    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error>
     func fetchSamples(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType) -> Future<HKSamples, Error>
 }

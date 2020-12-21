@@ -7,13 +7,14 @@
 
 import Foundation
 import Combine
+import HealthKit
 
 protocol RingProvider {
     var name: String { get }
     var description: String { get }
     var units: String { get }
     
-    func requestNeededPermissions() -> Future<Bool, Error>
+    var requiredHKPermission: HKSampleType? { get }
     func viewModel() -> RingViewModel
     func calculateProgress() -> AnyPublisher<Progress, Error>
 }
