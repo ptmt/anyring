@@ -25,12 +25,17 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     init(provider: RingProvider) {
         self.provider = provider
         defer {
-            provider.calculateProgress().sink { _ in }
-                receiveValue: { [weak self] value in
-                    print("get value", value)
-                    self?.progress = value
-                }.store(in: &cancellables)
+            refresh()
         }
+    }
+    
+    func refresh() {
+        provider.calculateProgress()
+            .receive(on: RunLoop.main)
+            .sink { _ in }
+            receiveValue: { [weak self] value in
+                self?.progress = value
+            }.store(in: &cancellables)
     }
     
     var description: String {

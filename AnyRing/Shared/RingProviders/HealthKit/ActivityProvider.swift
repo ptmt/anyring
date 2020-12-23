@@ -24,7 +24,7 @@ class ActivityProvider: RingProvider {
         self.dataSource = dataSource
     }
     
-    private let configurationMax = 300.0
+    private let configurationMax = 200.0
     private let configurationMin = 0.0
     private let reversed = false
     private let unit = HKUnit.minute()
@@ -49,14 +49,17 @@ class ActivityProvider: RingProvider {
     var requiredHKPermission: HKSampleType? { hrvType }
     
     private func sum() -> AnyPublisher<Double, Error> {
+        
         return dataSource.fetchSamples(
             withStart: Date().addingTimeInterval(TimeInterval(-numberOfNights * secondsInDayApprox)),
             to: Date(),
             ofType: hrvType)
             .tryMap { results -> Double in
+                
                 let sumOfAllActivity = results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
                     sum + (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit)
                 }
+                print("fetchSamples and sum for ActivityProvider", sumOfAllActivity)
                 return sumOfAllActivity
             }.eraseToAnyPublisher()
     }

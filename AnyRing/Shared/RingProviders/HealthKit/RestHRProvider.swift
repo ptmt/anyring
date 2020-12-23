@@ -26,7 +26,7 @@ class RestHRProvider: RingProvider {
     }
     
     private let configurationMax = 100.0
-    private let configurationMin = 40.0
+    private let configurationMin = 48.0
     private let reversed = true
     private let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
     

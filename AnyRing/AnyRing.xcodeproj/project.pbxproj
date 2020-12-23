@@ -36,8 +36,8 @@
 		24AA54B7258E0D39002CD4A6 /* MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54B5258E0D39002CD4A6 /* MainScreen.swift */; };
 		24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
 		24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
-		24AA54C8258E56E6002CD4A6 /* MultiRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54C7258E56E6002CD4A6 /* MultiRing.swift */; };
-		24AA54C9258E56E6002CD4A6 /* MultiRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54C7258E56E6002CD4A6 /* MultiRing.swift */; };
+		24AA54C8258E56E6002CD4A6 /* RingDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54C7258E56E6002CD4A6 /* RingDashboard.swift */; };
+		24AA54C9258E56E6002CD4A6 /* RingDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54C7258E56E6002CD4A6 /* RingDashboard.swift */; };
 		24AA54D7258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54D6258F420E002CD4A6 /* HealthKitDataSource.swift */; };
 		24AA54D8258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54D6258F420E002CD4A6 /* HealthKitDataSource.swift */; };
 		24AA54E6258F6925002CD4A6 /* MockHealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54E5258F6925002CD4A6 /* MockHealthKitDataSource.swift */; };
@@ -66,6 +66,19 @@
 		24AA557E2590FAA5002CD4A6 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
 		24C38D222591054A001F1412 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
 		24C38D2A2591054D001F1412 /* TripleRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55682590FA03002CD4A6 /* TripleRing.swift */; };
+		24DEB78A25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
+		24DEB78B25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
+		24DEB78C25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
+		24DEB79425920F2900647442 /* ActivityProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* ActivityProvider.swift */; };
+		24DEB79C25920F2B00647442 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
+		24DEB7A425920F2E00647442 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
+		24DEB7AC25920F3000647442 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
+		24DEB7B425920F3400647442 /* DemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54F7258FA576002CD4A6 /* DemoProvider.swift */; };
+		24DEB7BC25920F3800647442 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA550025909863002CD4A6 /* Progress.swift */; };
+		24DEB7C425920F4100647442 /* RingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */; };
+		24DEB7CC25920F5400647442 /* DeviceHealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */; };
+		24DEB7D425920F5600647442 /* HealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54D6258F420E002CD4A6 /* HealthKitDataSource.swift */; };
+		24DEB7DC25920F5900647442 /* MockHealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54E5258F6925002CD4A6 /* MockHealthKitDataSource.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -175,7 +188,7 @@
 		24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHttpProvider.swift; sourceTree = "<group>"; };
 		24AA54B5258E0D39002CD4A6 /* MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreen.swift; sourceTree = "<group>"; };
 		24AA54BE258E16DB002CD4A6 /* RIng.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RIng.swift; sourceTree = "<group>"; };
-		24AA54C7258E56E6002CD4A6 /* MultiRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiRing.swift; sourceTree = "<group>"; };
+		24AA54C7258E56E6002CD4A6 /* RingDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingDashboard.swift; sourceTree = "<group>"; };
 		24AA54D6258F420E002CD4A6 /* HealthKitDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitDataSource.swift; sourceTree = "<group>"; };
 		24AA54E5258F6925002CD4A6 /* MockHealthKitDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHealthKitDataSource.swift; sourceTree = "<group>"; };
 		24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingViewModel.swift; sourceTree = "<group>"; };
@@ -191,6 +204,7 @@
 		24AA554F2590F87A002CD4A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		24AA55682590FA03002CD4A6 /* TripleRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripleRing.swift; sourceTree = "<group>"; };
 		24AA55732590FA8A002CD4A6 /* RingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingLabel.swift; sourceTree = "<group>"; };
+		24DEB78925920EF000647442 /* AnyRingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -356,7 +370,6 @@
 				24AA555E2590F8B5002CD4A6 /* HealthKit */,
 				24AA546B258D25B4002CD4A6 /* RingProvider.swift */,
 				24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */,
-				24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */,
 				24AA54F7258FA576002CD4A6 /* DemoProvider.swift */,
 				24AA550025909863002CD4A6 /* Progress.swift */,
 			);
@@ -406,8 +419,9 @@
 		24AA55662590F9D9002CD4A6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				24DEB78825920ED900647442 /* ViewModels */,
 				246396B0258D21E200866E74 /* ContentView.swift */,
-				24AA54C7258E56E6002CD4A6 /* MultiRing.swift */,
+				24AA54C7258E56E6002CD4A6 /* RingDashboard.swift */,
 				24AA54B5258E0D39002CD4A6 /* MainScreen.swift */,
 				24AA55672590F9DF002CD4A6 /* Common */,
 			);
@@ -422,6 +436,15 @@
 				24AA55732590FA8A002CD4A6 /* RingLabel.swift */,
 			);
 			path = Common;
+			sourceTree = "<group>";
+		};
+		24DEB78825920ED900647442 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */,
+				24DEB78925920EF000647442 /* AnyRingViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -683,8 +706,9 @@
 				24AA54D7258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */,
 				24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
-				24AA54C8258E56E6002CD4A6 /* MultiRing.swift in Sources */,
+				24AA54C8258E56E6002CD4A6 /* RingDashboard.swift in Sources */,
 				24AA55132590D74A002CD4A6 /* ActivityProvider.swift in Sources */,
+				24DEB78A25920EF000647442 /* AnyRingViewModel.swift in Sources */,
 				24AA54E6258F6925002CD4A6 /* MockHealthKitDataSource.swift in Sources */,
 				24AA550125909863002CD4A6 /* Progress.swift in Sources */,
 				24AA54A4258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */,
@@ -708,8 +732,9 @@
 				24AA54D8258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */,
 				24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
-				24AA54C9258E56E6002CD4A6 /* MultiRing.swift in Sources */,
+				24AA54C9258E56E6002CD4A6 /* RingDashboard.swift in Sources */,
 				24AA55142590D74A002CD4A6 /* ActivityProvider.swift in Sources */,
+				24DEB78B25920EF000647442 /* AnyRingViewModel.swift in Sources */,
 				24AA54E7258F6925002CD4A6 /* MockHealthKitDataSource.swift in Sources */,
 				24AA550225909863002CD4A6 /* Progress.swift in Sources */,
 				24AA54A5258DF48C002CD4A6 /* CustomHttpProvider.swift in Sources */,
@@ -752,9 +777,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				24AA55762590FA8A002CD4A6 /* RingLabel.swift in Sources */,
+				24DEB79C25920F2B00647442 /* HRVProvider.swift in Sources */,
+				24DEB7C425920F4100647442 /* RingViewModel.swift in Sources */,
+				24DEB7A425920F2E00647442 /* RestHRProvider.swift in Sources */,
 				24AA557E2590FAA5002CD4A6 /* RIng.swift in Sources */,
 				24AA554C2590F87A002CD4A6 /* RingWidget.swift in Sources */,
+				24DEB7B425920F3400647442 /* DemoProvider.swift in Sources */,
+				24DEB7DC25920F5900647442 /* MockHealthKitDataSource.swift in Sources */,
+				24DEB7BC25920F3800647442 /* Progress.swift in Sources */,
 				24AA556B2590FA03002CD4A6 /* TripleRing.swift in Sources */,
+				24DEB7CC25920F5400647442 /* DeviceHealthKitDataSource.swift in Sources */,
+				24DEB7AC25920F3000647442 /* RingProvider.swift in Sources */,
+				24DEB7D425920F5600647442 /* HealthKitDataSource.swift in Sources */,
+				24DEB78C25920EF000647442 /* AnyRingViewModel.swift in Sources */,
+				24DEB79425920F2900647442 /* ActivityProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

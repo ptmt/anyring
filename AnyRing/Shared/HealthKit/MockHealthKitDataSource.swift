@@ -25,7 +25,17 @@ class MockHealthKitDataSource: HealthKitDataSource {
     func fetchSamples(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType) -> Future<HKSamples, Error> {
         
         return Future() { promise in
-            promise(.success([HKQuantitySample(type: HKQuantityType.quantityType(forIdentifier: .heartRate)!, quantity: HKQuantity(unit: HKUnit.count().unitDivided(by: HKUnit.minute()), doubleValue: 55), start: Date(), end: Date())]))
+            if (sampleType == HKQuantityType.quantityType(forIdentifier: .heartRate)!) {
+                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.count().unitDivided(by: HKUnit.minute()), doubleValue: 55), start: Date(), end: Date())]))
+            }
+            
+            if (sampleType == HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!) {
+                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.secondUnit(with: .milli), doubleValue: 110), start: Date(), end: Date())]))
+            }
+            
+            if (sampleType == HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!) {
+                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 110), start: Date(), end: Date())]))
+            }
         }
     }
 }

@@ -7,31 +7,27 @@
 
 import SwiftUI
 import Combine
+import WidgetKit
 
 struct ContentView: View {
     
-    #if targetEnvironment(simulator)
-      // your simulator code
-    let dataSource = MockHealthKitDataSource()
-    #else
-      // your real device code
-    let dataSource = DeviceHealthKitDataSource()
-    #endif
-    
-    @State var showingAlert = false
-    @State var rings: RingWrapper<RingViewModel>?
-    @State var initTask: AnyCancellable? = nil
+    @ObservedObject var viewModel = AnyRingViewModel()
     
     var body: some View {
         NavigationView {
-            if (dataSource.isAvailable()) {
-                if let rings = rings {
+            if (viewModel.dataSource.isAvailable()) {
+                if let rings = viewModel.rings {
                     MainScreen(rings: rings)
                         .navigationTitle(Text("AnyRing"))
+                        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                            print("Moving to the foreground")
+                            viewModel.rings?.forEach { $0.refresh() }
+                            refreshWidget()
+                        }.onAppear {
+                            refreshWidget()
+                        }
                 } else {
-                    ProgressView().onAppear {
-                        initViewModels()
-                    }.alert(isPresented: $showingAlert) {
+                    ProgressView().alert(isPresented: $viewModel.showingAlert) {
                         Alert(title: Text("Error"), message: Text("Permission to HealthKit is denided"), dismissButton: .default(Text("OK")))
                     }.navigationTitle(Text("AnyRing"))
                 }
@@ -42,45 +38,16 @@ struct ContentView: View {
             }
         }
     }
-    
-    private func initViewModels() {
-        // instanitiate all ring providers
-        let providers: [RingProvider] = [
-            RestHRProvider(dataSource: dataSource),
-            HRVProvider(dataSource: dataSource),
-            ActivityProvider(dataSource: dataSource),
-        ]
-        
-        // collect all permissions for healthkit
-        let permissions = providers.compactMap { $0.requiredHKPermission }
-        
-        initTask = dataSource.requestPermissions(permissions: Set(permissions)).sink { _ in } receiveValue: { success in
-            if (!success) {
-                showingAlert = true
-            } else {
-                // instanitiate all view models
-                rings = RingWrapper(providers.map { $0.viewModel() })
-            }
-        }
+}
+
+func refreshWidget() {
+    WidgetCenter.shared.getCurrentConfigurations { result in
+        guard case .success(let widgets) = result else { return }
+
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 
-struct RingWrapper<T> {
-    private let list: [T]
-    init(_ list: [T]) {
-        precondition(list.count == 3)
-        self.list = list
-    }
-    var first: T {
-        list.first!
-    }
-    var second: T {
-        list[1]
-    }
-    var third: T {
-        list[2]
-    }
-}
 
 struct RingConfiguration {
     let provider: RingProvider.Type

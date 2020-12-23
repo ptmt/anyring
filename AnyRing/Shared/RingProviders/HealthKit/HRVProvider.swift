@@ -27,7 +27,7 @@ class HRVProvider: RingProvider {
     private let configurationMax = 100.0
     private let configurationMin = 10.0
     private let reversed = false
-    private let unit = HKUnit.secondUnit(with: .milli) // HKUnit.count().unitDivided(by: HKUnit.minute()) // HKUnit.secondUnit(with: .milli)
+    private let unit = HKUnit.secondUnit(with: .milli)
     
     func calculateProgress() -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in

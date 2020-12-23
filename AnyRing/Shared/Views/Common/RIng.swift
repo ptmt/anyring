@@ -74,9 +74,9 @@ struct RingView: View {
 struct RingView_Preview: PreviewProvider {
     static var previews: some View {
         Group {
-            RingView(size: 140, color: Color.green, progress: 1.1, lineWidth: 20)
+            RingView(size: 140, color: Color.green, progress: 0.97, lineWidth: 20)
             RingView(size: 140, color: Color.yellow, progress: 1.5, lineWidth: 20)
-            RingView(size: 125, color: Color.pink, progress: 1.75, lineWidth: 20)
+            RingView(size: 125, color: Color.pink, progress: 0.75, lineWidth: 20)
             RingView(size: 50, color: Color.yellow, progress: 0.5, lineWidth: 8)
                 .preferredColorScheme(.dark)
         }.previewLayout(.fixed(width: 150, height: 150))

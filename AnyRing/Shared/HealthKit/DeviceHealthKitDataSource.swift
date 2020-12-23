@@ -20,15 +20,21 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
     func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
     
         return Future() { promise in
-            self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
-                if let error = error {
-                    promise(.failure(error))
-                } else {
-                    promise(.success(success))
-                }
-            }
+            promise(.success(true))
+//            let allSatisfy = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
+//            if (allSatisfy) {
+//                promise(.success(true))
+//                return
+//            }
+//
+//            self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
+//                if let error = error {
+//                    promise(.failure(error))
+//                } else {
+//                    promise(.success(success))
+//                }
+//            }
         }
-       
     }
     
     func fetchSamples(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType) -> Future<HKSamples, Error> {
@@ -37,7 +43,7 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
             
             let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate as Date?, options: [])
             
-            let heartRateQuery = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [], resultsHandler: { (query, results, error) in
+            let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [], resultsHandler: { (query, results, error) in
                 if let error = error {
                     promise(Result.failure(error))
                 } else {
@@ -45,7 +51,7 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
                 }
             })
             
-            self.healthStore.execute(heartRateQuery)
+            self.healthStore.execute(query)
         }
     }
 }

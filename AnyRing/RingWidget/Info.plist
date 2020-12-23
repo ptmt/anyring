@@ -25,5 +25,7 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>AnyRing Widget requires an access to HealthKit for certain ring providers</string>
 </dict>
 </plist>
