@@ -42,7 +42,7 @@ struct ContentView: View {
 
 func refreshWidget() {
     WidgetCenter.shared.getCurrentConfigurations { result in
-        guard case .success(let widgets) = result else { return }
+        guard case .success(_) = result else { return }
 
         WidgetCenter.shared.reloadAllTimelines()
     }

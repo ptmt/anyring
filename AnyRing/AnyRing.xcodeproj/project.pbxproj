@@ -66,6 +66,8 @@
 		24AA557E2590FAA5002CD4A6 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
 		24C38D222591054A001F1412 /* RIng.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54BE258E16DB002CD4A6 /* RIng.swift */; };
 		24C38D2A2591054D001F1412 /* TripleRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55682590FA03002CD4A6 /* TripleRing.swift */; };
+		24D279FF2593B4B300F9F0AB /* RingConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */; };
+		24D27A002593B4B300F9F0AB /* RingConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */; };
 		24DEB78A25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
 		24DEB78B25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
 		24DEB78C25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
@@ -204,6 +206,7 @@
 		24AA554F2590F87A002CD4A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		24AA55682590FA03002CD4A6 /* TripleRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripleRing.swift; sourceTree = "<group>"; };
 		24AA55732590FA8A002CD4A6 /* RingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingLabel.swift; sourceTree = "<group>"; };
+		24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingConfigurationView.swift; sourceTree = "<group>"; };
 		24DEB78925920EF000647442 /* AnyRingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -424,6 +427,7 @@
 				24AA54C7258E56E6002CD4A6 /* RingDashboard.swift */,
 				24AA54B5258E0D39002CD4A6 /* MainScreen.swift */,
 				24AA55672590F9DF002CD4A6 /* Common */,
+				24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -697,6 +701,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24AA54F8258FA576002CD4A6 /* DemoProvider.swift in Sources */,
+				24D279FF2593B4B300F9F0AB /* RingConfigurationView.swift in Sources */,
 				24AA54B6258E0D39002CD4A6 /* MainScreen.swift in Sources */,
 				24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */,
 				24AA54EF258F6AFF002CD4A6 /* RingViewModel.swift in Sources */,
@@ -723,6 +728,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24AA54F9258FA576002CD4A6 /* DemoProvider.swift in Sources */,
+				24D27A002593B4B300F9F0AB /* RingConfigurationView.swift in Sources */,
 				24AA54B7258E0D39002CD4A6 /* MainScreen.swift in Sources */,
 				24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */,
 				24AA54F0258F6AFF002CD4A6 /* RingViewModel.swift in Sources */,

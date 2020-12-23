@@ -9,9 +9,8 @@ import SwiftUI
 
 struct MainScreen: View {
     var rings: RingWrapper<RingViewModel>
-    @State var slider = 40
-    @State var isOn = false
-    @State var bgColor = Color.red
+    @State var selection = 1
+    
     var body: some View {
         Form {
             Section {
@@ -21,80 +20,22 @@ struct MainScreen: View {
                               ring3: rings.third).padding()
             }
             
-            Section(header: Text("Ring 1 - \(rings.first.name)")) {
-                ColorPicker("Main Color", selection: $bgColor)
+            Picker(selection: $selection, label: Text(""), content: {
+                Text("Ring 1").tag(1)
+                Text("Ring 2").tag(2)
+                Text("Ring 3").tag(3)
+            }).pickerStyle(SegmentedPickerStyle())
+            
+            switch(selection) {
+            case 2: RingConfigurationView(ring: rings.second, ringConfig: RingConfigViewModel())
+            case 3: RingConfigurationView(ring: rings.third, ringConfig: RingConfigViewModel())
+            default: RingConfigurationView(ring: rings.first, ringConfig: RingConfigViewModel())
             }
             
-            Section(header: Text("Ring 2 - \(rings.second.name)")) {
-                ColorPicker("Main Color", selection: $bgColor)
-                
-                HStack {
-                    VStack {
-                        Text("Min Value").font(.footnote)
-                            HStack { TextField("Min", value: $slider, formatter: DoubleFormatter())
-                                Stepper("", value: $slider, in: 0...1000) { _ in
-                                    
-                                }
-                            }
-                        }
-                }
-                
-                HStack {
-                    VStack {
-                        Text("Max Value").font(.footnote)
-                            HStack { TextField("Min", value: $slider, formatter: DoubleFormatter())
-                                Stepper("", value: $slider, in: 0...1000) { _ in
-                                    
-                                }
-                            }
-                        }
-                }
-                
-                Toggle("Reversed direction", isOn: $isOn)
-            }
-            
-            Section(header: Text("Ring 3 - \(rings.third.name)")) {
-                
-                HStack {
-                    Text("Threshold")
-                    
-                }
-            }
         }
     }
 }
 
-public class DoubleFormatter: Formatter {
-
-    override public func string(for obj: Any?) -> String? {
-        var retVal: String?
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-
-        if let dbl = obj as? Double {
-            retVal = formatter.string(from: NSNumber(value: dbl))
-        } else {
-            retVal = nil
-        }
-
-        return retVal
-    }
-
-    override public func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
-
-        var retVal = true
-
-        if let dbl = Double(string), let objok = obj {
-            objok.pointee = dbl as AnyObject?
-            retVal = true
-        } else {
-            retVal = false
-        }
-
-        return retVal
-
-    }
-}
 
 
 struct MainScreen_Preview: PreviewProvider {
