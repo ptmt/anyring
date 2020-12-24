@@ -10,6 +10,15 @@ import HealthKit
 import Combine
 
 class RestHRProvider: RingProvider {
+   
+    
+    struct Configuration: ProviderConfiguration {
+        var provider: RingProvider.Type { RestHRProvider.self }
+        
+        var minValue: Double
+        var maxValue: Double
+        var reversed: Bool
+    }
     
     let name = "Min Heart Rate"
     let description = """
@@ -19,10 +28,12 @@ class RestHRProvider: RingProvider {
     let requiredHKPermission: HKSampleType? = HKObjectType.quantityType(forIdentifier: .heartRate)!
     
     private let dataSource: HealthKitDataSource
+    private let config: Configuration
     let numberOfNights: Double = 3
     
-    init(dataSource: HealthKitDataSource) {
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
         self.dataSource = dataSource
+        self.config = config as! Configuration
     }
     
     private let configurationMax = 100.0
@@ -33,8 +44,8 @@ class RestHRProvider: RingProvider {
     func calculateProgress() -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
             Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
-                            maxAbsolute: self.configurationMax,
-                            minAbsolute: self.configurationMin,
+                     maxAbsolute: self.config.maxValue,
+                     minAbsolute: self.config.minValue,
                             reversed: self.reversed)
         }.eraseToAnyPublisher()
     }

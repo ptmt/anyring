@@ -10,6 +10,9 @@ import HealthKit
 import Combine
 
 class HRVProvider: RingProvider {
+    struct Configuration: ProviderConfiguration {
+        var provider: RingProvider.Type { HRVProvider.self }
+    }
     
     let name = "Max HRV"
     let description = """
@@ -20,10 +23,10 @@ class HRVProvider: RingProvider {
     private let dataSource: HealthKitDataSource
     let numberOfNights: Double = 3
     
-    init(dataSource: HealthKitDataSource) {
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
         self.dataSource = dataSource
     }
-    
+   
     private let configurationMax = 100.0
     private let configurationMin = 10.0
     private let reversed = false

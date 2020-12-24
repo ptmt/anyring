@@ -10,12 +10,26 @@ import Combine
 import HealthKit
 
 class DemoProvider: RingProvider {
+
+    struct Configuration: ProviderConfiguration {
+        var provider: RingProvider.Type { DemoProvider.self }
+        
+        
+    }
+    static var configurationType: ProviderConfiguration.Type = Configuration.self
+    
     var units: String = "KCAL"
     
     var name: String = "Demo"
     var description: String = "Demo provider"
     
     private let initValue: Double
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
+        self.name = "Demo"
+        self.initValue = 20
+        self.units = "KCAL"
+    }
+    
     init(_ name: String = "Demo", initValue: Double = 20, units: String = "KCAL") {
         self.name = name
         self.initValue = initValue

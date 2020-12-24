@@ -68,6 +68,12 @@
 		24C38D2A2591054D001F1412 /* TripleRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55682590FA03002CD4A6 /* TripleRing.swift */; };
 		24D279FF2593B4B300F9F0AB /* RingConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */; };
 		24D27A002593B4B300F9F0AB /* RingConfigurationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */; };
+		24D27A09259495C200F9F0AB /* ProviderConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D27A08259495C200F9F0AB /* ProviderConfiguration.swift */; };
+		24D27A0A259495C200F9F0AB /* ProviderConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D27A08259495C200F9F0AB /* ProviderConfiguration.swift */; };
+		24D27A122594974900F9F0AB /* ProviderConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D27A08259495C200F9F0AB /* ProviderConfiguration.swift */; };
+		24D27A1C2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D27A1B2594D8D400F9F0AB /* ConfigurationPersistence.swift */; };
+		24D27A1D2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D27A1B2594D8D400F9F0AB /* ConfigurationPersistence.swift */; };
+		24D27A1E2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24D27A1B2594D8D400F9F0AB /* ConfigurationPersistence.swift */; };
 		24DEB78A25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
 		24DEB78B25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
 		24DEB78C25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
@@ -207,6 +213,8 @@
 		24AA55682590FA03002CD4A6 /* TripleRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripleRing.swift; sourceTree = "<group>"; };
 		24AA55732590FA8A002CD4A6 /* RingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingLabel.swift; sourceTree = "<group>"; };
 		24D279FE2593B4B300F9F0AB /* RingConfigurationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingConfigurationView.swift; sourceTree = "<group>"; };
+		24D27A08259495C200F9F0AB /* ProviderConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderConfiguration.swift; sourceTree = "<group>"; };
+		24D27A1B2594D8D400F9F0AB /* ConfigurationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationPersistence.swift; sourceTree = "<group>"; };
 		24DEB78925920EF000647442 /* AnyRingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -279,6 +287,7 @@
 		246396AE258D21E200866E74 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				24D27A1A2594D8C300F9F0AB /* Storage */,
 				24AA55662590F9D9002CD4A6 /* Views */,
 				24AA5483258D27B6002CD4A6 /* HealthKit */,
 				24AA546A258D258E002CD4A6 /* RingProviders */,
@@ -375,6 +384,7 @@
 				24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */,
 				24AA54F7258FA576002CD4A6 /* DemoProvider.swift */,
 				24AA550025909863002CD4A6 /* Progress.swift */,
+				24D27A08259495C200F9F0AB /* ProviderConfiguration.swift */,
 			);
 			path = RingProviders;
 			sourceTree = "<group>";
@@ -440,6 +450,14 @@
 				24AA55732590FA8A002CD4A6 /* RingLabel.swift */,
 			);
 			path = Common;
+			sourceTree = "<group>";
+		};
+		24D27A1A2594D8C300F9F0AB /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				24D27A1B2594D8D400F9F0AB /* ConfigurationPersistence.swift */,
+			);
+			path = Storage;
 			sourceTree = "<group>";
 		};
 		24DEB78825920ED900647442 /* ViewModels */ = {
@@ -706,9 +724,11 @@
 				24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */,
 				24AA54EF258F6AFF002CD4A6 /* RingViewModel.swift in Sources */,
 				246396DA258D21E300866E74 /* ContentView.swift in Sources */,
+				24D27A09259495C200F9F0AB /* ProviderConfiguration.swift in Sources */,
 				24AA55692590FA03002CD4A6 /* TripleRing.swift in Sources */,
 				24AA55742590FA8A002CD4A6 /* RingLabel.swift in Sources */,
 				24AA54D7258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */,
+				24D27A1C2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
 				24AA54C8258E56E6002CD4A6 /* RingDashboard.swift in Sources */,
@@ -733,9 +753,11 @@
 				24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */,
 				24AA54F0258F6AFF002CD4A6 /* RingViewModel.swift in Sources */,
 				246396DB258D21E300866E74 /* ContentView.swift in Sources */,
+				24D27A0A259495C200F9F0AB /* ProviderConfiguration.swift in Sources */,
 				24AA556A2590FA03002CD4A6 /* TripleRing.swift in Sources */,
 				24AA55752590FA8A002CD4A6 /* RingLabel.swift in Sources */,
 				24AA54D8258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */,
+				24D27A1D2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
 				24AA54C9258E56E6002CD4A6 /* RingDashboard.swift in Sources */,
@@ -791,6 +813,8 @@
 				24DEB7B425920F3400647442 /* DemoProvider.swift in Sources */,
 				24DEB7DC25920F5900647442 /* MockHealthKitDataSource.swift in Sources */,
 				24DEB7BC25920F3800647442 /* Progress.swift in Sources */,
+				24D27A122594974900F9F0AB /* ProviderConfiguration.swift in Sources */,
+				24D27A1E2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA556B2590FA03002CD4A6 /* TripleRing.swift in Sources */,
 				24DEB7CC25920F5400647442 /* DeviceHealthKitDataSource.swift in Sources */,
 				24DEB7AC25920F3000647442 /* RingProvider.swift in Sources */,

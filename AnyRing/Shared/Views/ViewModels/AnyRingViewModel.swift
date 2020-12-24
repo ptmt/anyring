@@ -25,18 +25,18 @@ class AnyRingViewModel: ObservableObject {
     private var snapshotTask: AnyCancellable? = nil
     
     private var providers: [RingProvider] = []
+    private var persistence = UserDefaultsConfigurationPersistence()
     
     init() {
         defer { initViewModels() }
     }
     
     private func initViewModels() {
+        let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
         // instanitiate all ring providers
-        providers = [
-            RestHRProvider(dataSource: dataSource),
-            HRVProvider(dataSource: dataSource),
-            ActivityProvider(dataSource: dataSource),
-        ]
+        providers = config.configs.map {
+            $0.provider.init(dataSource: dataSource, config: $0)
+        }
         
         // collect all permissions for healthkit
         let permissions = providers.compactMap { $0.requiredHKPermission }
@@ -55,17 +55,16 @@ class AnyRingViewModel: ObservableObject {
         snapshotTask = Publishers.MergeMany(providers.map { $0.calculateProgress() })
             .collect()
             .sink { _ in
-            
-        } receiveValue: { result in
-            completion(RingWrapper(result.map({
-                print(">>", $0)
-                return RingSnapshot(progress: $0.normalized, color: Color.green)
-            })))
-        }
-        
-        
+                
+            } receiveValue: { result in
+                completion(RingWrapper(result.map({
+                    print(">>", $0)
+                    return RingSnapshot(progress: $0.normalized, color: Color.orange)
+                })))
+            }
     }
 }
+
 
 struct RingWrapper<T> {
     
@@ -89,3 +88,4 @@ struct RingWrapper<T> {
         try list.forEach(body)
     }
 }
+

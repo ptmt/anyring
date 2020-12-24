@@ -10,6 +10,7 @@ import Combine
 import HealthKit
 
 protocol RingProvider {
+    init(dataSource: HealthKitDataSource, config: ProviderConfiguration)
     var name: String { get }
     var description: String { get }
     var units: String { get }

@@ -11,6 +11,15 @@ import Combine
 
 class ActivityProvider: RingProvider {
     
+    
+    struct Configuration: ProviderConfiguration {
+        var provider: RingProvider.Type { ActivityProvider.self }
+        
+        var minValue: Double
+        var maxValue: Double
+    }
+    static var configurationType: ProviderConfiguration.Type = Configuration.self
+    
     let name = "Total Activity"
     let description = """
     Sum of all activity minutes for a choosen periof of time
@@ -20,8 +29,11 @@ class ActivityProvider: RingProvider {
     private let dataSource: HealthKitDataSource
     let numberOfNights: Double = 3
     
-    init(dataSource: HealthKitDataSource) {
+    private let config: Configuration
+    
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
         self.dataSource = dataSource
+        self.config = config as! Configuration
     }
     
     private let configurationMax = 200.0

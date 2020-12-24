@@ -11,6 +11,8 @@ import SwiftUI
 class RingConfigViewModel: ObservableObject {
     @Published var mainColor: Color = Color.red
     @Published var reversedDirection = false
+    @Published var minimumValue = 40
+    @Published var maximumValue = 100
 }
 
 struct RingConfigurationView: View {
@@ -20,28 +22,40 @@ struct RingConfigurationView: View {
     @State var isOn = false
     @State var ringMainColor = Color.red
     var body: some View {
-        Section(header: Text("\(ring.name)")) {
-            Text("Provider")
-            
-            ColorPicker("Main Color", selection: $ringConfig.mainColor)
-            
-            HStack {
-                Text("Min Value")
-                TextField("Min", value: $slider, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
+        Group {
+            Section(header: Text("Provider")) {
                 
-                Stepper("", value: $slider, in: 0...1000) { _ in
-                    
+                NavigationLink(destination: Text("Providers are hard-coded now")) {
+                    VStack {
+                        Text("Data source: \(ring.name)")
+                    }
                 }
+                Text(ring.providerDescription).font(.footnote)
             }
-            
-            HStack {
-                Text("Max Value")//.font(.footnote)
-                TextField("Min", value: $slider, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
-                Stepper("", value: $slider, in: 0...1000) { _ in
+            Section(header: Text("Ring")) {
+                
+                ColorPicker("Main Color", selection: $ringConfig.mainColor)
+                
+                HStack {
+                    Text("Min").padding()
+                    Spacer().background(Color.red)
+                    TextField("Min", value: $ringConfig.minimumValue, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
                     
+                    Stepper("", value: $slider, in: 0...1000) { _ in
+                        
+                    }
                 }
+                
+                HStack {
+                    Text("Max").padding()
+                    Spacer()
+                    TextField("Max", value: $ringConfig.maximumValue, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
+                    Stepper("", value: $slider, in: 0...1000) { _ in
+                        
+                    }
+                }
+                Toggle("Reversed direction", isOn: $ringConfig.reversedDirection)
             }
-            Toggle("Reversed direction", isOn: $ringConfig.reversedDirection)
         }
     }
 }
@@ -57,33 +71,33 @@ struct RingConfigurationView_Preview: PreviewProvider {
 
 
 public class DoubleFormatter: Formatter {
-
+    
     override public func string(for obj: Any?) -> String? {
         var retVal: String?
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-
+        
         if let dbl = obj as? Double {
             retVal = formatter.string(from: NSNumber(value: dbl))
         } else {
             retVal = nil
         }
-
+        
         return retVal
     }
-
+    
     override public func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
-
+        
         var retVal = true
-
+        
         if let dbl = Double(string), let objok = obj {
             objok.pointee = dbl as AnyObject?
             retVal = true
         } else {
             retVal = false
         }
-
+        
         return retVal
-
+        
     }
 }

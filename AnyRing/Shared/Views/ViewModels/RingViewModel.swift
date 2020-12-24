@@ -18,6 +18,9 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     var name: String {
         provider.name
     }
+    var providerDescription: String {
+        provider.description
+    }
     
     private let provider: RingProvider
     private var cancellables = Set<AnyCancellable>()

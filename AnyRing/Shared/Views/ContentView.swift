@@ -48,17 +48,6 @@ func refreshWidget() {
     }
 }
 
-
-struct RingConfiguration {
-    let provider: RingProvider.Type
-}
-struct RingsConfiguration {
-    let ring1: RingConfiguration
-}
-
-let defaultConfig = RingsConfiguration(ring1: RingConfiguration(provider: RestHRProvider.self))
-
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
