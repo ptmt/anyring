@@ -196,6 +196,7 @@
 		2463970E258D24CE00866E74 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		247861512595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsConfigurationPersistence.swift; sourceTree = "<group>"; };
 		2478615C2595F92800E4F1C2 /* MockConfigurationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockConfigurationPersistence.swift; sourceTree = "<group>"; };
+		24786175259654F300E4F1C2 /* RingWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RingWidgetExtension.entitlements; sourceTree = "<group>"; };
 		24AA546B258D25B4002CD4A6 /* RingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingProvider.swift; sourceTree = "<group>"; };
 		24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestHRProvider.swift; sourceTree = "<group>"; };
 		24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHealthKitDataSource.swift; sourceTree = "<group>"; };
@@ -278,6 +279,7 @@
 		246396A9258D21E200866E74 = {
 			isa = PBXGroup;
 			children = (
+				24786175259654F300E4F1C2 /* RingWidgetExtension.entitlements */,
 				24AA548D258D29EE002CD4A6 /* AnyRing.entitlements */,
 				246396AE258D21E200866E74 /* Shared */,
 				246396B8258D21E300866E74 /* iOS */,
@@ -1263,6 +1265,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;
@@ -1286,6 +1289,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;

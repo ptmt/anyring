@@ -15,13 +15,14 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         HRVProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.purple))
     ])
     
+    private let userDefaults = UserDefaults(suiteName: "group.com.potomushto.AnyRing")!
+    
     private var lastReadValue: HardcodedConfiguration?
     
     func persist(config: HardcodedConfiguration) {
         if let json = try? JSONEncoder().encode(config) {
             lastReadValue = config
-            print(">> persist", config.configs.first)// , String(data: json, encoding: .utf8))
-            UserDefaults.standard.setValue(json, forKey: UserDefaultsConfigurationPersistence.key)
+            userDefaults.setValue(json, forKey: UserDefaultsConfigurationPersistence.key)
         }
     }
     func update(ring: Int, config: ProviderConfiguration) {
@@ -31,9 +32,8 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         persist(config: currentConfig)
     }
     func restore() -> HardcodedConfiguration? {
-        if let json = UserDefaults.standard.value(forKey: UserDefaultsConfigurationPersistence.key) as? Data {
+        if let json = userDefaults.value(forKey: UserDefaultsConfigurationPersistence.key) as? Data {
             let decoded = try? JSONDecoder().decode(HardcodedConfiguration.self, from: json)
-            print(">> decoded", json, decoded)
             lastReadValue = decoded
             return decoded
         } else {

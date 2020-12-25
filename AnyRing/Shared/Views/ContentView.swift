@@ -43,8 +43,9 @@ struct ContentView: View {
 func refreshWidget() {
     WidgetCenter.shared.getCurrentConfigurations { result in
         guard case .success(_) = result else { return }
-
-        WidgetCenter.shared.reloadAllTimelines()
+        DispatchQueue.main.async {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 }
 

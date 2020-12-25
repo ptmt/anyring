@@ -35,7 +35,6 @@ class AnyRingViewModel: ObservableObject {
         let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
         // instanitiate all ring providers
         providers = config.configs.map {
-            print(">> init", $0)
             return $0.provider.init(dataSource: dataSource, config: $0, configPersistence: persistence)
         }
         
@@ -45,26 +44,26 @@ class AnyRingViewModel: ObservableObject {
         initTask = dataSource.requestPermissions(permissions: Set(permissions))
             .receive(on: RunLoop.main)
             .sink { _ in } receiveValue: { [weak self] success in
-            if (!success) {
-                self?.showingAlert = true
-            } else if let self = self {
-                // instanitiate all view models
-                self.rings = RingWrapper(self.providers.map { $0.viewModel() })
+                if (!success) {
+                    self?.showingAlert = true
+                } else if let self = self {
+                    // instanitiate all view models
+                    self.rings = RingWrapper(self.providers.map { $0.viewModel() })
+                }
             }
-        }
     }
     
     func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>) -> Void) {
-        snapshotTask = Publishers.MergeMany(providers.map { $0.calculateProgress(config: $0.config) })
-            .collect()
-            .sink { _ in
-                
-            } receiveValue: { result in
-                completion(RingWrapper(result.map({
-                    print(">>", $0)
-                    return RingSnapshot(progress: $0.normalized, color: Color.orange)
-                })))
-            }
+        snapshotTask = Publishers.MergeMany(providers.map { provider in
+            provider.calculateProgress(config: provider.config).tryMap { RingSnapshot(progress: $0.normalized, color: provider.config.mainColor.color) }
+        })
+        .collect()
+        .sink { _ in
+            
+        } receiveValue: { result in
+            print(">>> snapshots", result)
+            completion(RingWrapper(result))
+        }
     }
 }
 

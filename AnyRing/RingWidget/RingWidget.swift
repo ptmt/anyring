@@ -11,8 +11,7 @@ import SwiftUI
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(),
-                    size: context.displaySize,
-                    rings: staticSnapshot)
+                    size: context.displaySize)
     }
     
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
@@ -51,10 +50,9 @@ struct RingWidgetEntryView : View {
     
     var body: some View {
         if let rings = entry.rings {
-                let size = min(entry.size.width, entry.size.height) - 20
+                let size = min(entry.size.width, entry.size.height) - 10
             VStack {
-                Text("\(rings.first.progress) \(rings.second.progress)")
-                TripleRingView(size: size - 20,
+                TripleRingView(size: size - 10,
                                ring1: rings.first,
                                ring2: rings.second,
                                ring3: rings.third)
@@ -82,9 +80,9 @@ struct RingWidget: Widget {
     }
 }
 
-let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.7, color: Color.pink),
+let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, color: Color.pink),
                                          RingSnapshot(progress: 1.5, color: Color.orange),
-                                         RingSnapshot(progress: 0.8, color: Color.purple)])
+                                         RingSnapshot(progress: 0.1, color: Color.blue)])
 
 struct RingWidget_Previews: PreviewProvider {
     
