@@ -27,11 +27,10 @@ struct MainScreen: View {
             }).pickerStyle(SegmentedPickerStyle())
             
             switch(selection) {
-            case 2: RingConfigurationView(ring: rings.second, ringConfig: RingConfigViewModel())
-            case 3: RingConfigurationView(ring: rings.third, ringConfig: RingConfigViewModel())
-            default: RingConfigurationView(ring: rings.first, ringConfig: RingConfigViewModel())
+            case 2: RingConfigurationView(ring: rings.second)
+            case 3: RingConfigurationView(ring: rings.third)
+            default: RingConfigurationView(ring: rings.first)
             }
-            
         }
     }
 }

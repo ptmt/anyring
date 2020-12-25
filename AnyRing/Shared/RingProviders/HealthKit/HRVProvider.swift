@@ -10,8 +10,12 @@ import HealthKit
 import Combine
 
 class HRVProvider: RingProvider {
-    struct Configuration: ProviderConfiguration {
+    struct Configuration: HealthKitConfiguration {
         var provider: RingProvider.Type { HRVProvider.self }
+        
+        var minValue: Double = 0
+        var maxValue: Double = 100
+        var mainColor: CodableColor
     }
     
     let name = "Max HRV"
@@ -22,22 +26,21 @@ class HRVProvider: RingProvider {
     
     private let dataSource: HealthKitDataSource
     let numberOfNights: Double = 3
-    
+    let config: ProviderConfiguration
     required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
         self.dataSource = dataSource
+        self.config = config
     }
-   
-    private let configurationMax = 100.0
-    private let configurationMin = 10.0
+    
     private let reversed = false
     private let unit = HKUnit.secondUnit(with: .milli)
     
     func calculateProgress() -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
             Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
-                            maxAbsolute: self.configurationMax,
-                            minAbsolute: self.configurationMin,
-                            reversed: self.reversed)
+                     maxAbsolute: self.config.maxValue,
+                     minAbsolute: self.config.minValue,
+                     reversed: self.reversed)
         }.eraseToAnyPublisher()
     }
     

@@ -11,6 +11,7 @@ import Combine
 class RingViewModel: ObservableObject, CustomStringConvertible {
     @Published var progress: Progress = Progress.Empty
     @Published var error: Error? = nil
+    @Published var configuration: ProviderConfiguration
     
     var units: String {
         provider.units
@@ -18,6 +19,7 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     var name: String {
         provider.name
     }
+    
     var providerDescription: String {
         provider.description
     }
@@ -27,6 +29,7 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     
     init(provider: RingProvider) {
         self.provider = provider
+        self.configuration = provider.config
         defer {
             refresh()
         }

@@ -14,6 +14,7 @@ protocol RingProvider {
     var name: String { get }
     var description: String { get }
     var units: String { get }
+    var config: ProviderConfiguration { get }
     
     var requiredHKPermission: HKSampleType? { get }
     func viewModel() -> RingViewModel

@@ -7,54 +7,76 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 class RingConfigViewModel: ObservableObject {
+    //    private let provider: RingProvider
+    //    init(provider: RingProvider) {
+    //        self.provider = provider
+    //    }
     @Published var mainColor: Color = Color.red
-    @Published var reversedDirection = false
     @Published var minimumValue = 40
     @Published var maximumValue = 100
+    func update() {
+        // provider.config
+    }
+    init() {
+        $mainColor.sink {
+            print(">> main color changed", $0)
+        }
+    }
 }
 
+struct ConfigTextValue: View {
+    var label: String
+    @State var state: Double
+    var onChange: (String) -> Void
+    
+    var body: some View {
+        HStack {
+            Text(label)
+            Spacer()
+            
+            TextField("Min", value: $state, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
+                .fixedSize()
+            
+            Stepper("", value: $state, in: 0...1000) { _ in
+                
+            }.fixedSize()
+        }
+    }
+}
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
-    @ObservedObject var ringConfig: RingConfigViewModel
     @State var slider = 40
-    @State var isOn = false
-    @State var ringMainColor = Color.red
+    @State var ringMainColor = Color.red {
+        didSet {
+            print(">> Color changed to \(ringMainColor)")
+        }
+    }
     var body: some View {
         Group {
-            Section(header: Text("Provider")) {
-                
+            Section(header: Text("Data Source")) {
                 NavigationLink(destination: Text("Providers are hard-coded now")) {
-                    VStack {
-                        Text("Data source: \(ring.name)")
-                    }
+                    Text(ring.name)
                 }
-                Text(ring.providerDescription).font(.footnote)
+                Text(ring.providerDescription)
+                    .font(.footnote)
+                    .foregroundColor(Color.secondary)
+                
+                
+                ConfigTextValue(label: "Min value", state: ring.configuration.minValue) { changed in
+                    print(">>>", changed)
+                }
+                ConfigTextValue(label: "Max value", state:  ring.configuration.maxValue) { changed in
+                    print(">>>", changed)
+                }
             }
-            Section(header: Text("Ring")) {
+            
+            Section(header: Text("Appearance")) {
                 
-                ColorPicker("Main Color", selection: $ringConfig.mainColor)
+                ColorPicker("Main Color", selection: $ringMainColor)
                 
-                HStack {
-                    Text("Min").padding()
-                    Spacer().background(Color.red)
-                    TextField("Min", value: $ringConfig.minimumValue, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    Stepper("", value: $slider, in: 0...1000) { _ in
-                        
-                    }
-                }
-                
-                HStack {
-                    Text("Max").padding()
-                    Spacer()
-                    TextField("Max", value: $ringConfig.maximumValue, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
-                    Stepper("", value: $slider, in: 0...1000) { _ in
-                        
-                    }
-                }
-                Toggle("Reversed direction", isOn: $ringConfig.reversedDirection)
             }
         }
     }
@@ -63,8 +85,7 @@ struct RingConfigurationView: View {
 struct RingConfigurationView_Preview: PreviewProvider {
     static var previews: some View {
         Form {
-            RingConfigurationView(ring: DemoProvider().viewModel(),
-                                  ringConfig: RingConfigViewModel())
+            RingConfigurationView(ring: DemoProvider().viewModel())
         }
     }
 }

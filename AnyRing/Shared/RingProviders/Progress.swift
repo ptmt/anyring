@@ -18,12 +18,13 @@ struct Progress: CustomStringConvertible {
         0
     }
     private var normMax: Double {
-        maxAbsolute - minAbsolute
-    }
-    var normalized: Double {
-        reversed ? (maxAbsolute - absolute)/normMax : absolute/normMax
+        precondition(maxAbsolute - minAbsolute != 0)
+        return maxAbsolute - minAbsolute
     }
     
+    var normalized: Double {
+        reversed ? (maxAbsolute - absolute) / normMax : absolute / normMax
+    }
     
     var description: String {
         return "\(Int(absolute))/\(reversed ? Int(minAbsolute) : Int(maxAbsolute))"

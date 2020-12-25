@@ -11,43 +11,46 @@ import Combine
 
 class ActivityProvider: RingProvider {
     
-    
     struct Configuration: ProviderConfiguration {
         var provider: RingProvider.Type { ActivityProvider.self }
         
-        var minValue: Double
-        var maxValue: Double
+        var minValue: Double = 0
+        var maxValue: Double = 200
+        var mainColor: CodableColor
     }
     static var configurationType: ProviderConfiguration.Type = Configuration.self
     
     let name = "Total Activity"
     let description = """
-    Sum of all activity minutes for a choosen periof of time
+    Sum of all activity minutes for a choosen number of days
     """
     let units = "min"
     
     private let dataSource: HealthKitDataSource
     let numberOfNights: Double = 3
     
-    private let config: Configuration
+    let config: ProviderConfiguration
     
     required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
         self.dataSource = dataSource
         self.config = config as! Configuration
     }
     
-    private let configurationMax = 200.0
-    private let configurationMin = 0.0
     private let reversed = false
     private let unit = HKUnit.minute()
     
     func calculateProgress() -> AnyPublisher<Progress, Error> {
+        let config = self.config as! Configuration
         return sum().tryMap { (sum: Double) -> Progress in
             Progress(absolute: sum,
-                            maxAbsolute: self.configurationMax,
-                            minAbsolute: self.configurationMin,
-                            reversed: self.reversed)
+                     maxAbsolute: config.maxValue,
+                        minAbsolute: config.minValue,
+                            reversed: false)
         }.eraseToAnyPublisher()
+    }
+    
+    func updateConfig(config: ProviderConfiguration) {
+        
     }
     
     private var cancellable: AnyCancellable?

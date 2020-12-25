@@ -6,17 +6,18 @@
 //
 
 import Foundation
-
-let allProviders: [RingProvider.Type] = [
-    RestHRProvider.self,
-    ActivityProvider.self,
-    HRVProvider.self
-]
+import Combine
 
 protocol ProviderConfiguration: Codable {
     var provider: RingProvider.Type { get }
+    
+    var minValue: Double { get }
+    var maxValue: Double { get }
+    
+    // split this into Appearance Configuration
+    var mainColor: CodableColor { get }
+    
 }
 
-
-
-
+protocol HealthKitConfiguration: ProviderConfiguration {
+}

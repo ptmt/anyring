@@ -11,42 +11,39 @@ import Combine
 
 class RestHRProvider: RingProvider {
    
-    
-    struct Configuration: ProviderConfiguration {
+    struct Configuration: HealthKitConfiguration {
         var provider: RingProvider.Type { RestHRProvider.self }
         
-        var minValue: Double
-        var maxValue: Double
-        var reversed: Bool
+        var minValue: Double = 46
+        var maxValue: Double = 100
+        var mainColor: CodableColor
     }
     
     let name = "Min Heart Rate"
     let description = """
-    This allows to track what was the lowest heart-rate at night for set period of days.
+    This allows to track what was the lowest heart-rate at night.
     """
     let units = "BPM"
     let requiredHKPermission: HKSampleType? = HKObjectType.quantityType(forIdentifier: .heartRate)!
     
     private let dataSource: HealthKitDataSource
-    private let config: Configuration
+    let config: ProviderConfiguration
     let numberOfNights: Double = 3
     
     required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
         self.dataSource = dataSource
-        self.config = config as! Configuration
+        self.config = config
     }
     
-    private let configurationMax = 100.0
-    private let configurationMin = 48.0
-    private let reversed = true
+    private var confuguration: Configuration { config as! Configuration }
     private let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
     
     func calculateProgress() -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
             Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
-                     maxAbsolute: self.config.maxValue,
-                     minAbsolute: self.config.minValue,
-                            reversed: self.reversed)
+                     maxAbsolute: self.confuguration.maxValue,
+                     minAbsolute: self.confuguration.minValue,
+                            reversed: true)
         }.eraseToAnyPublisher()
     }
     

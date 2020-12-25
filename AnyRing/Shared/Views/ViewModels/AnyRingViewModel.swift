@@ -35,7 +35,8 @@ class AnyRingViewModel: ObservableObject {
         let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
         // instanitiate all ring providers
         providers = config.configs.map {
-            $0.provider.init(dataSource: dataSource, config: $0)
+            print(">> init", $0)
+            return $0.provider.init(dataSource: dataSource, config: $0)
         }
         
         // collect all permissions for healthkit

@@ -14,9 +14,9 @@ protocol ConfigurationPersistence {
 class UserDefaultsConfigurationPersistence {
     static let key = "Config.v1"
     static let defaultConfig = HardcodedConfiguration([
-        ActivityProvider.Configuration(minValue: 10, maxValue: 10),
-        RestHRProvider.Configuration(minValue: 40, maxValue: 70, reversed: true),
-        HRVProvider.Configuration()
+        ActivityProvider.Configuration(minValue: 0, maxValue: 200, mainColor: CodableColor(.orange)),
+        RestHRProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.pink)),
+        HRVProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.purple))
     ])
     
     func persist(config: HardcodedConfiguration) {
@@ -28,6 +28,7 @@ class UserDefaultsConfigurationPersistence {
     func restore() -> HardcodedConfiguration? {
         if let json = UserDefaults.standard.value(forKey: UserDefaultsConfigurationPersistence.key) as? Data {
             let decoded = try? JSONDecoder().decode(HardcodedConfiguration.self, from: json)
+            print(">> decoded", decoded)
             return decoded
         } else {
             return nil
