@@ -24,12 +24,14 @@ class DemoProvider: RingProvider {
     var name: String = "Demo"
     let description: String = "Demo provider"
     let config: ProviderConfiguration
+    let configPersistence: ConfigurationPersistence
     
     private let initValue: Double
     
-    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence) {
         self.initValue = 20
         self.config = config
+        self.configPersistence = configPersistence
     }
     
     init(_ name: String = "Demo", initValue: Double = 20, units: String = "KCAL", config: Configuration = Configuration(minValue: 0, maxValue: 100, mainColor: CodableColor(.orange))) {
@@ -37,6 +39,7 @@ class DemoProvider: RingProvider {
         self.initValue = initValue
         self.units = units
         self.config = config
+        self.configPersistence = MockConfigurationPersistence()
     }
     
     func viewModel() -> RingViewModel {
@@ -49,7 +52,7 @@ class DemoProvider: RingProvider {
         }
     }
     
-    func calculateProgress() -> AnyPublisher<Progress, Error> {
+    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
         Result<Progress, Error>.Publisher(.success(Progress(absolute: initValue, maxAbsolute: config.maxValue, minAbsolute: config.minValue))).eraseToAnyPublisher()
     }
     

@@ -10,13 +10,14 @@ import Combine
 import HealthKit
 
 protocol RingProvider {
-    init(dataSource: HealthKitDataSource, config: ProviderConfiguration)
+    init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence)
     var name: String { get }
     var description: String { get }
     var units: String { get }
     var config: ProviderConfiguration { get }
+    var configPersistence: ConfigurationPersistence { get }
     
     var requiredHKPermission: HKSampleType? { get }
     func viewModel() -> RingViewModel
-    func calculateProgress() -> AnyPublisher<Progress, Error>
+    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error>
 }

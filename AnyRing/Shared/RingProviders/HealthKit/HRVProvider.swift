@@ -10,6 +10,8 @@ import HealthKit
 import Combine
 
 class HRVProvider: RingProvider {
+    
+    
     struct Configuration: HealthKitConfiguration {
         var provider: RingProvider.Type { HRVProvider.self }
         
@@ -25,22 +27,25 @@ class HRVProvider: RingProvider {
     let units = "MS"
     
     private let dataSource: HealthKitDataSource
+    
     let numberOfNights: Double = 3
     let config: ProviderConfiguration
-    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
+    let configPersistence: ConfigurationPersistence
+    
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence) {
         self.dataSource = dataSource
         self.config = config
+        self.configPersistence = configPersistence
     }
     
-    private let reversed = false
     private let unit = HKUnit.secondUnit(with: .milli)
-    
-    func calculateProgress() -> AnyPublisher<Progress, Error> {
+  
+    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
             Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
-                     maxAbsolute: self.config.maxValue,
-                     minAbsolute: self.config.minValue,
-                     reversed: self.reversed)
+                     maxAbsolute: config.maxValue,
+                     minAbsolute: config.minValue,
+                     reversed: false)
         }.eraseToAnyPublisher()
     }
     

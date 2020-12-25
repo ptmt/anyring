@@ -27,22 +27,23 @@ class RestHRProvider: RingProvider {
     let requiredHKPermission: HKSampleType? = HKObjectType.quantityType(forIdentifier: .heartRate)!
     
     private let dataSource: HealthKitDataSource
+    let configPersistence: ConfigurationPersistence
     let config: ProviderConfiguration
     let numberOfNights: Double = 3
     
-    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence) {
         self.dataSource = dataSource
         self.config = config
+        self.configPersistence = configPersistence
     }
     
-    private var confuguration: Configuration { config as! Configuration }
     private let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
     
-    func calculateProgress() -> AnyPublisher<Progress, Error> {
+    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
             Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
-                     maxAbsolute: self.confuguration.maxValue,
-                     minAbsolute: self.confuguration.minValue,
+                     maxAbsolute: config.maxValue,
+                     minAbsolute: config.minValue,
                             reversed: true)
         }.eraseToAnyPublisher()
     }

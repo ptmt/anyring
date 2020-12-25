@@ -20,20 +20,19 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
     func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
     
         return Future() { promise in
-            promise(.success(true))
-//            let allSatisfy = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
-//            if (allSatisfy) {
-//                promise(.success(true))
-//                return
-//            }
-//
-//            self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
-//                if let error = error {
-//                    promise(.failure(error))
-//                } else {
-//                    promise(.success(success))
-//                }
-//            }
+            let allSatisfy = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
+            if (allSatisfy) {
+                promise(.success(true))
+                return
+            }
+
+            self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
+                if let error = error {
+                    promise(.failure(error))
+                } else {
+                    promise(.success(success))
+                }
+            }
         }
     }
     

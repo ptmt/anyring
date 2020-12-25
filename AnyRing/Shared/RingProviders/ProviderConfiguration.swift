@@ -11,11 +11,11 @@ import Combine
 protocol ProviderConfiguration: Codable {
     var provider: RingProvider.Type { get }
     
-    var minValue: Double { get }
-    var maxValue: Double { get }
+    var minValue: Double { get set }
+    var maxValue: Double { get set }
     
     // split this into Appearance Configuration
-    var mainColor: CodableColor { get }
+    var mainColor: CodableColor { get set }
     
 }
 

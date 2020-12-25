@@ -36,13 +36,15 @@ class AnyRingViewModel: ObservableObject {
         // instanitiate all ring providers
         providers = config.configs.map {
             print(">> init", $0)
-            return $0.provider.init(dataSource: dataSource, config: $0)
+            return $0.provider.init(dataSource: dataSource, config: $0, configPersistence: persistence)
         }
         
         // collect all permissions for healthkit
         let permissions = providers.compactMap { $0.requiredHKPermission }
         
-        initTask = dataSource.requestPermissions(permissions: Set(permissions)).sink { _ in } receiveValue: { [weak self] success in
+        initTask = dataSource.requestPermissions(permissions: Set(permissions))
+            .receive(on: RunLoop.main)
+            .sink { _ in } receiveValue: { [weak self] success in
             if (!success) {
                 self?.showingAlert = true
             } else if let self = self {
@@ -53,7 +55,7 @@ class AnyRingViewModel: ObservableObject {
     }
     
     func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>) -> Void) {
-        snapshotTask = Publishers.MergeMany(providers.map { $0.calculateProgress() })
+        snapshotTask = Publishers.MergeMany(providers.map { $0.calculateProgress(config: $0.config) })
             .collect()
             .sink { _ in
                 

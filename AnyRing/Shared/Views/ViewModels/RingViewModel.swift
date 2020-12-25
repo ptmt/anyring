@@ -36,12 +36,26 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     }
     
     func refresh() {
-        provider.calculateProgress()
+        provider.calculateProgress(config: configuration)
             .receive(on: RunLoop.main)
             .sink { _ in }
             receiveValue: { [weak self] value in
                 self?.progress = value
             }.store(in: &cancellables)
+    }
+    
+    func update(config: ProviderConfiguration) {
+        var id = 0
+        // we hardcoded the providers, remember
+        if provider is RestHRProvider {
+            id = 1
+        }
+        if provider is HRVProvider {
+            id = 2
+        }
+        provider.configPersistence.update(ring: id, config: config)
+        configuration = config
+        refresh()
     }
     
     var description: String {

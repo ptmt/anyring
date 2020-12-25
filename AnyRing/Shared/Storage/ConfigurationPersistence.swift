@@ -8,35 +8,14 @@
 import Foundation
 
 protocol ConfigurationPersistence {
-    
-}
-
-class UserDefaultsConfigurationPersistence {
-    static let key = "Config.v1"
-    static let defaultConfig = HardcodedConfiguration([
-        ActivityProvider.Configuration(minValue: 0, maxValue: 200, mainColor: CodableColor(.orange)),
-        RestHRProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.pink)),
-        HRVProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.purple))
-    ])
-    
-    func persist(config: HardcodedConfiguration) {
-        if let json = try? JSONEncoder().encode(config) {
-            print(">> persist", String(data: json, encoding: .utf8))
-            UserDefaults.standard.setValue(json, forKey: UserDefaultsConfigurationPersistence.key)
-        }
-    }
-    func restore() -> HardcodedConfiguration? {
-        if let json = UserDefaults.standard.value(forKey: UserDefaultsConfigurationPersistence.key) as? Data {
-            let decoded = try? JSONDecoder().decode(HardcodedConfiguration.self, from: json)
-            print(">> decoded", decoded)
-            return decoded
-        } else {
-            return nil
-        }
-    }
+    func persist(config: HardcodedConfiguration)
+    func update(ring: Int, config: ProviderConfiguration)
+    func restore() -> HardcodedConfiguration?
 }
 
 
+// this is hardcoded implemention to save time after I realized of some limitation of Swift
+//
 struct HardcodedConfiguration: Codable {
     var configs: [ProviderConfiguration]
     
@@ -52,8 +31,6 @@ struct HardcodedConfiguration: Codable {
     }
     
     init(from decoder: Decoder) throws {
-        // this is hardcoded implemention to save time after I realized of some limitation of Swift
-        //
         
         // first ring is always
         let container = try decoder.container(keyedBy: CodingKeys.self)

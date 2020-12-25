@@ -27,30 +27,28 @@ class ActivityProvider: RingProvider {
     let units = "min"
     
     private let dataSource: HealthKitDataSource
+    
     let numberOfNights: Double = 3
     
     let config: ProviderConfiguration
+    let configPersistence: ConfigurationPersistence
     
-    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration) {
+    required init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence) {
         self.dataSource = dataSource
         self.config = config as! Configuration
+        self.configPersistence = configPersistence
     }
     
     private let reversed = false
     private let unit = HKUnit.minute()
     
-    func calculateProgress() -> AnyPublisher<Progress, Error> {
-        let config = self.config as! Configuration
+    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
         return sum().tryMap { (sum: Double) -> Progress in
             Progress(absolute: sum,
                      maxAbsolute: config.maxValue,
-                        minAbsolute: config.minValue,
+                     minAbsolute: config.minValue,
                             reversed: false)
         }.eraseToAnyPublisher()
-    }
-    
-    func updateConfig(config: ProviderConfiguration) {
-        
     }
     
     private var cancellable: AnyCancellable?
@@ -74,7 +72,6 @@ class ActivityProvider: RingProvider {
                 let sumOfAllActivity = results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
                     sum + (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit)
                 }
-                print("fetchSamples and sum for ActivityProvider", sumOfAllActivity)
                 return sumOfAllActivity
             }.eraseToAnyPublisher()
     }

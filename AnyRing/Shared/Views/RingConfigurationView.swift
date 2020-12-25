@@ -17,44 +17,47 @@ class RingConfigViewModel: ObservableObject {
     @Published var mainColor: Color = Color.red
     @Published var minimumValue = 40
     @Published var maximumValue = 100
-    func update() {
-        // provider.config
-    }
+    private var cancellables = Set<AnyCancellable>()
     init() {
         $mainColor.sink {
             print(">> main color changed", $0)
-        }
+        }.store(in: &cancellables)
     }
 }
 
 struct ConfigTextValue: View {
     var label: String
     @State var state: Double
-    var onChange: (String) -> Void
+    var onChange: (Double) -> Void
     
     var body: some View {
         HStack {
             Text(label)
             Spacer()
             
-            TextField("Min", value: $state, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle())
+            TextField("Min", value: $state, formatter: DoubleFormatter(), onEditingChanged: { s in
+                if (!s) { onChange(state) }
+            }).textFieldStyle(RoundedBorderTextFieldStyle())
                 .fixedSize()
             
-            Stepper("", value: $state, in: 0...1000) { _ in
-                
+            Stepper("", value: $state, in: 0...1000) { s in
+                if (!s) { onChange(state) }
             }.fixedSize()
         }
     }
 }
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
-    @State var slider = 40
-    @State var ringMainColor = Color.red {
-        didSet {
-            print(">> Color changed to \(ringMainColor)")
-        }
-    }
+    
+    
     var body: some View {
+        let ringMainColor = Binding<Color>(get: {
+            ring.configuration.mainColor.color
+        }, set: {
+            var newConfig = ring.configuration
+            newConfig.mainColor = CodableColor($0)
+            ring.update(config: newConfig)
+        })
         Group {
             Section(header: Text("Data Source")) {
                 NavigationLink(destination: Text("Providers are hard-coded now")) {
@@ -67,16 +70,19 @@ struct RingConfigurationView: View {
                 
                 ConfigTextValue(label: "Min value", state: ring.configuration.minValue) { changed in
                     print(">>>", changed)
+                    var newConfig = ring.configuration
+                    newConfig.minValue = changed
+                    ring.update(config: newConfig)
                 }
                 ConfigTextValue(label: "Max value", state:  ring.configuration.maxValue) { changed in
-                    print(">>>", changed)
+                    var newConfig = ring.configuration
+                    newConfig.maxValue = changed
+                    ring.update(config: newConfig)
                 }
             }
             
             Section(header: Text("Appearance")) {
-                
-                ColorPicker("Main Color", selection: $ringMainColor)
-                
+                ColorPicker("Main Color", selection: ringMainColor)
             }
         }
     }

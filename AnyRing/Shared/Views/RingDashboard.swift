@@ -15,8 +15,9 @@ struct RingDashboard: View {
     
     var body: some View {
         HStack(alignment: .center, spacing: 5) {
+            let progress = ring1.progress.normalized
             TripleRingView(size: size,
-                           ring1: .init(progress: ring1.progress.normalized, color: ring1.configuration.mainColor.color),
+                           ring1: .init(progress: progress, color: ring1.configuration.mainColor.color),
                            ring2: .init(progress: ring2.progress.normalized, color: ring2.configuration.mainColor.color),
                            ring3: .init(progress: ring3.progress.normalized, color:
                                             ring3.configuration.mainColor.color))
