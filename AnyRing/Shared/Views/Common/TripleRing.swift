@@ -22,9 +22,9 @@ struct TripleRingView: View {
     var body: some View {
         ZStack {
             let lineWidth = size / 9
-            RingView(size: size, color: ring1.color, progress: ring1.progress, lineWidth: lineWidth)
-            RingView(size: size - 2 * (lineWidth + margin), color: ring2.color, progress: ring2.progress, lineWidth: lineWidth)
-            RingView(size: size - 4 * (lineWidth + margin), color: ring3.color, progress: ring3.progress, lineWidth: lineWidth)
+            RingView(size: size, primaryColor: ring1.color, progress: ring1.progress, lineWidth: lineWidth)
+            RingView(size: size - 2 * (lineWidth + margin), primaryColor: ring2.color, progress: ring2.progress, lineWidth: lineWidth)
+            RingView(size: size - 4 * (lineWidth + margin), primaryColor: ring3.color, progress: ring3.progress, lineWidth: lineWidth)
         }
     }
 }

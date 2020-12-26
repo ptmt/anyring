@@ -11,7 +11,8 @@ import SwiftUI
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(),
-                    size: context.displaySize)
+                    size: context.displaySize,
+                    rings: staticSnapshot)
     }
     
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {

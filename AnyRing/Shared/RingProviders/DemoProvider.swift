@@ -18,6 +18,10 @@ class DemoProvider: RingProvider {
         var minValue: Double
         var maxValue: Double
         var mainColor: CodableColor
+        var gradient: Bool = true
+        var secondaryColor: CodableColor? = nil
+        var outerGlow: Bool = true
+        var innerGlow: Bool = true
     }
     
     var units: String = "KCAL"

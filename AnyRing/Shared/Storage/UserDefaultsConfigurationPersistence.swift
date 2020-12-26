@@ -10,7 +10,7 @@ import Foundation
 class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     static let key = "Config.v1"
     static let defaultConfig = HardcodedConfiguration([
-        ActivityProvider.Configuration(minValue: 0, maxValue: 200, mainColor: CodableColor(.orange)),
+        ActivityProvider.Configuration(minValue: 0, maxValue: 200, mainColor: CodableColor(.green)),
         RestHRProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.pink)),
         HRVProvider.Configuration(minValue: 40, maxValue: 70, mainColor: CodableColor(.purple))
     ])

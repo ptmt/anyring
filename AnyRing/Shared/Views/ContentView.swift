@@ -20,7 +20,6 @@ struct ContentView: View {
                     MainScreen(rings: rings)
                         .navigationTitle(Text("AnyRing"))
                         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-                            print("Moving to the foreground")
                             viewModel.rings?.forEach { $0.refresh() }
                             refreshWidget()
                         }.onAppear {
@@ -28,7 +27,7 @@ struct ContentView: View {
                         }
                 } else {
                     ProgressView().alert(isPresented: $viewModel.showingAlert) {
-                        Alert(title: Text("Error"), message: Text("Permission to HealthKit is denided"), dismissButton: .default(Text("OK")))
+                        Alert(title: Text("Error"), message: Text("Permission to HealthKit is denied"), dismissButton: .default(Text("OK")))
                     }.navigationTitle(Text("AnyRing"))
                 }
                 

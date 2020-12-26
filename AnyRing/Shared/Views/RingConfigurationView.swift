@@ -38,7 +38,7 @@ struct ConfigTextValue: View {
             TextField("Min", value: $state, formatter: DoubleFormatter(), onEditingChanged: { s in
                 if (!s) { onChange(state) }
             }).textFieldStyle(RoundedBorderTextFieldStyle())
-                .fixedSize()
+            .fixedSize()
             
             Stepper("", value: $state, in: 0...1000) { s in
                 if (!s) { onChange(state) }
@@ -46,6 +46,25 @@ struct ConfigTextValue: View {
         }
     }
 }
+
+struct ConfigBoolValue: View {
+    var label: String
+    var initialValue: Bool
+    var onChange: (Bool) -> Void
+    
+    var body: some View {
+        let isOn = Binding<Bool>(get: {
+            initialValue
+        }, set: {
+            onChange($0)
+        })
+        Toggle(isOn: isOn) {
+            Text(label)
+        }
+    }
+}
+
+
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
     
@@ -83,6 +102,24 @@ struct RingConfigurationView: View {
             
             Section(header: Text("Appearance")) {
                 ColorPicker("Main Color", selection: ringMainColor)
+                
+                ConfigBoolValue(label: "Gradient", initialValue: ring.configuration.gradient) { changed in
+                    var newConfig = ring.configuration
+                    newConfig.gradient = changed
+                    ring.update(config: newConfig)
+                }
+                
+                ConfigBoolValue(label: "Inner Glow", initialValue: ring.configuration.innerGlow) { changed in
+                    var newConfig = ring.configuration
+                    newConfig.innerGlow = changed
+                    ring.update(config: newConfig)
+                }
+                
+                ConfigBoolValue(label: "Outer Glow", initialValue: ring.configuration.outerGlow) { changed in
+                    var newConfig = ring.configuration
+                    newConfig.outerGlow = changed
+                    ring.update(config: newConfig)
+                }
             }
         }
     }

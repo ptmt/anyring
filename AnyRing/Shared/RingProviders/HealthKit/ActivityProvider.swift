@@ -17,6 +17,10 @@ class ActivityProvider: RingProvider {
         var minValue: Double = 0
         var maxValue: Double = 200
         var mainColor: CodableColor
+        var gradient: Bool = true
+        var secondaryColor: CodableColor? = nil
+        var outerGlow: Bool = true
+        var innerGlow: Bool = true
     }
     static var configurationType: ProviderConfiguration.Type = Configuration.self
     

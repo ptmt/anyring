@@ -29,6 +29,10 @@
 		2478615D2595F92800E4F1C2 /* MockConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478615C2595F92800E4F1C2 /* MockConfigurationPersistence.swift */; };
 		2478615E2595F92800E4F1C2 /* MockConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478615C2595F92800E4F1C2 /* MockConfigurationPersistence.swift */; };
 		2478615F2595F92800E4F1C2 /* MockConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478615C2595F92800E4F1C2 /* MockConfigurationPersistence.swift */; };
+		2478617E25974D7800E4F1C2 /* Glow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478617D25974D7800E4F1C2 /* Glow.swift */; };
+		2478617F25974D7800E4F1C2 /* Glow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478617D25974D7800E4F1C2 /* Glow.swift */; };
+		2478618E2597514700E4F1C2 /* Glow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478617D25974D7800E4F1C2 /* Glow.swift */; };
+		247861962597515B00E4F1C2 /* Glow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478617D25974D7800E4F1C2 /* Glow.swift */; };
 		24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
 		24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
 		24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
@@ -197,6 +201,7 @@
 		247861512595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsConfigurationPersistence.swift; sourceTree = "<group>"; };
 		2478615C2595F92800E4F1C2 /* MockConfigurationPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockConfigurationPersistence.swift; sourceTree = "<group>"; };
 		24786175259654F300E4F1C2 /* RingWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RingWidgetExtension.entitlements; sourceTree = "<group>"; };
+		2478617D25974D7800E4F1C2 /* Glow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glow.swift; sourceTree = "<group>"; };
 		24AA546B258D25B4002CD4A6 /* RingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingProvider.swift; sourceTree = "<group>"; };
 		24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestHRProvider.swift; sourceTree = "<group>"; };
 		24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHealthKitDataSource.swift; sourceTree = "<group>"; };
@@ -458,6 +463,7 @@
 				24AA54BE258E16DB002CD4A6 /* RIng.swift */,
 				24AA55682590FA03002CD4A6 /* TripleRing.swift */,
 				24AA55732590FA8A002CD4A6 /* RingLabel.swift */,
+				2478617D25974D7800E4F1C2 /* Glow.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -741,6 +747,7 @@
 				24AA55692590FA03002CD4A6 /* TripleRing.swift in Sources */,
 				24AA55742590FA8A002CD4A6 /* RingLabel.swift in Sources */,
 				24AA54D7258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */,
+				2478617E25974D7800E4F1C2 /* Glow.swift in Sources */,
 				24D27A1C2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
@@ -772,6 +779,7 @@
 				24AA556A2590FA03002CD4A6 /* TripleRing.swift in Sources */,
 				24AA55752590FA8A002CD4A6 /* RingLabel.swift in Sources */,
 				24AA54D8258F420E002CD4A6 /* HealthKitDataSource.swift in Sources */,
+				2478618E2597514700E4F1C2 /* Glow.swift in Sources */,
 				24D27A1D2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */,
 				24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
@@ -812,6 +820,7 @@
 				24C38D2A2591054D001F1412 /* TripleRing.swift in Sources */,
 				24C38D222591054A001F1412 /* RIng.swift in Sources */,
 				24639704258D24CD00866E74 /* ContentView.swift in Sources */,
+				247861962597515B00E4F1C2 /* Glow.swift in Sources */,
 				24639708258D24CD00866E74 /* ComplicationController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -826,6 +835,7 @@
 				24DEB7A425920F2E00647442 /* RestHRProvider.swift in Sources */,
 				24AA557E2590FAA5002CD4A6 /* RIng.swift in Sources */,
 				247861542595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift in Sources */,
+				2478617F25974D7800E4F1C2 /* Glow.swift in Sources */,
 				24AA554C2590F87A002CD4A6 /* RingWidget.swift in Sources */,
 				24DEB7B425920F3400647442 /* DemoProvider.swift in Sources */,
 				24DEB7DC25920F5900647442 /* MockHealthKitDataSource.swift in Sources */,
