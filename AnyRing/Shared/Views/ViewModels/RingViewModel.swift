@@ -58,6 +58,15 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
         refresh()
     }
     
+    func snapshot() -> RingSnapshot {
+        .init(progress: progress.normalized,
+              mainColor: configuration.mainColor.color,
+              gradient: configuration.gradient,
+              secondaryColor: configuration.secondaryColor?.color,
+              outerGlow: configuration.outerGlow,
+              innerGlow: configuration.innerGlow)
+    }
+    
     var description: String {
         return progress.description + units
     }

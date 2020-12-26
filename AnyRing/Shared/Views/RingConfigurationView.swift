@@ -9,21 +9,6 @@ import Foundation
 import SwiftUI
 import Combine
 
-class RingConfigViewModel: ObservableObject {
-    //    private let provider: RingProvider
-    //    init(provider: RingProvider) {
-    //        self.provider = provider
-    //    }
-    @Published var mainColor: Color = Color.red
-    @Published var minimumValue = 40
-    @Published var maximumValue = 100
-    private var cancellables = Set<AnyCancellable>()
-    init() {
-        $mainColor.sink {
-            print(">> main color changed", $0)
-        }.store(in: &cancellables)
-    }
-}
 
 struct ConfigTextValue: View {
     var label: String
@@ -55,8 +40,10 @@ struct ConfigBoolValue: View {
     var body: some View {
         let isOn = Binding<Bool>(get: {
             initialValue
-        }, set: {
-            onChange($0)
+        }, set: { changed in
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(700)) {
+                onChange(changed)
+            }
         })
         Toggle(isOn: isOn) {
             Text(label)
@@ -67,14 +54,19 @@ struct ConfigBoolValue: View {
 
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
-    
-    
     var body: some View {
         let ringMainColor = Binding<Color>(get: {
             ring.configuration.mainColor.color
         }, set: {
             var newConfig = ring.configuration
             newConfig.mainColor = CodableColor($0)
+            ring.update(config: newConfig)
+        })
+        let secondaryColor = Binding<Color>(get: {
+            ring.configuration.secondaryColor?.color ?? ring.configuration.mainColor.color.opacity(0.5)
+        }, set: {
+            var newConfig = ring.configuration
+            newConfig.secondaryColor = CodableColor($0)
             ring.update(config: newConfig)
         })
         Group {
@@ -107,6 +99,10 @@ struct RingConfigurationView: View {
                     var newConfig = ring.configuration
                     newConfig.gradient = changed
                     ring.update(config: newConfig)
+                }
+                
+                if (ring.configuration.gradient) {
+                    ColorPicker("Second Gradient Color", selection: secondaryColor)
                 }
                 
                 ConfigBoolValue(label: "Inner Glow", initialValue: ring.configuration.innerGlow) { changed in

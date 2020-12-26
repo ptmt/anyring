@@ -15,12 +15,10 @@ struct RingDashboard: View {
     
     var body: some View {
         HStack(alignment: .center, spacing: 5) {
-            let progress = ring1.progress.normalized
             TripleRingView(size: size,
-                           ring1: .init(progress: progress, color: ring1.configuration.mainColor.color),
-                           ring2: .init(progress: ring2.progress.normalized, color: ring2.configuration.mainColor.color),
-                           ring3: .init(progress: ring3.progress.normalized, color:
-                                            ring3.configuration.mainColor.color))
+                           ring1: ring1.snapshot(),
+                           ring2: ring2.snapshot(),
+                           ring3: ring3.snapshot())
             Spacer()
             VStack(alignment: .leading, spacing: 10) {
                 RingLabel(name: ring1.name,

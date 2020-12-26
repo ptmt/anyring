@@ -36,7 +36,7 @@ struct InnerGlow: ViewModifier {
             Circle()
                 .stroke(Color.clear,
                         lineWidth: 2)
-                .shadow(color: glowColor,
+                .shadow(color: glowColor.opacity(0.5),
                         radius: 2, x: 0, y: 0)
                 .shadow(color: glowColor.opacity(0.1),
                         radius: 2, x: 0, y: 0)

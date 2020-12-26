@@ -81,9 +81,9 @@ struct RingWidget: Widget {
     }
 }
 
-let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, color: Color.pink),
-                                         RingSnapshot(progress: 1.5, color: Color.orange),
-                                         RingSnapshot(progress: 0.1, color: Color.blue)])
+let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, mainColor: Color.pink),
+                                         RingSnapshot(progress: 1.5, mainColor: Color.orange),
+                                         RingSnapshot(progress: 0.1, mainColor: Color.blue)])
 
 struct RingWidget_Previews: PreviewProvider {
     

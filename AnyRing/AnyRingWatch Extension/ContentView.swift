@@ -12,9 +12,9 @@ struct ContentView: View {
         GeometryReader { geometry in
             let size = min(geometry.size.width, geometry.size.height) - 20
             TripleRingView(size: size,
-                           ring1: .init(progress: 0.5, color: Color.green),
-                           ring2: .init(progress: 1.5, color: Color.yellow),
-                           ring3: .init(progress: 0.4, color: Color.blue))
+                           ring1: .init(progress: 1.5, mainColor: Color.green, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1))),
+                           ring2: .init(progress: 1.5, mainColor: Color.yellow),
+                           ring3: .init(progress: 0.4, mainColor: Color.blue))
                 .padding(.all, 10)
         }
     }
