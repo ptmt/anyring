@@ -65,17 +65,16 @@ struct RingView: View {
                     .conditionalModifier(outerGlow, OuterGlow(primaryColor))
                     .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size))
                    
-                    
                 if progress > 1 {
                     let offsetRadius = geometry.size.width / 2
                     
-                    let angleForFinalSegment: CGFloat =  CGFloat(progress.truncatingRemainder(dividingBy: 1)) * (CGFloat(Double.pi))
+                    let angleForFinalSegment: CGFloat =  CGFloat(progress.truncatingRemainder(dividingBy: 1) * Double.pi * 2) - CGFloat(Double.pi / 2)
                     
                     let angleForOffsetInRadians: CGFloat = angleForFinalSegment + CGFloat(Double.pi / 2)
                     let relativeXOffset = cos(angleForOffsetInRadians)
                     let relativeYOffset = sin(angleForOffsetInRadians)
-                    let xOffset = relativeXOffset * 5
-                    let yOffset = relativeYOffset * 5
+                    let xOffset = relativeXOffset * 3
+                    let yOffset = relativeYOffset * 3
                     Circle()
                         .fill(primaryColor)
                         .frame(width: lineWidth,
@@ -112,8 +111,8 @@ extension View {
 struct RingView_Preview: PreviewProvider {
     static var previews: some View {
         Group {
-            RingView(size: 140, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.green, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: false), lineWidth: 20.0)
-            RingView(size: 140, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.red, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1))), lineWidth: 20.0)
+            RingView(size: 140, snapshot: RingSnapshot(progress: 1.25, mainColor: Color.green, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: false), lineWidth: 20.0)
+            RingView(size: 140, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: true, innerGlow: true), lineWidth: 20.0)
             RingView(size: 100, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.pink, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
                 .preferredColorScheme(.dark)
         }.previewLayout(.fixed(width: 150, height: 150))

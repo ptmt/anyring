@@ -14,7 +14,7 @@ struct RingSnapshot {
     var gradient: Bool = false
     var secondaryColor: Color? = nil
     var outerGlow: Bool = true
-    var innerGlow: Bool = true
+    var innerGlow: Bool = false
 }
 
 struct TripleRingView: View {
