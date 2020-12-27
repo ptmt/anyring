@@ -41,14 +41,20 @@ struct RingDashboard: View {
 }
 
 
+
 struct MultiRingView_Preview: PreviewProvider {
-    static var previews: some View {
+    static var preview: some View {
         RingDashboard(size: 150,
                       ring1: DemoProvider("HRV", initValue: 110, units: "ms", config: .init(minValue: 0, maxValue: 10, mainColor: CodableColor(.orange))).viewModel(),
                       ring2: DemoProvider("Heart Rate", initValue: 60, units: "bpm", config: .init(minValue: 10, maxValue: 70, mainColor: CodableColor(.pink))).viewModel(),
                       ring3: DemoProvider("Activity", initValue: 30, units: "min", config:  .init(minValue: 10, maxValue: 70, mainColor: CodableColor(.purple))).viewModel())
             .padding()
-            .previewLayout(.fixed(width: 350, height: 200))
-            .preferredColorScheme(.dark)
+    }
+    static var previews: some View {
+        Group {
+            preview.preferredColorScheme(.dark)
+            preview.preferredColorScheme(.light)
+        }.previewLayout(.fixed(width: 350, height: 200))
+         
     }
 }

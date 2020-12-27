@@ -20,10 +20,16 @@ struct RingShape: Shape {
         let endAngle = Angle(degrees: angle + RingShape.baseAngle)
         
         return Path { path in
-            path.addArc(center: center, radius: radius, startAngle: Angle(degrees: RingShape.baseAngle), endAngle: endAngle, clockwise: false)
+            path.addArc(center: center,
+                        radius: radius,
+                        startAngle: Angle(degrees: RingShape.baseAngle),
+                        endAngle: endAngle,
+                        clockwise: false)
         }
     }
 }
+
+
 
 struct RingView: View {
     var size: CGFloat
@@ -63,7 +69,7 @@ struct RingView: View {
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
                     .conditionalModifier(outerGlow, OuterGlow(primaryColor))
-                    .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size))
+                    .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth))
                    
                 if progress > 1 {
                     let offsetRadius = geometry.size.width / 2
@@ -77,6 +83,8 @@ struct RingView: View {
                     let yOffset = relativeYOffset * 3
                     Circle()
                         .fill(primaryColor)
+                        .rotationEffect(.init(radians: Double(angleForOffsetInRadians) + Double.pi / 2))
+                        .modifier(InnerGlow(primaryColor, size: lineWidth - 1, lineWidth: 1, halfCircle: true))
                         .frame(width: lineWidth,
                                height: lineWidth,
                                alignment: .center)
@@ -112,9 +120,9 @@ struct RingView_Preview: PreviewProvider {
     static var previews: some View {
         Group {
             RingView(size: 140, snapshot: RingSnapshot(progress: 1.25, mainColor: Color.green, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: false), lineWidth: 20.0)
-            RingView(size: 140, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: true, innerGlow: true), lineWidth: 20.0)
+            RingView(size: 240, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: true, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
             RingView(size: 100, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.pink, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
                 .preferredColorScheme(.dark)
-        }.previewLayout(.fixed(width: 150, height: 150))
+        }.previewLayout(.fixed(width: 250, height: 250))
     }
 }
