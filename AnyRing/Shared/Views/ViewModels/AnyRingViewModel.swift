@@ -61,7 +61,6 @@ class AnyRingViewModel: ObservableObject {
         .sink { _ in
             
         } receiveValue: { result in
-            print(">>> snapshots", result)
             completion(RingWrapper(result))
         }
     }

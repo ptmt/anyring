@@ -80,7 +80,6 @@ struct RingConfigurationView: View {
                 
                 
                 ConfigTextValue(label: "Min value", state: ring.configuration.minValue) { changed in
-                    print(">>>", changed)
                     var newConfig = ring.configuration
                     newConfig.minValue = changed
                     ring.update(config: newConfig)

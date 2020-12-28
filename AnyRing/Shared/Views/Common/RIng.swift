@@ -40,16 +40,15 @@ struct RingLineEndView: View {
     var primaryColor: Color
     var innerGlow: Bool
     @State private var finalProgress: Double = 0
-  
+    
     var animatableData: Double {
-        get { progress }
-        set { progress = newValue }
+        get { finalProgress }
+        set { finalProgress = newValue }
     }
     
     var body: some View {
         Circle()
             .fill(primaryColor)
-           
             .frame(width: lineWidth,
                    height: lineWidth,
                    alignment: .center)
@@ -59,9 +58,12 @@ struct RingLineEndView: View {
             .shadow(color: Color.black.opacity(0.2), radius: 3, x: 4, y: 0)
             .offset(x: 0, y: -offsetRadius)
             .rotationEffect(.degrees(finalProgress * 360))
-            .onAppear {
+            .onAppear(perform: {
                 finalProgress = progress
-            }
+            })
+            .onChange(of: progress, perform: { value in
+                finalProgress = value
+            })
     }
 }
 
@@ -86,7 +88,7 @@ struct RingView: View {
         snapshot.innerGlow
     }
     
-    @State private var angleForFinalSegment = -Double.pi / 2
+    @State private var initialRender = true
     
     var body: some View {
         let angle: Double = progress * 360
@@ -104,10 +106,15 @@ struct RingView: View {
                 RingShape(endAngle: angle)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
-                    .animation(.easeInOut(duration: progress))
+                    .animation(.easeInOut(duration: initialRender ? progress : 0.4))
                     .conditionalModifier(outerGlow, OuterGlow(primaryColor))
                     .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
                     .rotationEffect(.radians(-Double.pi / 2))
+                    .onChange(of: progress, perform: { value in
+                        if (value > 0) {
+                            initialRender = false
+                        }
+                    })
                    
                 if progress > 1 {
                     RingLineEndView(
@@ -116,7 +123,7 @@ struct RingView: View {
                         lineWidth: lineWidth,
                         primaryColor: primaryColor,
                         innerGlow: innerGlow)
-                        .animation(.easeInOut(duration: progress))
+                        .animation(.easeInOut(duration: initialRender ? progress : 0.4))
                 }
             }
         }
