@@ -54,18 +54,3 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
         }
     }
 }
-
-
-//protocol Storage {
-//    func get(key: String) -> String?
-//}
-//
-//class UserDefaultsStorage: Storage {
-//    let userDefaults = UserDefaults.standard
-//    func get(key: String) -> String? {
-//        return userDefaults.string(forKey: key)
-//    }
-//    func save(key: String, value: String) {
-//        userDefaults.setValue(value, forKey: key)
-//    }
-//}

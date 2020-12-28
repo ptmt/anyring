@@ -22,7 +22,7 @@ struct HalfCircle : Shape {
             center: center,
             radius: radius,
             startAngle:
-                Angle(radians: Double.pi), endAngle: Angle(radians: 2*Double.pi), clockwise: false)
+                Angle(radians: Double.pi / 2 + 0.5), endAngle: Angle(radians: -Double.pi / 2 - 0.5), clockwise: true)
 
         return p
     }

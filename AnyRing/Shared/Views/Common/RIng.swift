@@ -8,49 +8,86 @@
 import SwiftUI
 
 struct RingShape: Shape {
-    var angle: Double
-    // We start from the top
-    static let baseAngle: Double = -90
-    // This draws a simple arc from the start angle to the end angle
+    var endAngle: Double
+    var animatableData: Double {
+            get { endAngle }
+            set { endAngle = newValue }
+        }
+    
+    // We used to compensate the start
+    static let baseAngle: Double = 0
     func path(in rect: CGRect) -> Path {
         let width = rect.width
         let height = rect.height
         let radius = min(width, height) / 2
         let center = CGPoint(x: width / 2, y: height / 2)
-        let endAngle = Angle(degrees: angle + RingShape.baseAngle)
+        let endAngleNormalized = Angle(degrees: endAngle + RingShape.baseAngle)
         
         return Path { path in
             path.addArc(center: center,
                         radius: radius,
                         startAngle: Angle(degrees: RingShape.baseAngle),
-                        endAngle: endAngle,
+                        endAngle: endAngleNormalized,
                         clockwise: false)
         }
     }
 }
 
-
+struct RingLineEndView: View {
+    var progress: Double
+    var offsetRadius: CGFloat
+    var lineWidth: CGFloat
+    var primaryColor: Color
+    var innerGlow: Bool
+    @State private var finalProgress: Double = 0
+  
+    var animatableData: Double {
+        get { progress }
+        set { progress = newValue }
+    }
+    
+    var body: some View {
+        Circle()
+            .fill(primaryColor)
+           
+            .frame(width: lineWidth,
+                   height: lineWidth,
+                   alignment: .center)
+            
+            .rotationEffect(.degrees(finalProgress * 360))
+            .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: lineWidth - 1, lineWidth: lineWidth - 1, progress: 1.0, halfCircle: true))
+            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 4, y: 0)
+            .offset(x: 0, y: -offsetRadius)
+            .rotationEffect(.degrees(finalProgress * 360))
+            .onAppear {
+                finalProgress = progress
+            }
+    }
+}
 
 struct RingView: View {
     var size: CGFloat
     var snapshot: RingSnapshot
     var lineWidth: CGFloat
     
-    var primaryColor: Color {
+    private var primaryColor: Color {
         snapshot.mainColor
     }
-    var secondaryColor: Color? {
+    private var secondaryColor: Color? {
         snapshot.secondaryColor
     }
-    var progress: Double {
+    private var progress: Double {
         snapshot.progress
     }
-    var outerGlow: Bool {
+    private var outerGlow: Bool {
         snapshot.outerGlow
     }
-    var innerGlow: Bool {
+    private var innerGlow: Bool {
         snapshot.innerGlow
     }
+    
+    @State private var angleForFinalSegment = -Double.pi / 2
+    
     var body: some View {
         let angle: Double = progress * 360
         let gradientSecondaryColor = snapshot.gradient ? (secondaryColor ?? primaryColor.opacity(0.5)) : primaryColor
@@ -59,41 +96,27 @@ struct RingView: View {
                                        endAngle: Angle(degrees: angle  + RingShape.baseAngle))
         GeometryReader { geometry in
             ZStack {
-               
                 Circle()
                     .stroke(style: StrokeStyle.init(lineWidth: lineWidth, lineCap: .round))
                     .opacity(0.2)
                     .foregroundColor(primaryColor)
                 
-                RingShape(angle: angle)
+                RingShape(endAngle: angle)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
+                    .animation(.easeInOut(duration: progress))
                     .conditionalModifier(outerGlow, OuterGlow(primaryColor))
-                    .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth))
+                    .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
+                    .rotationEffect(.radians(-Double.pi / 2))
                    
                 if progress > 1 {
-                    let offsetRadius = geometry.size.width / 2
-                    
-                    let angleForFinalSegment: CGFloat =  CGFloat(progress.truncatingRemainder(dividingBy: 1) * Double.pi * 2) - CGFloat(Double.pi / 2)
-                    
-                    let angleForOffsetInRadians: CGFloat = angleForFinalSegment + CGFloat(Double.pi / 2)
-                    let relativeXOffset = cos(angleForOffsetInRadians)
-                    let relativeYOffset = sin(angleForOffsetInRadians)
-                    let xOffset = relativeXOffset * 3
-                    let yOffset = relativeYOffset * 3
-                    Circle()
-                        .fill(primaryColor)
-                        .rotationEffect(.init(radians: Double(angleForOffsetInRadians) + Double.pi / 2))
-                        .modifier(InnerGlow(primaryColor, size: lineWidth - 1, lineWidth: 1, halfCircle: true))
-                        .frame(width: lineWidth,
-                               height: lineWidth,
-                               alignment: .center)
-                        .offset(x: offsetRadius * cos(angleForFinalSegment),
-                                y: offsetRadius * sin(angleForFinalSegment))
-                        .shadow(color: Color.black.opacity(0.2),
-                                radius: 3,
-                                x: xOffset,
-                                y: yOffset)
+                    RingLineEndView(
+                        progress: progress,
+                        offsetRadius: geometry.size.width / 2,
+                        lineWidth: lineWidth,
+                        primaryColor: primaryColor,
+                        innerGlow: innerGlow)
+                        .animation(.easeInOut(duration: progress))
                 }
             }
         }
@@ -119,8 +142,8 @@ extension View {
 struct RingView_Preview: PreviewProvider {
     static var previews: some View {
         Group {
-            RingView(size: 140, snapshot: RingSnapshot(progress: 1.25, mainColor: Color.green, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: false), lineWidth: 20.0)
-            RingView(size: 240, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: true, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
+            RingView(size: 140, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.green, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: false), lineWidth: 20.0)
+            RingView(size: 240, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red, gradient: false, outerGlow: false, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
             RingView(size: 100, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.pink, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
                 .preferredColorScheme(.dark)
         }.previewLayout(.fixed(width: 250, height: 250))
