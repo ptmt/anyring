@@ -52,7 +52,6 @@ struct RingLineEndView: View {
             .frame(width: lineWidth,
                    height: lineWidth,
                    alignment: .center)
-            
             .rotationEffect(.degrees(finalProgress * 360))
             .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: lineWidth - 1, lineWidth: lineWidth - 1, progress: 1.0, halfCircle: true))
             .shadow(color: Color.black.opacity(0.2), radius: 3, x: 4, y: 0)
@@ -88,14 +87,13 @@ struct RingView: View {
         snapshot.innerGlow
     }
     
-    @State private var initialRender = true
-    
     var body: some View {
         let angle: Double = progress * 360
         let gradientSecondaryColor = snapshot.gradient ? (secondaryColor ?? primaryColor.opacity(0.5)) : primaryColor
         let gradient = AngularGradient(gradient: Gradient(colors: [gradientSecondaryColor, primaryColor]), center: .center,
                                        startAngle: Angle(degrees: RingShape.baseAngle),
                                        endAngle: Angle(degrees: angle  + RingShape.baseAngle))
+        
         GeometryReader { geometry in
             ZStack {
                 Circle()
@@ -106,25 +104,20 @@ struct RingView: View {
                 RingShape(endAngle: angle)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
-                    .animation(.easeInOut(duration: initialRender ? progress : 0.4))
+                    .animation(.easeInOut(duration: progress))
                     .conditionalModifier(outerGlow, OuterGlow(primaryColor))
                     .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
                     .rotationEffect(.radians(-Double.pi / 2))
-                    .onChange(of: progress, perform: { value in
-                        if (value > 0) {
-                            initialRender = false
-                        }
-                    })
                    
-                if progress > 1 {
+              //  if progress > 1 {
                     RingLineEndView(
                         progress: progress,
                         offsetRadius: geometry.size.width / 2,
                         lineWidth: lineWidth,
                         primaryColor: primaryColor,
                         innerGlow: innerGlow)
-                        .animation(.easeInOut(duration: initialRender ? progress : 0.4))
-                }
+                        .animation(.easeInOut(duration: progress))
+              //  }
             }
         }
         .padding(.all, lineWidth / 2)

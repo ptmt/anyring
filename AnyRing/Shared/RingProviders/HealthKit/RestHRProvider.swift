@@ -25,7 +25,7 @@ class RestHRProvider: RingProvider {
     
     let name = "Min Heart Rate"
     let description = """
-    This allows to track what was the lowest heart-rate at night.
+    The lowest heart-rate at night.
     """
     let units = "BPM"
     let requiredHKPermission: HKSampleType? = HKObjectType.quantityType(forIdentifier: .heartRate)!

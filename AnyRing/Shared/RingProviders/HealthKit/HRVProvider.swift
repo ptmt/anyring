@@ -24,7 +24,7 @@ class HRVProvider: RingProvider {
         var innerGlow: Bool = true
     }
     
-    let name = "Max HRV"
+    let name = "Latest HRV"
     let description = """
     Last available value for Heart Rate Variability
     """
@@ -69,10 +69,10 @@ class HRVProvider: RingProvider {
             to: Date(),
             ofType: hrvType)
             .tryMap { results -> HKSample? in
-                let minHR = results.min { (sample1, sample2) -> Bool in
-                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: self.unit) > (sample2 as! HKQuantitySample).quantity.doubleValue(for: self.unit)
+                let latestHRV = results.min { (sample1, sample2) -> Bool in
+                    (sample1 as! HKQuantitySample).endDate > (sample2 as! HKQuantitySample).endDate
                 }
-                return minHR
+                return latestHRV
             }.eraseToAnyPublisher()
         return m
     }

@@ -36,17 +36,13 @@ struct ConfigBoolValue: View {
     var label: String
     var initialValue: Bool
     var onChange: (Bool) -> Void
+    @State var isOn = false
     
     var body: some View {
-        let isOn = Binding<Bool>(get: {
-            initialValue
-        }, set: { changed in
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(700)) {
-                onChange(changed)
-            }
-        })
-        Toggle(isOn: isOn) {
+        Toggle(isOn: $isOn) {
             Text(label)
+        }.onChange(of: isOn) { value in
+            onChange(value)
         }
     }
 }
@@ -71,9 +67,9 @@ struct RingConfigurationView: View {
         })
         Group {
             Section(header: Text("Data Source")) {
-                NavigationLink(destination: Text("Providers are hard-coded now")) {
+                //NavigationLink(destination: Text("Providers are hard-coded now")) {
                     Text(ring.name)
-                }
+               // }
                 Text(ring.providerDescription)
                     .font(.footnote)
                     .foregroundColor(Color.secondary)
