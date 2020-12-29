@@ -10,15 +10,21 @@ import SwiftUI
 
 struct OuterGlow: ViewModifier {
     let color: Color
+    let simplified: Bool
     
-    init(_ color: Color) {
+    init(_ color: Color, simplified: Bool = false) {
         self.color = color
+        self.simplified = simplified
     }
     
     func body(content: Content) -> some View {
-        return content.shadow(color: color.opacity(0.5), radius: 12)
-            .shadow(color: color.opacity(0.2), radius: 12)
-            .shadow(color: color.opacity(0.1), radius: 12)
+        if (simplified) {
+            return AnyView(content.shadow(color: color.opacity(0.5), radius: 12))
+        } else {
+            return AnyView(content.shadow(color: color.opacity(0.5), radius: 12)
+                            .shadow(color: color.opacity(0.2), radius: 12)
+                            .shadow(color: color.opacity(0.1), radius: 12))
+        }
     }
 }
 
@@ -59,15 +65,15 @@ struct InnerGlow: ViewModifier {
                 if (!halfCircle) {
                     shape()
                         .trim(from: 0, to: progress)
-                            .stroke(Color.clear,
-                                    lineWidth: lineWidth / 7)
-                            .shadow(color: glowColor.opacity(0.2),
-                                    radius: 3, x: 0, y: 0)
-                            .shadow(color: glowColor.opacity(0.1),
-                                    radius: 2, x: 0, y: 0)
-                            .shadow(color: glowColor.opacity(0.1),
-                                    radius: 5, x: 0, y: 0)
-                            .frame(width: size - 2 * lineWidth, height: size - 2 * lineWidth, alignment: .center)
+                        .stroke(Color.clear,
+                                lineWidth: lineWidth / 7)
+                        .shadow(color: glowColor.opacity(0.2),
+                                radius: 3, x: 0, y: 0)
+                        .shadow(color: glowColor.opacity(0.1),
+                                radius: 2, x: 0, y: 0)
+                        .shadow(color: glowColor.opacity(0.1),
+                                radius: 5, x: 0, y: 0)
+                        .frame(width: size - 2 * lineWidth, height: size - 2 * lineWidth, alignment: .center)
                 }
             }
         )
@@ -83,10 +89,10 @@ struct AnyShape: Shape {
             return path
         }
     }
-
+    
     func path(in rect: CGRect) -> Path {
         return _path(rect)
     }
-
+    
     private let _path: (CGRect) -> Path
 }

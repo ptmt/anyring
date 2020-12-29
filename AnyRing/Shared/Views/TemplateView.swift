@@ -63,10 +63,11 @@ struct TemplatesView: View {
             HStack {
                 ForEach(0 ..< snapshots.count) { i in
                     let ring = snapshots[i]
-                    TripleRingView(size: 60,
+                    TripleRingView(size: 55,
                                    ring1: ring.first,
                                    ring2: ring.second,
-                                   ring3: ring.third).onTapGesture {
+                                   ring3: ring.third,
+                                   simplified: true).onTapGesture {
                                     onSelect?(ring)
                                    }
                 }

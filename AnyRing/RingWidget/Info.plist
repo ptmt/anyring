@@ -27,5 +27,7 @@
 	</dict>
 	<key>NSHealthShareUsageDescription</key>
 	<string>AnyRing Widget requires an access to HealthKit for certain ring providers</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>AnyRing uses HealthKit only in a read-only mode</string>
 </dict>
 </plist>

@@ -71,6 +71,9 @@ struct RingView: View {
     var snapshot: RingSnapshot
     var lineWidth: CGFloat
     
+    // improve fps by disabling animation and some glows
+    var simplified = false
+    
     private var primaryColor: Color {
         snapshot.mainColor
     }
@@ -105,9 +108,9 @@ struct RingView: View {
                 RingShape(endAngle: angle)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
-                    .animation(.easeInOut(duration: firstRender ? progress : 0.5))
-                    .conditionalModifier(outerGlow, OuterGlow(primaryColor))
-                    .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
+                    .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))
+                    .conditionalModifier(outerGlow, OuterGlow(primaryColor, simplified: simplified))
+                    .conditionalModifier(!simplified && innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
                     .rotationEffect(.radians(-Double.pi / 2))
                    
               //  if progress > 1 {
@@ -117,7 +120,7 @@ struct RingView: View {
                         lineWidth: lineWidth,
                         primaryColor: primaryColor,
                         innerGlow: innerGlow)
-                        .animation(.easeInOut(duration: firstRender ? progress : 0.5))
+                        .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))
               //  }
             }
         }

@@ -22,6 +22,7 @@ struct TripleRingView: View {
     let ring1: RingSnapshot
     let ring2: RingSnapshot
     let ring3: RingSnapshot
+    var simplified: Bool = false
     private let margin: CGFloat = 1.5
     var body: some View {
         ZStack {
@@ -29,15 +30,18 @@ struct TripleRingView: View {
             RingView(
                 size: size,
                 snapshot: ring1,
-                lineWidth: lineWidth)
+                lineWidth: lineWidth,
+                simplified: simplified)
             RingView(
                 size: size - 2 * (lineWidth + margin),
                 snapshot: ring2,
-                lineWidth: lineWidth)
+                lineWidth: lineWidth,
+                simplified: simplified)
             RingView(
                 size: size - 4 * (lineWidth + margin),
                 snapshot: ring3,
-                lineWidth: lineWidth)
+                lineWidth: lineWidth,
+                simplified: simplified)
         }
     }
 }
