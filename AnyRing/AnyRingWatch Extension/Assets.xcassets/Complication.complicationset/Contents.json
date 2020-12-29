@@ -1,9 +1,7 @@
 {
   "assets" : [
     {
-      "filename" : "Circular.imageset",
-      "idiom" : "watch",
-      "role" : "circular"
+      "filename" : "Circular.imageset"
     },
     {
       "filename" : "Extra Large.imageset",
@@ -34,6 +32,11 @@
       "filename" : "Graphic Large Rectangular.imageset",
       "idiom" : "watch",
       "role" : "graphic-large-rectangular"
+    },
+    {
+      "filename" : "I.imageset",
+      "idiom" : "watch",
+      "role" : "circular"
     },
     {
       "filename" : "Modular.imageset",

@@ -14,7 +14,7 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     
     func getComplicationDescriptors(handler: @escaping ([CLKComplicationDescriptor]) -> Void) {
         let descriptors = [
-            CLKComplicationDescriptor(identifier: "complication", displayName: "AnyRing", supportedFamilies: [CLKComplicationFamily.modularSmall, .graphicCircular])
+            CLKComplicationDescriptor(identifier: "complication", displayName: "AnyRing", supportedFamilies: [.graphicCircular])
             // Multiple complication support can be added here with more descriptors
         ]
         
@@ -72,10 +72,10 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     
     private func createTemplate(forComplication complication: CLKComplication, date: Date, snapshot: RingWrapper<RingSnapshot>) -> CLKComplicationTemplate {
         switch complication.family {
-        case .circularSmall:
+        case .graphicCircular:
             return createCircularSmallTemplate(forDate: date, snapshot: snapshot)
         default:
-            fatalError("*** Not supported ***")
+            fatalError("*** \(complication.family) Not supported ***")
         //        @unknown default:
         //            fatalError("*** Unknown Complication Family ***")
         }
