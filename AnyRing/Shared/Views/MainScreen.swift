@@ -20,11 +20,19 @@ struct MainScreen: View {
                               ring3: rings.third).padding()
             }
             
-            Picker(selection: $selection, label: Text(""), content: {
-                Text("Ring 1").tag(1)
-                Text("Ring 2").tag(2)
-                Text("Ring 3").tag(3)
-            }).pickerStyle(SegmentedPickerStyle())
+            TemplatesView { newConfig in
+                rings.first.updateFromSnapshot(snapshot: newConfig.first)
+                rings.second.updateFromSnapshot(snapshot: newConfig.second)
+                rings.third.updateFromSnapshot(snapshot: newConfig.third)
+            }
+            
+            Section {
+                Picker(selection: $selection, label: Text(""), content: {
+                    Text("Ring 1").tag(1)
+                    Text("Ring 2").tag(2)
+                    Text("Ring 3").tag(3)
+                }).pickerStyle(SegmentedPickerStyle())
+            }
             
             switch(selection) {
             case 2: RingConfigurationView(ring: rings.second)

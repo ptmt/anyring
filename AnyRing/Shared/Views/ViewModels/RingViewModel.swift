@@ -58,6 +58,28 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
         refresh()
     }
     
+    func updateFromSnapshot(snapshot: RingSnapshot) {
+        var id = 0
+        // we hardcoded the providers, remember
+        if provider is RestHRProvider {
+            id = 1
+        }
+        if provider is HRVProvider {
+            id = 2
+        }
+        var newConfig = configuration
+        newConfig.gradient = snapshot.gradient
+        newConfig.innerGlow = snapshot.innerGlow
+        newConfig.mainColor = CodableColor(snapshot.mainColor)
+        if let secondaryColor = snapshot.secondaryColor {
+            newConfig.secondaryColor = CodableColor(secondaryColor)
+        }
+        newConfig.outerGlow = snapshot.outerGlow
+        provider.configPersistence.update(ring: id, config: newConfig)
+        configuration = newConfig
+        refresh()
+    }
+    
     func snapshot() -> RingSnapshot {
         .init(progress: progress.normalized,
               mainColor: configuration.mainColor.color,

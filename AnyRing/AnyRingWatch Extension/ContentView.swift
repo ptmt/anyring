@@ -8,14 +8,45 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @ObservedObject var viewModel = AnyRingViewModel()
+    
     var body: some View {
-        GeometryReader { geometry in
-            let size = min(geometry.size.width, geometry.size.height) - 20
-            TripleRingView(size: size,
-                           ring1: .init(progress: 1.5, mainColor: Color.green, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1))),
-                           ring2: .init(progress: 1.5, mainColor: Color.yellow),
-                           ring3: .init(progress: 0.4, mainColor: Color.blue))
-                .padding(.all, 10)
+        if (viewModel.dataSource.isAvailable()) {
+            GeometryReader { geometry in
+                let size = min(geometry.size.width, geometry.size.height) - 20
+                if let rings = viewModel.rings {
+                    ScrollView {
+                        TripleRingView(size: size,
+                                       ring1: rings.first.snapshot(),
+                                       ring2: rings.second.snapshot(),
+                                       ring3: rings.third.snapshot()).padding(10)
+                        VStack(alignment: .leading, spacing: 10) {
+                            RingLabel(name: rings.first.name,
+                                      value: String(describing: rings.first.progress),
+                                      units: rings.first.units,
+                                      color: rings.first.configuration.mainColor.color)
+                            RingLabel(name: rings.second.name,
+                                      value: String(describing: rings.second.progress),
+                                      units: rings.second.units,
+                                      color: rings.second.configuration.mainColor.color)
+                            RingLabel(name: rings.third.name,
+                                      value: String(describing: rings.third.progress),
+                                      units: rings.third.units,
+                                      color: rings.third.configuration.mainColor.color)
+                            
+                            Text("3-day period").font(.footnote).foregroundColor(.secondary)
+                        }
+                    }
+                    
+                } else {
+                    ProgressView()
+                }
+            }
+            
+        } else {
+            Text("Apple HealthKit data appears to be not available")
+                .padding()
         }
     }
 }

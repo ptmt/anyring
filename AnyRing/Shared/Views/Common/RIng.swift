@@ -86,6 +86,7 @@ struct RingView: View {
     private var innerGlow: Bool {
         snapshot.innerGlow
     }
+    @State private var firstRender = true
     
     var body: some View {
         let angle: Double = progress * 360
@@ -104,7 +105,7 @@ struct RingView: View {
                 RingShape(endAngle: angle)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
-                    .animation(.easeInOut(duration: progress))
+                    .animation(.easeInOut(duration: firstRender ? progress : 0.5))
                     .conditionalModifier(outerGlow, OuterGlow(primaryColor))
                     .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
                     .rotationEffect(.radians(-Double.pi / 2))
@@ -116,12 +117,17 @@ struct RingView: View {
                         lineWidth: lineWidth,
                         primaryColor: primaryColor,
                         innerGlow: innerGlow)
-                        .animation(.easeInOut(duration: progress))
+                        .animation(.easeInOut(duration: firstRender ? progress : 0.5))
               //  }
             }
         }
         .padding(.all, lineWidth / 2)
         .frame(width: size, height: size)
+        .onChange(of: progress, perform: { value in
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(progress) * 1000)) {
+                firstRender = false
+            }
+        })
     }
 
 }

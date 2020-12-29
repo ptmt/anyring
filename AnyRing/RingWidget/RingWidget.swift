@@ -51,14 +51,15 @@ struct RingWidgetEntryView : View {
     
     var body: some View {
         if let rings = entry.rings {
-                let size = min(entry.size.width, entry.size.height) - 10
+            let delta: CGFloat = 30
+            let size = min(entry.size.width, entry.size.height) - delta
             VStack {
-                TripleRingView(size: size - 10,
+                TripleRingView(size: size - delta,
                                ring1: rings.first,
                                ring2: rings.second,
                                ring3: rings.third)
             }
-                    .padding(.all, 10)
+                    .padding(.all, delta)
             } else {
                 Text("Loading rings")
             }
