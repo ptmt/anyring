@@ -20,6 +20,9 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
     func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
     
         return Future() { promise in
+            if Bundle.main.bundlePath.hasSuffix(".appex") {
+                promise(.success(true))
+            }
             let allSatisfy = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
             if (allSatisfy) {
                 promise(.success(true))

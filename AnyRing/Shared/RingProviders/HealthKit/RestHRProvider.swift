@@ -42,10 +42,14 @@ class RestHRProvider: RingProvider {
     
     func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
         return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
-            Progress(absolute: (sample as! HKQuantitySample).quantity.doubleValue(for: self.unit),
+            if let sample = sample as? HKQuantitySample {
+                return Progress(absolute: sample.quantity.doubleValue(for: self.unit),
                      maxAbsolute: config.maxValue,
                      minAbsolute: config.minValue,
                             reversed: true)
+            } else {
+                return Progress(absolute: config.minValue, maxAbsolute: config.maxValue, minAbsolute: config.minValue)
+            }
         }.eraseToAnyPublisher()
     }
     

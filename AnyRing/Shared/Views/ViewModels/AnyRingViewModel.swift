@@ -10,13 +10,13 @@ import Combine
 import SwiftUI
 
 class AnyRingViewModel: ObservableObject {
-    #if targetEnvironment(simulator)
+  //  #if targetEnvironment(simulator)
     // your simulator code
-    let dataSource = MockHealthKitDataSource()
-    #else
+ //   let dataSource = MockHealthKitDataSource()
+ //   #else
     // your real device code
     let dataSource = DeviceHealthKitDataSource()
-    #endif
+ //   #endif
     
     @Published var showingAlert = false
     @Published var rings: RingWrapper<RingViewModel>?

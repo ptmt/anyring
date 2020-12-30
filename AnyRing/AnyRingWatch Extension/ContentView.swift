@@ -20,7 +20,7 @@ struct ContentView: View {
                         TripleRingView(size: size,
                                        ring1: rings.first.snapshot(),
                                        ring2: rings.second.snapshot(),
-                                       ring3: rings.third.snapshot()).padding(10)
+                                       ring3: rings.third.snapshot()).padding(10).ignoresSafeArea()
                         VStack(alignment: .leading, spacing: 10) {
                             RingLabel(name: rings.first.name,
                                       value: String(describing: rings.first.progress),

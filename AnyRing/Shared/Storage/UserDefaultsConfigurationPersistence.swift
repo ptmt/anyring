@@ -15,7 +15,7 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         HRVProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))
     ])
     
-    private let userDefaults = UserDefaults(suiteName: "group.com.potomushto.AnyRing")!
+    private let userDefaults = UserDefaults(suiteName: "group.49PJNAT2WC.com.potomushto.AnyRing")!
     
     private var lastReadValue: HardcodedConfiguration?
     

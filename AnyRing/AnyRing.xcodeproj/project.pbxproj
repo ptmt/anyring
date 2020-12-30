@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		241C76D5259CDE4600968D25 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 241C76D4259CDE4600968D25 /* HealthKit.framework */; };
 		246396CB258D21E300866E74 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396CA258D21E300866E74 /* Tests_iOS.swift */; };
 		246396D6258D21E300866E74 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396D5258D21E300866E74 /* Tests_macOS.swift */; };
 		246396D8258D21E300866E74 /* AnyRingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396AF258D21E200866E74 /* AnyRingApp.swift */; };
@@ -202,6 +203,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		241C76D3259CDE4600968D25 /* AnyRingWatch Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "AnyRingWatch Extension.entitlements"; sourceTree = "<group>"; };
+		241C76D4259CDE4600968D25 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS7.2.sdk/System/Library/Frameworks/HealthKit.framework; sourceTree = DEVELOPER_DIR; };
 		246396AF258D21E200866E74 /* AnyRingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingApp.swift; sourceTree = "<group>"; };
 		246396B0258D21E200866E74 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		246396B1258D21E300866E74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -298,6 +301,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				241C76D5259CDE4600968D25 /* HealthKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -406,6 +410,7 @@
 		24639702258D24CD00866E74 /* AnyRingWatch Extension */ = {
 			isa = PBXGroup;
 			children = (
+				241C76D3259CDE4600968D25 /* AnyRingWatch Extension.entitlements */,
 				24639703258D24CD00866E74 /* ContentView.swift */,
 				24639705258D24CD00866E74 /* AnyRingApp.swift */,
 				24639707258D24CD00866E74 /* ComplicationController.swift */,
@@ -451,6 +456,7 @@
 		24AA548E258D29EE002CD4A6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				241C76D4259CDE4600968D25 /* HealthKit.framework */,
 				24AA548F258D29EE002CD4A6 /* HealthKit.framework */,
 				24AA55462590F87A002CD4A6 /* WidgetKit.framework */,
 				24AA55482590F87A002CD4A6 /* SwiftUI.framework */,
@@ -1250,6 +1256,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_ENTITLEMENTS = "AnyRingWatch Extension/AnyRingWatch Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"AnyRingWatch Extension/Preview Content\"";
@@ -1275,6 +1282,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_ENTITLEMENTS = "AnyRingWatch Extension/AnyRingWatch Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"AnyRingWatch Extension/Preview Content\"";
@@ -1304,6 +1312,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRingWatch/AnyRingWatch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
@@ -1311,6 +1320,7 @@
 				INFOPLIST_FILE = AnyRingWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1326,6 +1336,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRingWatch/AnyRingWatch.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
@@ -1333,6 +1344,7 @@
 				INFOPLIST_FILE = AnyRingWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.potomushto.AnyRing.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
