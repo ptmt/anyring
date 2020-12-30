@@ -34,9 +34,8 @@ struct ConfigTextValue: View {
 
 struct ConfigBoolValue: View {
     var label: String
-    var initialValue: Bool
+    @State var isOn: Bool
     var onChange: (Bool) -> Void
-    @State var isOn = false
     
     var body: some View {
         Toggle(isOn: $isOn) {
@@ -52,17 +51,17 @@ struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
     var body: some View {
         let ringMainColor = Binding<Color>(get: {
-            ring.configuration.mainColor.color
+            ring.configuration.appearance.mainColor.color
         }, set: {
             var newConfig = ring.configuration
-            newConfig.mainColor = CodableColor($0)
+            newConfig.appearance.mainColor = CodableColor($0)
             ring.update(config: newConfig)
         })
         let secondaryColor = Binding<Color>(get: {
-            ring.configuration.secondaryColor?.color ?? ring.configuration.mainColor.color.opacity(0.5)
+            ring.configuration.appearance.secondaryColor?.color ?? ring.configuration.appearance.mainColor.color.opacity(0.5)
         }, set: {
             var newConfig = ring.configuration
-            newConfig.secondaryColor = CodableColor($0)
+            newConfig.appearance.secondaryColor = CodableColor($0)
             ring.update(config: newConfig)
         })
         Group {
@@ -90,25 +89,25 @@ struct RingConfigurationView: View {
             Section(header: Text("Appearance")) {
                 ColorPicker("Main Color", selection: ringMainColor)
                 
-                ConfigBoolValue(label: "Gradient", initialValue: ring.configuration.gradient) { changed in
+                ConfigBoolValue(label: "Gradient", isOn: ring.configuration.appearance.gradient) { changed in
                     var newConfig = ring.configuration
-                    newConfig.gradient = changed
+                    newConfig.appearance.gradient = changed
                     ring.update(config: newConfig)
                 }
                 
-                if (ring.configuration.gradient) {
+                if (ring.configuration.appearance.gradient) {
                     ColorPicker("Second Gradient Color", selection: secondaryColor)
                 }
                 
-                ConfigBoolValue(label: "Inner Glow", initialValue: ring.configuration.innerGlow) { changed in
+                ConfigBoolValue(label: "Inner Glow", isOn: ring.configuration.appearance.innerGlow) { changed in
                     var newConfig = ring.configuration
-                    newConfig.innerGlow = changed
+                    newConfig.appearance.innerGlow = changed
                     ring.update(config: newConfig)
                 }
                 
-                ConfigBoolValue(label: "Outer Glow", initialValue: ring.configuration.outerGlow) { changed in
+                ConfigBoolValue(label: "Outer Glow", isOn: ring.configuration.appearance.outerGlow) { changed in
                     var newConfig = ring.configuration
-                    newConfig.outerGlow = changed
+                    newConfig.appearance.outerGlow = changed
                     ring.update(config: newConfig)
                 }
             }

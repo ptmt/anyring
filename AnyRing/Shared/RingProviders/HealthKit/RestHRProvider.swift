@@ -16,11 +16,8 @@ class RestHRProvider: RingProvider {
         
         var minValue: Double = 46
         var maxValue: Double = 100
-        var mainColor: CodableColor
-        var gradient: Bool = true
-        var secondaryColor: CodableColor? = nil
-        var outerGlow: Bool = true
-        var innerGlow: Bool = true
+        
+        var appearance: RingAppearance
     }
     
     let name = "Min Heart Rate"

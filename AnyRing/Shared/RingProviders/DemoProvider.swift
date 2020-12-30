@@ -10,6 +10,7 @@ import Combine
 import HealthKit
 import SwiftUI
 
+
 class DemoProvider: RingProvider {
     
     struct Configuration: ProviderConfiguration {
@@ -17,11 +18,8 @@ class DemoProvider: RingProvider {
         
         var minValue: Double
         var maxValue: Double
-        var mainColor: CodableColor
-        var gradient: Bool = true
-        var secondaryColor: CodableColor? = nil
-        var outerGlow: Bool = true
-        var innerGlow: Bool = true
+        
+        var appearance: RingAppearance
     }
     
     var units: String = "KCAL"
@@ -38,7 +36,7 @@ class DemoProvider: RingProvider {
         self.configPersistence = configPersistence
     }
     
-    init(_ name: String = "Demo", initValue: Double = 20, units: String = "KCAL", config: Configuration = Configuration(minValue: 0, maxValue: 100, mainColor: CodableColor(.orange))) {
+    init(_ name: String = "Demo", initValue: Double = 20, units: String = "KCAL", config: Configuration = Configuration(minValue: 0, maxValue: 100, appearance: RingAppearance(mainColor: CodableColor(.orange)))) {
         self.name = name
         self.initValue = initValue
         self.units = units

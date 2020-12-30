@@ -38,6 +38,7 @@ struct HardcodedConfiguration: Codable {
         let second = try container.decode(RestHRProvider.Configuration.self, forKey: .second)
         let third = try container.decode(HRVProvider.Configuration.self, forKey: .third)
         
+        print("decoded first", first)
         self.configs = [first, second, third]
     }
     

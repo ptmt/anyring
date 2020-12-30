@@ -68,13 +68,15 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
             id = 2
         }
         var newConfig = configuration
-        newConfig.gradient = snapshot.gradient
-        newConfig.innerGlow = snapshot.innerGlow
-        newConfig.mainColor = CodableColor(snapshot.mainColor)
+        var newAppearance = configuration.appearance
+        newAppearance.gradient = snapshot.gradient
+        newAppearance.innerGlow = snapshot.innerGlow
+        newAppearance.mainColor = CodableColor(snapshot.mainColor)
         if let secondaryColor = snapshot.secondaryColor {
-            newConfig.secondaryColor = CodableColor(secondaryColor)
+            newAppearance.secondaryColor = CodableColor(secondaryColor)
         }
-        newConfig.outerGlow = snapshot.outerGlow
+        newAppearance.outerGlow = snapshot.outerGlow
+        newConfig.appearance = newAppearance
         provider.configPersistence.update(ring: id, config: newConfig)
         configuration = newConfig
         refresh()
@@ -82,11 +84,11 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     
     func snapshot() -> RingSnapshot {
         .init(progress: progress.normalized,
-              mainColor: configuration.mainColor.color,
-              gradient: configuration.gradient,
-              secondaryColor: configuration.secondaryColor?.color,
-              outerGlow: configuration.outerGlow,
-              innerGlow: configuration.innerGlow)
+              mainColor: configuration.appearance.mainColor.color,
+              gradient: configuration.appearance.gradient,
+              secondaryColor: configuration.appearance.secondaryColor?.color,
+              outerGlow: configuration.appearance.outerGlow,
+              innerGlow: configuration.appearance.innerGlow)
     }
     
     var description: String {

@@ -25,15 +25,15 @@ struct ContentView: View {
                             RingLabel(name: rings.first.name,
                                       value: String(describing: rings.first.progress),
                                       units: rings.first.units,
-                                      color: rings.first.configuration.mainColor.color)
+                                      color: rings.first.configuration.appearance.mainColor.color)
                             RingLabel(name: rings.second.name,
                                       value: String(describing: rings.second.progress),
                                       units: rings.second.units,
-                                      color: rings.second.configuration.mainColor.color)
+                                      color: rings.second.configuration.appearance.mainColor.color)
                             RingLabel(name: rings.third.name,
                                       value: String(describing: rings.third.progress),
                                       units: rings.third.units,
-                                      color: rings.third.configuration.mainColor.color)
+                                      color: rings.third.configuration.appearance.mainColor.color)
                             
                             Text("3-day period").font(.footnote).foregroundColor(.secondary)
                         }

@@ -24,15 +24,15 @@ struct RingDashboard: View {
                 RingLabel(name: ring1.name,
                           value: String(describing: ring1.progress),
                           units: ring1.units,
-                          color: ring1.configuration.mainColor.color)
+                          color: ring1.configuration.appearance.mainColor.color)
                 RingLabel(name: ring2.name,
                           value: String(describing: ring2.progress),
                           units: ring2.units,
-                          color: ring2.configuration.mainColor.color)
+                          color: ring2.configuration.appearance.mainColor.color)
                 RingLabel(name: ring3.name,
                           value: String(describing: ring3.progress),
                           units: ring3.units,
-                          color: ring3.configuration.mainColor.color)
+                          color: ring3.configuration.appearance.mainColor.color)
                 
                 Text("3-day period").font(.footnote).foregroundColor(.secondary)
             }
@@ -45,9 +45,9 @@ struct RingDashboard: View {
 struct MultiRingView_Preview: PreviewProvider {
     static var preview: some View {
         RingDashboard(size: 150,
-                      ring1: DemoProvider("HRV", initValue: 110, units: "ms", config: .init(minValue: 0, maxValue: 10, mainColor: CodableColor(.orange))).viewModel(),
-                      ring2: DemoProvider("Heart Rate", initValue: 60, units: "bpm", config: .init(minValue: 10, maxValue: 70, mainColor: CodableColor(.pink))).viewModel(),
-                      ring3: DemoProvider("Activity", initValue: 30, units: "min", config:  .init(minValue: 10, maxValue: 70, mainColor: CodableColor(.purple))).viewModel())
+                      ring1: DemoProvider("HRV", initValue: 110, units: "ms", config: .init(minValue: 0, maxValue: 10, appearance: RingAppearance(mainColor: CodableColor(.orange)))).viewModel(),
+                      ring2: DemoProvider("Heart Rate", initValue: 60, units: "bpm", config: .init(minValue: 10, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink)))).viewModel(),
+                      ring3: DemoProvider("Activity", initValue: 30, units: "min", config:  .init(minValue: 10, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))).viewModel())
             .padding()
     }
     static var previews: some View {

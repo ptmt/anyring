@@ -55,7 +55,7 @@ class AnyRingViewModel: ObservableObject {
     
     func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>) -> Void) {
         snapshotTask = Publishers.MergeMany(providers.map { provider in
-            provider.calculateProgress(config: provider.config).tryMap { RingSnapshot(progress: $0.normalized, mainColor: provider.config.mainColor.color) }
+            provider.calculateProgress(config: provider.config).tryMap { RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color) }
         })
         .collect()
         .sink { _ in
