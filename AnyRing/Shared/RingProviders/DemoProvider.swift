@@ -44,8 +44,8 @@ class DemoProvider: RingProvider {
         self.configPersistence = MockConfigurationPersistence()
     }
     
-    func viewModel() -> RingViewModel {
-        RingViewModel(provider: self)
+    func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
+        RingViewModel(provider: self, globalConfig: globalConfig)
     }
     
     func requestNeededPermissions() -> Future<Bool, Error> {
@@ -54,8 +54,8 @@ class DemoProvider: RingProvider {
         }
     }
     
-    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
-        Result<Progress, Error>.Publisher(.success(Progress(absolute: initValue, maxAbsolute: config.maxValue, minAbsolute: config.minValue))).eraseToAnyPublisher()
+    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error> {
+        Result<Progress, Error>.Publisher(.success(Progress(absolute: initValue, maxAbsolute: providerConfig.maxValue, minAbsolute: providerConfig.minValue))).eraseToAnyPublisher()
     }
     
     var requiredHKPermission: HKSampleType? = nil

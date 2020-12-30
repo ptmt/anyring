@@ -10,16 +10,17 @@ import Combine
 import SwiftUI
 
 class AnyRingViewModel: ObservableObject {
-  //  #if targetEnvironment(simulator)
+    #if targetEnvironment(simulator)
     // your simulator code
- //   let dataSource = MockHealthKitDataSource()
- //   #else
+    let dataSource = MockHealthKitDataSource()
+    #else
     // your real device code
     let dataSource = DeviceHealthKitDataSource()
- //   #endif
+    #endif
     
     @Published var showingAlert = false
     @Published var rings: RingWrapper<RingViewModel>?
+    @Published var globalConfig: GlobalConfiguration = GlobalConfiguration(days: 3)
     
     private var initTask: AnyCancellable? = nil
     private var snapshotTask: AnyCancellable? = nil
@@ -33,6 +34,7 @@ class AnyRingViewModel: ObservableObject {
     
     private func initViewModels() {
         let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
+        globalConfig = config.global
         // instanitiate all ring providers
         providers = config.configs.map {
             return $0.provider.init(dataSource: dataSource, config: $0, configPersistence: persistence)
@@ -48,14 +50,14 @@ class AnyRingViewModel: ObservableObject {
                     self?.showingAlert = true
                 } else if let self = self {
                     // instanitiate all view models
-                    self.rings = RingWrapper(self.providers.map { $0.viewModel() })
+                    self.rings = RingWrapper(self.providers.map { $0.viewModel(globalConfig: self.globalConfig) })
                 }
             }
     }
     
     func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>) -> Void) {
         snapshotTask = Publishers.MergeMany(providers.map { provider in
-            provider.calculateProgress(config: provider.config).tryMap { RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color) }
+            provider.calculateProgress(providerConfig: provider.config, globalConfig: globalConfig).tryMap { RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color) }
         })
         .collect()
         .sink { _ in
@@ -63,6 +65,13 @@ class AnyRingViewModel: ObservableObject {
         } receiveValue: { result in
             completion(RingWrapper(result))
         }
+    }
+    
+    func updatePeriod(days: Int) {
+        self.globalConfig.days = days
+        rings?.forEach { $0.globalConfig = self.globalConfig } 
+        persistence.updateGlobal(globalConfig)
+        rings?.forEach { $0.refresh() }
     }
 }
 

@@ -118,7 +118,7 @@ struct RingConfigurationView: View {
 struct RingConfigurationView_Preview: PreviewProvider {
     static var previews: some View {
         Form {
-            RingConfigurationView(ring: DemoProvider().viewModel())
+            RingConfigurationView(ring: DemoProvider().viewModel(globalConfig:  GlobalConfiguration.Default))
         }
     }
 }

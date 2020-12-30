@@ -30,7 +30,6 @@ class RestHRProvider: RingProvider {
     private let dataSource: HealthKitDataSource
     let configPersistence: ConfigurationPersistence
     let config: ProviderConfiguration
-    let numberOfNights: Double = 3
     
     required init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence) {
         self.dataSource = dataSource
@@ -40,29 +39,29 @@ class RestHRProvider: RingProvider {
     
     private let unit = HKUnit.count().unitDivided(by: HKUnit.minute())
     
-    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
-        return fetchSamples().tryMap { (sample: HKSample?) -> Progress in
+    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error> {
+        return fetchSamples(numberOfNights: globalConfig.days).tryMap { (sample: HKSample?) -> Progress in
             if let sample = sample as? HKQuantitySample {
                 return Progress(absolute: sample.quantity.doubleValue(for: self.unit),
-                     maxAbsolute: config.maxValue,
-                     minAbsolute: config.minValue,
+                     maxAbsolute: providerConfig.maxValue,
+                     minAbsolute: providerConfig.minValue,
                             reversed: true)
             } else {
-                return Progress(absolute: config.minValue, maxAbsolute: config.maxValue, minAbsolute: config.minValue)
+                return Progress(absolute: providerConfig.minValue, maxAbsolute: providerConfig.maxValue, minAbsolute: providerConfig.minValue)
             }
         }.eraseToAnyPublisher()
     }
     
     private var cancellable: AnyCancellable?
     
-    func viewModel() -> RingViewModel {
-        RingViewModel(provider: self)
+    func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
+        RingViewModel(provider: self, globalConfig: globalConfig)
     }
     
-    private func fetchSamples() -> AnyPublisher<HKSample?, Error> {
+    private func fetchSamples(numberOfNights: Int) -> AnyPublisher<HKSample?, Error> {
         let hr = HKObjectType.quantityType(forIdentifier: .heartRate)!
         let m = dataSource.fetchSamples(
-            withStart: Date().addingTimeInterval(TimeInterval(-numberOfNights * secondsInDayApprox)),
+            withStart: Date().addingTimeInterval(TimeInterval(-Double(numberOfNights) * secondsInDayApprox)),
             to: Date(),
             ofType: hr)
             .tryMap { results -> HKSample? in

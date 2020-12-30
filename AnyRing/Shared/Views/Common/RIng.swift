@@ -54,7 +54,7 @@ struct RingLineEndView: View {
                    alignment: .center)
             .rotationEffect(.degrees(finalProgress * 360))
             .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: lineWidth - 1, lineWidth: lineWidth - 1, progress: 1.0, halfCircle: true))
-            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 4, y: 0)
+            .shadow(color: Color.black.opacity(0.4), radius: 3, x: 4, y: 0)
             .offset(x: 0, y: -offsetRadius)
             .rotationEffect(.degrees(finalProgress * 360))
             .onAppear(perform: {

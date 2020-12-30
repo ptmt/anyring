@@ -29,8 +29,6 @@ class ActivityProvider: RingProvider {
     
     private let dataSource: HealthKitDataSource
     
-    let numberOfNights: Double = 3
-    
     let config: ProviderConfiguration
     let configPersistence: ConfigurationPersistence
     
@@ -43,29 +41,29 @@ class ActivityProvider: RingProvider {
     private let reversed = false
     private let unit = HKUnit.minute()
     
-    func calculateProgress(config: ProviderConfiguration) -> AnyPublisher<Progress, Error> {
-        return sum().tryMap { (sum: Double) -> Progress in
+    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error> {
+        return sum(numberOfDays: globalConfig.days).tryMap { (sum: Double) -> Progress in
             Progress(absolute: sum,
-                     maxAbsolute: config.maxValue,
-                     minAbsolute: config.minValue,
+                     maxAbsolute: providerConfig.maxValue,
+                     minAbsolute: providerConfig.minValue,
                             reversed: false)
         }.eraseToAnyPublisher()
     }
     
     private var cancellable: AnyCancellable?
     
-    func viewModel() -> RingViewModel {
-        RingViewModel(provider: self)
+    func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
+        RingViewModel(provider: self, globalConfig: globalConfig)
     }
     
     private let hrvType = HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!
     
     var requiredHKPermission: HKSampleType? { hrvType }
     
-    private func sum() -> AnyPublisher<Double, Error> {
+    private func sum(numberOfDays: Int) -> AnyPublisher<Double, Error> {
         
         return dataSource.fetchSamples(
-            withStart: Date().addingTimeInterval(TimeInterval(-numberOfNights * secondsInDayApprox)),
+            withStart: Date().addingTimeInterval(TimeInterval(-Double(numberOfDays) * secondsInDayApprox)),
             to: Date(),
             ofType: hrvType)
             .tryMap { results -> Double in

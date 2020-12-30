@@ -19,7 +19,7 @@ struct OuterGlow: ViewModifier {
     
     func body(content: Content) -> some View {
         if (simplified) {
-            return AnyView(content.shadow(color: color.opacity(0.5), radius: 12))
+            return AnyView(content.shadow(color: color.opacity(0.5), radius: 4))
         } else {
             return AnyView(content.shadow(color: color.opacity(0.5), radius: 12)
                             .shadow(color: color.opacity(0.2), radius: 12)

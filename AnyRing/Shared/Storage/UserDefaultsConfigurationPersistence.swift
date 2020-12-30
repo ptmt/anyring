@@ -13,7 +13,7 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         ActivityProvider.Configuration(minValue: 0, maxValue: 200, appearance: RingAppearance(mainColor: CodableColor(.green))),
         RestHRProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink))),
         HRVProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))
-    ])
+    ], GlobalConfiguration(days: 3))
     
     private let userDefaults = UserDefaults(suiteName: "group.49PJNAT2WC.com.potomushto.AnyRing")!
     
@@ -29,6 +29,11 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         precondition(ring <= 3)
         var currentConfig = lastReadValue ?? UserDefaultsConfigurationPersistence.defaultConfig
         currentConfig.configs[ring] = config
+        persist(config: currentConfig)
+    }
+    func updateGlobal(_ globalConfig: GlobalConfiguration) {
+        var currentConfig = lastReadValue ?? UserDefaultsConfigurationPersistence.defaultConfig
+        currentConfig.global = globalConfig
         persist(config: currentConfig)
     }
     func restore() -> HardcodedConfiguration? {

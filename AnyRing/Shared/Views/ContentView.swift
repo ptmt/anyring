@@ -17,7 +17,9 @@ struct ContentView: View {
         NavigationView {
             if (viewModel.dataSource.isAvailable()) {
                 if let rings = viewModel.rings {
-                    MainScreen(rings: rings)
+                    MainScreen(rings: rings, days: viewModel.globalConfig.days, onPeriodChange: { period in
+                        viewModel.updatePeriod(days: period)
+                    })
                         .navigationTitle(Text("AnyRing"))
                         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                             viewModel.rings?.forEach { $0.refresh() }

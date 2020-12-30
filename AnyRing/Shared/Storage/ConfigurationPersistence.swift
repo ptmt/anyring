@@ -18,16 +18,19 @@ protocol ConfigurationPersistence {
 //
 struct HardcodedConfiguration: Codable {
     var configs: [ProviderConfiguration]
+    var global: GlobalConfiguration
     
     enum CodingKeys: String, CodingKey {
         case first
         case second
         case third
+        case global
     }
     
-    init(_ list: [ProviderConfiguration]) {
+    init(_ list: [ProviderConfiguration], _ global: GlobalConfiguration) {
         precondition(list.count == 3)
         configs = list
+        self.global = global
     }
     
     init(from decoder: Decoder) throws {
@@ -37,15 +40,22 @@ struct HardcodedConfiguration: Codable {
         let first = try container.decode(ActivityProvider.Configuration.self, forKey: .first)
         let second = try container.decode(RestHRProvider.Configuration.self, forKey: .second)
         let third = try container.decode(HRVProvider.Configuration.self, forKey: .third)
+        let global = try container.decode(GlobalConfiguration.self, forKey: .global)
         
-        print("decoded first", first)
         self.configs = [first, second, third]
+        self.global = global
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(configs.first as? ActivityProvider.Configuration, forKey: CodingKeys.first)
-        try container.encode(configs[1] as? RestHRProvider.Configuration, forKey: CodingKeys.second)
-        try container.encode(configs[2] as? HRVProvider.Configuration, forKey: CodingKeys.third)
+        try container.encode(configs.first as? ActivityProvider.Configuration, forKey: .first)
+        try container.encode(configs[1] as? RestHRProvider.Configuration, forKey: .second)
+        try container.encode(configs[2] as? HRVProvider.Configuration, forKey: .third)
+        try container.encode(global, forKey: .global)
     }
+}
+
+struct GlobalConfiguration: Codable, Equatable {
+    static var Default = GlobalConfiguration(days: 3)
+    var days: Int
 }
