@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MainScreen: View {
     var rings: RingWrapper<RingViewModel>
+    @EnvironmentObject var vm: AnyRingViewModel
     @State var days: Int
     @State var selection = 1
     var onPeriodChange: ((Int) -> Void)?
@@ -59,9 +60,9 @@ struct MainScreen: View {
             }
             
             switch(selection) {
-            case 2: RingConfigurationView(ring: rings.second)
-            case 3: RingConfigurationView(ring: rings.third)
-            default: RingConfigurationView(ring: rings.first)
+            case 2: RingConfigurationView(ring: rings.second).environmentObject(vm)
+            case 3: RingConfigurationView(ring: rings.third).environmentObject(vm)
+            default: RingConfigurationView(ring: rings.first).environmentObject(vm)
             }
         }
     }

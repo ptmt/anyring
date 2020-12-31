@@ -18,8 +18,10 @@
 		241C771F259DDAA900968D25 /* CodableHealthKitStructs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C771B259DDAA900968D25 /* CodableHealthKitStructs.swift */; };
 		241C7728259DE09500968D25 /* SelectProviderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7727259DE09500968D25 /* SelectProviderScreen.swift */; };
 		241C7729259DE09500968D25 /* SelectProviderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7727259DE09500968D25 /* SelectProviderScreen.swift */; };
-		241C772A259DE09500968D25 /* SelectProviderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7727259DE09500968D25 /* SelectProviderScreen.swift */; };
-		241C772B259DE09500968D25 /* SelectProviderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7727259DE09500968D25 /* SelectProviderScreen.swift */; };
+		241C7749259DEA3200968D25 /* HealthKitDieatary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7748259DEA3200968D25 /* HealthKitDieatary.swift */; };
+		241C774A259DEA3200968D25 /* HealthKitDieatary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7748259DEA3200968D25 /* HealthKitDieatary.swift */; };
+		241C774B259DEA3200968D25 /* HealthKitDieatary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7748259DEA3200968D25 /* HealthKitDieatary.swift */; };
+		241C774C259DEA3200968D25 /* HealthKitDieatary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241C7748259DEA3200968D25 /* HealthKitDieatary.swift */; };
 		246396CB258D21E300866E74 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396CA258D21E300866E74 /* Tests_iOS.swift */; };
 		246396D6258D21E300866E74 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396D5258D21E300866E74 /* Tests_macOS.swift */; };
 		246396D8258D21E300866E74 /* AnyRingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246396AF258D21E200866E74 /* AnyRingApp.swift */; };
@@ -220,6 +222,7 @@
 		241C770E259DDA7800968D25 /* CodableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableColor.swift; sourceTree = "<group>"; };
 		241C771B259DDAA900968D25 /* CodableHealthKitStructs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableHealthKitStructs.swift; sourceTree = "<group>"; };
 		241C7727259DE09500968D25 /* SelectProviderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectProviderScreen.swift; sourceTree = "<group>"; };
+		241C7748259DEA3200968D25 /* HealthKitDieatary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitDieatary.swift; sourceTree = "<group>"; };
 		246396AF258D21E200866E74 /* AnyRingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyRingApp.swift; sourceTree = "<group>"; };
 		246396B0258D21E200866E74 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		246396B1258D21E300866E74 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -364,7 +367,7 @@
 			children = (
 				24D27A1A2594D8C300F9F0AB /* Storage */,
 				24AA55662590F9D9002CD4A6 /* Views */,
-				24AA5483258D27B6002CD4A6 /* HealthKit */,
+				24AA5483258D27B6002CD4A6 /* HealthKitDataSource */,
 				24AA546A258D258E002CD4A6 /* RingProviders */,
 				246396AF258D21E200866E74 /* AnyRingApp.swift */,
 				246396B1258D21E300866E74 /* Assets.xcassets */,
@@ -456,7 +459,6 @@
 		24AA546A258D258E002CD4A6 /* RingProviders */ = {
 			isa = PBXGroup;
 			children = (
-				24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */,
 				24AA555E2590F8B5002CD4A6 /* HealthKit */,
 				24AA546B258D25B4002CD4A6 /* RingProvider.swift */,
 				24AA54A3258DF48C002CD4A6 /* CustomHttpProvider.swift */,
@@ -468,14 +470,14 @@
 			path = RingProviders;
 			sourceTree = "<group>";
 		};
-		24AA5483258D27B6002CD4A6 /* HealthKit */ = {
+		24AA5483258D27B6002CD4A6 /* HealthKitDataSource */ = {
 			isa = PBXGroup;
 			children = (
 				24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */,
 				24AA54D6258F420E002CD4A6 /* HealthKitDataSource.swift */,
 				24AA54E5258F6925002CD4A6 /* MockHealthKitDataSource.swift */,
 			);
-			path = HealthKit;
+			path = HealthKitDataSource;
 			sourceTree = "<group>";
 		};
 		24AA548E258D29EE002CD4A6 /* Frameworks */ = {
@@ -502,8 +504,10 @@
 		24AA555E2590F8B5002CD4A6 /* HealthKit */ = {
 			isa = PBXGroup;
 			children = (
+				24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */,
 				24AA55092590AC82002CD4A6 /* HRVProvider.swift */,
 				24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */,
+				241C7748259DEA3200968D25 /* HealthKitDieatary.swift */,
 			);
 			path = HealthKit;
 			sourceTree = "<group>";
@@ -807,6 +811,7 @@
 				24AA54F8258FA576002CD4A6 /* DemoProvider.swift in Sources */,
 				24D279FF2593B4B300F9F0AB /* RingConfigurationView.swift in Sources */,
 				24AA54B6258E0D39002CD4A6 /* MainScreen.swift in Sources */,
+				241C7749259DEA3200968D25 /* HealthKitDieatary.swift in Sources */,
 				24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */,
 				2478615D2595F92800E4F1C2 /* MockConfigurationPersistence.swift in Sources */,
 				24AA54EF258F6AFF002CD4A6 /* RingViewModel.swift in Sources */,
@@ -845,6 +850,7 @@
 				24AA54F9258FA576002CD4A6 /* DemoProvider.swift in Sources */,
 				24D27A002593B4B300F9F0AB /* RingConfigurationView.swift in Sources */,
 				24AA54B7258E0D39002CD4A6 /* MainScreen.swift in Sources */,
+				241C774A259DEA3200968D25 /* HealthKitDieatary.swift in Sources */,
 				24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */,
 				2478615E2595F92800E4F1C2 /* MockConfigurationPersistence.swift in Sources */,
 				24AA54F0258F6AFF002CD4A6 /* RingViewModel.swift in Sources */,
@@ -908,7 +914,6 @@
 				247861D6259A5EA000E4F1C2 /* RingProvider.swift in Sources */,
 				247861E6259A5EAA00E4F1C2 /* Progress.swift in Sources */,
 				2478620E259A5EC300E4F1C2 /* HealthKitProvider.swift in Sources */,
-				241C772A259DE09500968D25 /* SelectProviderScreen.swift in Sources */,
 				24639704258D24CD00866E74 /* ContentView.swift in Sources */,
 				247861AD259A5B8300E4F1C2 /* TemplateView.swift in Sources */,
 				241C7711259DDA7800968D25 /* CodableColor.swift in Sources */,
@@ -924,6 +929,7 @@
 				247861EE259A5EAD00E4F1C2 /* DemoProvider.swift in Sources */,
 				247861A12598906F00E4F1C2 /* HalfCircle.swift in Sources */,
 				247861DE259A5EA500E4F1C2 /* ProviderConfiguration.swift in Sources */,
+				241C774B259DEA3200968D25 /* HealthKitDieatary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -940,6 +946,7 @@
 				2478617F25974D7800E4F1C2 /* Glow.swift in Sources */,
 				24AA554C2590F87A002CD4A6 /* RingWidget.swift in Sources */,
 				24DEB7B425920F3400647442 /* DemoProvider.swift in Sources */,
+				241C774C259DEA3200968D25 /* HealthKitDieatary.swift in Sources */,
 				24DEB7DC25920F5900647442 /* MockHealthKitDataSource.swift in Sources */,
 				24DEB7BC25920F3800647442 /* Progress.swift in Sources */,
 				24D27A122594974900F9F0AB /* ProviderConfiguration.swift in Sources */,
@@ -953,7 +960,6 @@
 				24DEB78C25920EF000647442 /* AnyRingViewModel.swift in Sources */,
 				2478629A259C885000E4F1C2 /* RingAppearance.swift in Sources */,
 				24DEB79425920F2900647442 /* HealthKitProvider.swift in Sources */,
-				241C772B259DE09500968D25 /* SelectProviderScreen.swift in Sources */,
 				241C771F259DDAA900968D25 /* CodableHealthKitStructs.swift in Sources */,
 				247861AE259A5B8300E4F1C2 /* TemplateView.swift in Sources */,
 				247861A22598906F00E4F1C2 /* HalfCircle.swift in Sources */,

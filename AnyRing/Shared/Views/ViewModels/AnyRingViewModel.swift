@@ -73,6 +73,10 @@ class AnyRingViewModel: ObservableObject {
         persistence.updateGlobal(globalConfig)
         rings?.forEach { $0.refresh() }
     }
+    
+    func updateProvider(for ring: RingID, with: HealthKitProvider.HealthKitConfiguration) {
+        // re-create view model for this ring
+    }
 }
 
 

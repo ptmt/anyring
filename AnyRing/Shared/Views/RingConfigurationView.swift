@@ -49,6 +49,12 @@ struct ConfigBoolValue: View {
 
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
+    @EnvironmentObject var vm: AnyRingViewModel
+    var providerSelection: some View {
+        SelectProviderScreen(selected: ring.configuration.name) { config in
+            self.vm.updateProvider(for: ring.configuration.ring, with: config)
+        }
+    }
     var body: some View {
         let ringMainColor = Binding<Color>(get: {
             ring.configuration.appearance.mainColor.color
@@ -66,7 +72,7 @@ struct RingConfigurationView: View {
         })
         Group {
             Section(header: Text("Data Source")) {
-                NavigationLink(destination: SelectProviderScreen(selected: ring.configuration.name)) {
+                NavigationLink(destination: providerSelection) {
                     Text(ring.fullName)
                 }
                 Text(ring.providerDescription)

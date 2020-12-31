@@ -21,6 +21,7 @@ let activityMinutesConfiguration = HealthKitProvider.HealthKitConfiguration(
 
 let hrvConfiguration = HealthKitProvider.HealthKitConfiguration(
     name: "HRV",
+    description: "A quantity sample type that measures the standard deviation of heartbeat intervals.",
     units: HKUnitCodable.millisecond,
     sampleType: HKObjectTypeCodable.heartRateVariabilitySDNN,
     minValue: 0,
@@ -29,6 +30,7 @@ let hrvConfiguration = HealthKitProvider.HealthKitConfiguration(
 
 let hrConfiguration = HealthKitProvider.HealthKitConfiguration(
     name: "Heart-rate",
+    description: "A quantity sample type that measures the user’s heart rate.",
     units: HKUnitCodable.countperminute,
     sampleType: HKObjectTypeCodable.heartRate,
     minValue: 0,
@@ -36,11 +38,32 @@ let hrConfiguration = HealthKitProvider.HealthKitConfiguration(
     reversed: true,
     aggregation: .min)
 
+let bloodAlcoholContentConfiguration = HealthKitProvider.HealthKitConfiguration(
+    name: "Blood Alchohol %",
+    description: "A quantity sample type that measures the user’s blood alcohol content.",
+    units: HKUnitCodable.percent,
+    sampleType: HKObjectTypeCodable.bloodAlcoholContent,
+    minValue: 0,
+    maxValue: 100,
+    aggregation: .max)
+
+let dietaryCaffeineConfiguration = HealthKitProvider.HealthKitConfiguration(
+    name: "Caffeine",
+    description: "A quantity sample type that measures the amount of caffeine consumed.",
+    units: HKUnitCodable.mgrams,
+    sampleType: HKObjectTypeCodable.dietaryCaffeine,
+    minValue: 0,
+    maxValue: 100,
+    aggregation: .sum)
+
+
 let healthKitProviders = [
     activityMinutesConfiguration,
     hrvConfiguration,
-    hrConfiguration
-]
+    hrConfiguration,
+    bloodAlcoholContentConfiguration,
+    dietaryCaffeineConfiguration
+] + dietProviders
 
 enum Aggregation: String, Codable {
     case avg = "Avg"
