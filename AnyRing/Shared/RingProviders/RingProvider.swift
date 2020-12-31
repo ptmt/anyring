@@ -13,13 +13,13 @@ protocol RingProvider {
     init(dataSource: HealthKitDataSource,
          config: ProviderConfiguration,
          configPersistence: ConfigurationPersistence)
-    var name: String { get }
-    var description: String { get }
-    var units: String { get }
+    static var name: String { get }
+    static var description: String { get }
+    // var units: String { get }
     var config: ProviderConfiguration { get }
     var configPersistence: ConfigurationPersistence { get }
     
-    var requiredHKPermission: HKSampleType? { get }
+    // var requiredHKPermission: HKSampleType? { get }
     func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel
     func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error>
 }

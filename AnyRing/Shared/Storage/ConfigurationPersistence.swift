@@ -37,9 +37,9 @@ struct HardcodedConfiguration: Codable {
         
         // first ring is always
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let first = try container.decode(ActivityProvider.Configuration.self, forKey: .first)
-        let second = try container.decode(RestHRProvider.Configuration.self, forKey: .second)
-        let third = try container.decode(HRVProvider.Configuration.self, forKey: .third)
+        let first = try container.decode(HealthKitProvider.Configuration.self, forKey: .first)
+        let second = try container.decode(HealthKitProvider.Configuration.self, forKey: .second)
+        let third = try container.decode(HealthKitProvider.Configuration.self, forKey: .third)
         let global = try container.decode(GlobalConfiguration.self, forKey: .global)
         
         self.configs = [first, second, third]
@@ -48,9 +48,9 @@ struct HardcodedConfiguration: Codable {
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(configs.first as? ActivityProvider.Configuration, forKey: .first)
-        try container.encode(configs[1] as? RestHRProvider.Configuration, forKey: .second)
-        try container.encode(configs[2] as? HRVProvider.Configuration, forKey: .third)
+        try container.encode(configs.first as? HealthKitProvider.Configuration, forKey: .first)
+        try container.encode(configs[1] as? HealthKitProvider.Configuration, forKey: .second)
+        try container.encode(configs[2] as? HealthKitProvider.Configuration, forKey: .third)
         try container.encode(global, forKey: .global)
     }
 }

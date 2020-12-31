@@ -14,18 +14,20 @@ import SwiftUI
 class DemoProvider: RingProvider {
     
     struct Configuration: ProviderConfiguration {
+        var name: String
         var provider: RingProvider.Type { DemoProvider.self }
-        
+        var ring: RingID
         var minValue: Double
         var maxValue: Double
         
         var appearance: RingAppearance
+        var units: String
     }
     
     var units: String = "KCAL"
-    var name: String = "Demo"
-    let description: String = "Demo provider"
-    let config: ProviderConfiguration
+    static var name: String = "Demo"
+    static let description: String = "Demo provider"
+    var config: ProviderConfiguration
     let configPersistence: ConfigurationPersistence
     
     private let initValue: Double
@@ -36,10 +38,9 @@ class DemoProvider: RingProvider {
         self.configPersistence = configPersistence
     }
     
-    init(_ name: String = "Demo", initValue: Double = 20, units: String = "KCAL", config: Configuration = Configuration(minValue: 0, maxValue: 100, appearance: RingAppearance(mainColor: CodableColor(.orange)))) {
-        self.name = name
+    init(initValue: Double = 20,
+         config: Configuration = Configuration(name: "Demo", ring: .first, minValue: 0, maxValue: 100, appearance: RingAppearance(mainColor: CodableColor(.orange)), units: "KCAL")) {
         self.initValue = initValue
-        self.units = units
         self.config = config
         self.configPersistence = MockConfigurationPersistence()
     }
@@ -59,46 +60,4 @@ class DemoProvider: RingProvider {
     }
     
     var requiredHKPermission: HKSampleType? = nil
-}
-
-//struct CodableColor: Codable {
-//    var red: Double
-//    var green: Double
-//    var blue: Double
-//    var opacity: Double
-//
-//    init(_ color: Color) {
-//        self.red = color.cgColor!.components
-//    }
-//    //private var cachedColor: Color?
-//    var color: Color {
-//       Color(.sRGB, red: red, green: green, blue: blue, opacity: opacity)
-//    }
-//}
-
-struct CodableColor: Codable {
-    let color: Color
-    init(_ color: Color) {
-        self.color = color
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case color
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let data = try container.decode(Data.self)
-        if let uiColor = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
-            self.color = Color(uiColor)
-        } else {
-            self.color = Color.red // fail silently
-        }
-    }
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        let uiColor = UIColor(color)
-        let colorData = try NSKeyedArchiver.archivedData(withRootObject: uiColor, requiringSecureCoding: false)
-        try container.encode(colorData)
-    }
 }

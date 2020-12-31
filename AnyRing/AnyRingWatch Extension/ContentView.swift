@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ClockKit
 
 struct ContentView: View {
     
@@ -37,6 +38,11 @@ struct ContentView: View {
                             
                             Text("3-day period").font(.footnote).foregroundColor(.secondary)
                         }
+                    }.onReceive(NotificationCenter.default.publisher(for: WKExtension.applicationWillEnterForegroundNotification)) { _ in
+                        viewModel.rings?.forEach { $0.refresh() }
+                        refreshComplication()
+                    }.onAppear {
+                        refreshComplication()
                     }
                     
                 } else {
@@ -48,6 +54,13 @@ struct ContentView: View {
             Text("Apple HealthKit data appears to be not available")
                 .padding()
         }
+    }
+}
+
+func refreshComplication() {
+    let server = CLKComplicationServer.sharedInstance()
+    server.activeComplications?.forEach {
+        server.reloadTimeline(for: $0)
     }
 }
 

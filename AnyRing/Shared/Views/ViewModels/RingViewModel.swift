@@ -15,14 +15,19 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     var globalConfig: GlobalConfiguration
     
     var units: String {
-        provider.units
+        provider.config.units
     }
+    
     var name: String {
-        provider.name
+        configuration.name
+    }
+    
+    var fullName: String {
+        "\(type(of: provider).name) / \(name)"
     }
     
     var providerDescription: String {
-        provider.description
+        type(of: provider).description
     }
     
     private let provider: RingProvider
@@ -47,28 +52,14 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     }
     
     func update(config: ProviderConfiguration) {
-        var id = 0
-        // we hardcoded the providers, remember
-        if provider is RestHRProvider {
-            id = 1
-        }
-        if provider is HRVProvider {
-            id = 2
-        }
+        let id = config.ring.rawValue
         provider.configPersistence.update(ring: id, config: config)
         configuration = config
         refresh()
     }
     
     func updateFromSnapshot(snapshot: RingSnapshot) {
-        var id = 0
-        // we hardcoded the providers, remember
-        if provider is RestHRProvider {
-            id = 1
-        }
-        if provider is HRVProvider {
-            id = 2
-        }
+        let id = configuration.ring.rawValue
         var newConfig = configuration
         var newAppearance = configuration.appearance
         newAppearance.gradient = snapshot.gradient

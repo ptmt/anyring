@@ -12,7 +12,7 @@ import SwiftUI
 class AnyRingViewModel: ObservableObject {
     #if targetEnvironment(simulator)
     // your simulator code
-    let dataSource = MockHealthKitDataSource()
+    let dataSource = DeviceHealthKitDataSource() // MockHealthKitDataSource()
     #else
     // your real device code
     let dataSource = DeviceHealthKitDataSource()
@@ -41,7 +41,7 @@ class AnyRingViewModel: ObservableObject {
         }
         
         // collect all permissions for healthkit
-        let permissions = providers.compactMap { $0.requiredHKPermission }
+        let permissions = providers.compactMap { ($0 as? HealthKitProvider)?.healthKitParams.sampleType.hkSampleType }
         
         initTask = dataSource.requestPermissions(permissions: Set(permissions))
             .receive(on: RunLoop.main)

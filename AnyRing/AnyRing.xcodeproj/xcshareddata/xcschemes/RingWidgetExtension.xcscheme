@@ -72,6 +72,11 @@
             isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
+            key = "CG_NUMERICS_SHOW_BACKTRACE"
+            value = ""
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "_XCWidgetDefaultView"
             value = "timeline"
             isEnabled = "NO">

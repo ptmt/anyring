@@ -46,9 +46,9 @@ struct RingDashboard: View {
 struct MultiRingView_Preview: PreviewProvider {
     static var preview: some View {
         RingDashboard(size: 150,
-                      ring1: DemoProvider("HRV", initValue: 110, units: "ms", config: .init(minValue: 0, maxValue: 10, appearance: RingAppearance(mainColor: CodableColor(.orange)))).viewModel(globalConfig:  GlobalConfiguration.Default),
-                      ring2: DemoProvider("Heart Rate", initValue: 60, units: "bpm", config: .init(minValue: 10, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink)))).viewModel(globalConfig:  GlobalConfiguration.Default),
-                      ring3: DemoProvider("Activity", initValue: 30, units: "min", config:  .init(minValue: 10, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))).viewModel(globalConfig:  GlobalConfiguration.Default))
+                      ring1: DemoProvider(initValue: 110, config: .init(name: "HRV", ring: .first, minValue: 0, maxValue: 10, appearance: RingAppearance(mainColor: CodableColor(.orange)), units: "ms")).viewModel(globalConfig:  GlobalConfiguration.Default),
+                      ring2: DemoProvider(initValue: 60, config: .init(name: "Heart Rate", ring: .first, minValue: 10, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink)), units: "bpm")).viewModel(globalConfig:  GlobalConfiguration.Default),
+                      ring3: DemoProvider(initValue: 30, config:  .init(name: "Activity", ring: .first, minValue: 10, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)), units: "minutes")).viewModel(globalConfig:  GlobalConfiguration.Default))
             .padding()
     }
     static var previews: some View {

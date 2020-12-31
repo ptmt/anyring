@@ -66,13 +66,12 @@ struct RingConfigurationView: View {
         })
         Group {
             Section(header: Text("Data Source")) {
-                //NavigationLink(destination: Text("Providers are hard-coded now")) {
-                    Text(ring.name)
-               // }
+                NavigationLink(destination: SelectProviderScreen(selected: ring.configuration.name)) {
+                    Text(ring.fullName)
+                }
                 Text(ring.providerDescription)
                     .font(.footnote)
                     .foregroundColor(Color.secondary)
-                
                 
                 ConfigTextValue(label: "Min value", state: ring.configuration.minValue) { changed in
                     var newConfig = ring.configuration

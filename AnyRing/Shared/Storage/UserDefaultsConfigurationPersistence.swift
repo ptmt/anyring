@@ -8,11 +8,16 @@
 import Foundation
 
 class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
-    static let key = "Config.v1"
+    static let key = "Config.v2"
+//    static let defaultConfig = HardcodedConfiguration([
+//        ActivityProvider.Configuration(minValue: 0, maxValue: 200, appearance: RingAppearance(mainColor: CodableColor(.green))),
+//        RestHRProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink))),
+//        HRVProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))
+//    ], GlobalConfiguration(days: 3))
     static let defaultConfig = HardcodedConfiguration([
-        ActivityProvider.Configuration(minValue: 0, maxValue: 200, appearance: RingAppearance(mainColor: CodableColor(.green))),
-        RestHRProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink))),
-        HRVProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))
+        HealthKitProvider.Configuration(ring: .first, healthKitParams: activityMinutesConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
+        HealthKitProvider.Configuration(ring: .second, healthKitParams: hrvConfiguration, appearance: RingAppearance(mainColor: CodableColor(.pink))),
+        HealthKitProvider.Configuration(ring: .third, healthKitParams: hrConfiguration, appearance: RingAppearance(mainColor: CodableColor(.purple))),
     ], GlobalConfiguration(days: 3))
     
     private let userDefaults = UserDefaults(suiteName: "group.49PJNAT2WC.com.potomushto.AnyRing")!
