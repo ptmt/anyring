@@ -18,7 +18,7 @@ func diet(name: String, description: String, sampleType: HKObjectTypeCodable) ->
     HealthKitProvider.HealthKitConfiguration(
         name: name,
         description: description,
-        units: HKUnitCodable.grams,
+        units: HKUnitCodable.mgrams,
         sampleType: sampleType,
         minValue: 0,
         maxValue: 100,

@@ -12,11 +12,8 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     @Published var progress: Progress = Progress.Empty
     @Published var error: Error? = nil
     @Published var configuration: ProviderConfiguration
+    @Published var units: String
     var globalConfig: GlobalConfiguration
-    
-    var units: String {
-        provider.config.units
-    }
     
     var name: String {
         configuration.name
@@ -30,13 +27,14 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
         type(of: provider).description
     }
     
-    private let provider: RingProvider
+    private var provider: RingProvider
     private var cancellables = Set<AnyCancellable>()
     
     init(provider: RingProvider, globalConfig: GlobalConfiguration) {
         self.provider = provider
         self.globalConfig = globalConfig
         self.configuration = provider.config
+        self.units = provider.config.units
         defer {
             refresh()
         }
@@ -45,16 +43,20 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     func refresh() {
         provider.calculateProgress(providerConfig: configuration, globalConfig: globalConfig)
             .receive(on: RunLoop.main)
-            .sink { _ in }
-            receiveValue: { [weak self] value in
+            .replaceError(with: Progress.Empty)
+            .sink { [weak self] value in
+                print(">> progress", self?.provider.config, value)
                 self?.progress = value
             }.store(in: &cancellables)
+        self.units = configuration.units
     }
     
     func update(config: ProviderConfiguration) {
         let id = config.ring.rawValue
         provider.configPersistence.update(ring: id, config: config)
+        provider.config = config
         configuration = config
+        print(">> update", config.name)
         refresh()
     }
     

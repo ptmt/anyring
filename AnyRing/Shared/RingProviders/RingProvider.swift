@@ -15,8 +15,7 @@ protocol RingProvider {
          configPersistence: ConfigurationPersistence)
     static var name: String { get }
     static var description: String { get }
-    // var units: String { get }
-    var config: ProviderConfiguration { get }
+    var config: ProviderConfiguration { get set }
     var configPersistence: ConfigurationPersistence { get }
     
     // var requiredHKPermission: HKSampleType? { get }

@@ -23,7 +23,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>AnyRing uses HealthKit data to draw rings</string>
+	<string>AnyRing uses HealthKit data to draw rings and only in read-only mode</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>AnyRing uses HealthKit only in read-only mode</string>
 	<key>UIApplicationSceneManifest</key>

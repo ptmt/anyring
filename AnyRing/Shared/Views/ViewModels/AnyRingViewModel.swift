@@ -8,11 +8,12 @@
 import Foundation
 import Combine
 import SwiftUI
+import HealthKit
 
 class AnyRingViewModel: ObservableObject {
     #if targetEnvironment(simulator)
     // your simulator code
-    let dataSource = DeviceHealthKitDataSource() // MockHealthKitDataSource()
+    let dataSource = MockHealthKitDataSource()
     #else
     // your real device code
     let dataSource = DeviceHealthKitDataSource()
@@ -41,9 +42,9 @@ class AnyRingViewModel: ObservableObject {
         }
         
         // collect all permissions for healthkit
-        let permissions = providers.compactMap { ($0 as? HealthKitProvider)?.healthKitParams.sampleType.hkSampleType }
+        let permissions = providers.compactMap { (($0 as? HealthKitProvider)?.config as? HealthKitProvider.Configuration)?.healthKitParams.sampleType.hkSampleType }
         
-        initTask = dataSource.requestPermissions(permissions: Set(permissions))
+        initTask = handlePermissions(permissions: permissions)
             .receive(on: RunLoop.main)
             .sink { _ in } receiveValue: { [weak self] success in
                 if (!success) {
@@ -59,6 +60,7 @@ class AnyRingViewModel: ObservableObject {
         snapshotTask = Publishers.MergeMany(providers.map { provider in
             provider.calculateProgress(providerConfig: provider.config, globalConfig: globalConfig).tryMap { RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color) }
         })
+        .receive(on: RunLoop.main)
         .collect()
         .sink { _ in
             
@@ -76,6 +78,12 @@ class AnyRingViewModel: ObservableObject {
     
     func updateProvider(for ring: RingID, with: HealthKitProvider.HealthKitConfiguration) {
         // re-create view model for this ring
+        // by persist the config and re-create everything
+        initViewModels()
+    }
+    
+    func handlePermissions(permissions: [HKObjectType]) -> Future<Bool, Error> {
+        return dataSource.requestPermissions(permissions: Set(permissions))
     }
 }
 

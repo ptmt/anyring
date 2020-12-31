@@ -84,8 +84,8 @@ class HealthKitProvider: RingProvider {
         var reversed: Bool = false
         var aggregation: Aggregation = Aggregation.max
     }
+    
     struct Configuration: ProviderConfiguration {
-       
         var provider: RingProvider.Type { HealthKitProvider.self }
         var ring: RingID
         var healthKitParams: HealthKitConfiguration
@@ -117,23 +117,23 @@ class HealthKitProvider: RingProvider {
                 healthKitParams.name = newValue
             }
         }
-            
+        
         var units: String {
             let string: String = healthKitParams.units.hkunit.unitString
             return string.replacingOccurrences(of: "count/min", with: "bpm").uppercased()
         }
-        
     }
+    
     static var configurationType: ProviderConfiguration.Type = Configuration.self
     
     static let name = "HealthKit"
     static let description = """
-    You can choose from pre-selected number of data sources. Some of them available only if you're using Apple Watch or alternatives.
+    HealthKit is local, encrypted storage on your iPhone. Some data sources are available only if you're using Apple Watch or alternatives.
     """
     
     private let dataSource: HealthKitDataSource
     
-    let config: ProviderConfiguration
+    var config: ProviderConfiguration
     let configPersistence: ConfigurationPersistence
     
     required init(dataSource: HealthKitDataSource, config: ProviderConfiguration, configPersistence: ConfigurationPersistence) {
@@ -142,13 +142,18 @@ class HealthKitProvider: RingProvider {
         self.configPersistence = configPersistence
     }
     
+    
     func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error> {
-        return sum(numberOfDays: globalConfig.days).tryMap { (sum: Double) -> Progress in
-            Progress(absolute: sum,
-                     maxAbsolute: providerConfig.maxValue,
-                     minAbsolute: providerConfig.minValue,
-                     reversed: false)
-        }.eraseToAnyPublisher()
+        let healthKitParams = (providerConfig as! Configuration).healthKitParams
+        return aggregate(numberOfDays: globalConfig.days,
+                         sampleType: healthKitParams.sampleType.hkSampleType,
+                         unit: healthKitParams.units.hkunit,
+                         aggregation: healthKitParams.aggregation).tryMap { (sum: Double) -> Progress in
+                            Progress(absolute: sum,
+                                     maxAbsolute: providerConfig.maxValue,
+                                     minAbsolute: providerConfig.minValue,
+                                     reversed: healthKitParams.reversed)
+                         }.eraseToAnyPublisher()
     }
     
     private var cancellable: AnyCancellable?
@@ -157,23 +162,27 @@ class HealthKitProvider: RingProvider {
         RingViewModel(provider: self, globalConfig: globalConfig)
     }
     
-    //private let hrvType = HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!
-    
-    // var requiredHKPermission: HKSampleType? { hrvType }
-    var healthKitParams: HealthKitConfiguration { (config as! Configuration).healthKitParams }
-    
-    private func sum(numberOfDays: Int) -> AnyPublisher<Double, Error> {
+    private func aggregate(numberOfDays: Int, sampleType: HKSampleType, unit: HKUnit, aggregation: Aggregation) -> AnyPublisher<Double, Error> {
         
         return dataSource.fetchSamples(
             withStart: Date().addingTimeInterval(TimeInterval(-Double(numberOfDays) * secondsInDayApprox)),
             to: Date(),
-            ofType: healthKitParams.sampleType.hkSampleType)
+            ofType: sampleType)
             .tryMap { results -> Double in
-                
-                let sumOfAllActivity = results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
-                    sum + (sample as! HKQuantitySample).quantity.doubleValue(for: self.healthKitParams.units.hkunit)
+                switch(aggregation) {
+                case .sum: return results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
+                    sum + (sample as! HKQuantitySample).quantity.doubleValue(for: unit)
                 }
-                return sumOfAllActivity
+                case .avg:  return (results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
+                    sum + (sample as! HKQuantitySample).quantity.doubleValue(for: unit)
+                }) / Double(results.count)
+                case .min:  return (results.min { (sample1, sample2) -> Bool in
+                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: unit)
+                } as? HKQuantitySample)?.quantity.doubleValue(for: unit) ?? 0
+                case .max:  return (results.max { (sample1, sample2) -> Bool in
+                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: unit)
+                } as? HKQuantitySample)?.quantity.doubleValue(for: unit) ?? 0
+                }
             }.eraseToAnyPublisher()
     }
 }

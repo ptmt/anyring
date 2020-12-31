@@ -43,6 +43,7 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     
     func getCurrentTimelineEntry(for complication: CLKComplication, withHandler handler: @escaping (CLKComplicationTimelineEntry?) -> Void) {
         // Call the handler with the current timeline entry
+        precondition(Thread.isMainThread)
         viewModel.getSnapshots { (currentSnapshot) in
             let entry = self.createTimelineEntry(forComplication: complication, date: Date(), snapshot: currentSnapshot)
             handler(entry)

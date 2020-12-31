@@ -50,9 +50,18 @@ struct ConfigBoolValue: View {
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
     @EnvironmentObject var vm: AnyRingViewModel
+    @State private var permissionsTask: Cancellable? = nil
     var providerSelection: some View {
-        SelectProviderScreen(selected: ring.configuration.name) { config in
-            self.vm.updateProvider(for: ring.configuration.ring, with: config)
+        SelectProviderScreen(selected: ring.configuration.name) { healthKitParams in
+            var newConfig = ring.configuration as! HealthKitProvider.Configuration
+            newConfig.healthKitParams = healthKitParams
+            ring.update(config: newConfig)
+            permissionsTask = self.vm.handlePermissions(permissions: [healthKitParams.sampleType.hkSampleType])
+                .receive(on: RunLoop.main)
+                .replaceError(with: false)
+                .sink { res in
+                    
+                }
         }
     }
     var body: some View {
@@ -79,15 +88,30 @@ struct RingConfigurationView: View {
                     .font(.footnote)
                     .foregroundColor(Color.secondary)
                 
-                ConfigTextValue(label: "Min value", state: ring.configuration.minValue) { changed in
+                ConfigTextValue(label: "Empty Ring", state: ring.configuration.minValue) { changed in
                     var newConfig = ring.configuration
                     newConfig.minValue = changed
                     ring.update(config: newConfig)
                 }
-                ConfigTextValue(label: "Max value", state:  ring.configuration.maxValue) { changed in
+                ConfigTextValue(label: "Full Ring", state:  ring.configuration.maxValue) { changed in
                     var newConfig = ring.configuration
                     newConfig.maxValue = changed
                     ring.update(config: newConfig)
+                }
+                
+                if let config = ring.configuration as? HealthKitProvider.Configuration {
+                    ConfigBoolValue(label: "Reversed", isOn: config.healthKitParams.reversed) { changed in
+                        var newConfig = config
+                        newConfig.healthKitParams.reversed = changed
+                        ring.update(config: newConfig)
+                    }
+                    
+                    
+                    ConfigAggregation(tag: config.healthKitParams.aggregation) { changed in
+                        var newConfig = config
+                        newConfig.healthKitParams.aggregation = changed
+                        ring.update(config: newConfig)
+                    }
                 }
             }
             
