@@ -88,19 +88,20 @@ struct RingConfigurationView: View {
                     .font(.footnote)
                     .foregroundColor(Color.secondary)
                 
-                ConfigTextValue(label: "Empty Ring", state: ring.configuration.minValue) { changed in
-                    var newConfig = ring.configuration
-                    newConfig.minValue = changed
-                    ring.update(config: newConfig)
-                }
-                ConfigTextValue(label: "Full Ring", state:  ring.configuration.maxValue) { changed in
-                    var newConfig = ring.configuration
-                    newConfig.maxValue = changed
-                    ring.update(config: newConfig)
-                }
-                
                 if let config = ring.configuration as? HealthKitProvider.Configuration {
-                    ConfigBoolValue(label: "Reversed", isOn: config.healthKitParams.reversed) { changed in
+                    
+                    ConfigTextValue(label: config.healthKitParams.reversed ? "Goal" : "Empty Ring", state: ring.configuration.minValue) { changed in
+                        var newConfig = ring.configuration
+                        newConfig.minValue = changed
+                        ring.update(config: newConfig)
+                    }
+                    ConfigTextValue(label: config.healthKitParams.reversed ? "Empty Ring" : "Goal", state:  ring.configuration.maxValue) { changed in
+                        var newConfig = ring.configuration
+                        newConfig.maxValue = changed
+                        ring.update(config: newConfig)
+                    }
+                    
+                    ConfigBoolValue(label: "Reversed goal", isOn: config.healthKitParams.reversed) { changed in
                         var newConfig = config
                         newConfig.healthKitParams.reversed = changed
                         ring.update(config: newConfig)

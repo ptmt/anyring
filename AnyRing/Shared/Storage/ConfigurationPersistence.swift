@@ -9,13 +9,11 @@ import Foundation
 
 protocol ConfigurationPersistence {
     func persist(config: HardcodedConfiguration)
-    func update(ring: Int, config: ProviderConfiguration)
+    func update(config: ProviderConfiguration)
     func restore() -> HardcodedConfiguration?
 }
 
 
-// this is hardcoded implemention to save time after I realized of some limitation of Swift
-//
 struct HardcodedConfiguration: Codable {
     var configs: [ProviderConfiguration]
     var global: GlobalConfiguration
@@ -29,7 +27,9 @@ struct HardcodedConfiguration: Codable {
     
     init(_ list: [ProviderConfiguration], _ global: GlobalConfiguration) {
         precondition(list.count == 3)
-        configs = list
+        configs = list.sorted(by: { (a, b) -> Bool in
+            a.ring.rawValue < b.ring.rawValue
+        })
         self.global = global
     }
     

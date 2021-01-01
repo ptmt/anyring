@@ -13,15 +13,15 @@ struct ContentView: View {
     @ObservedObject var viewModel = AnyRingViewModel()
     
     var body: some View {
-        if (viewModel.dataSource.isAvailable()) {
+        if (viewModel.dataSource.isAvailable() && !viewModel.showingAlert) {
             GeometryReader { geometry in
-                let size = min(geometry.size.width, geometry.size.height) - 20
+                let size = min(geometry.size.width, geometry.size.height) - 10
                 if let rings = viewModel.rings {
                     ScrollView {
                         TripleRingView(size: size,
                                        ring1: rings.first.snapshot(),
                                        ring2: rings.second.snapshot(),
-                                       ring3: rings.third.snapshot()).padding(10).ignoresSafeArea()
+                                       ring3: rings.third.snapshot()).padding(10)
                         VStack(alignment: .leading, spacing: 10) {
                             RingLabel(name: rings.first.name,
                                       value: String(describing: rings.first.progress),
@@ -36,15 +36,18 @@ struct ContentView: View {
                                       units: rings.third.units,
                                       color: rings.third.configuration.appearance.mainColor.color)
                             
-                            Text("3-day period").font(.footnote).foregroundColor(.secondary)
-                        }
-                    }.onReceive(NotificationCenter.default.publisher(for: WKExtension.applicationWillEnterForegroundNotification)) { _ in
-                        viewModel.rings?.forEach { $0.refresh() }
+                            Text("\(viewModel.globalConfig.days)-day period")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }.padding(.horizontal, 20)
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: WKExtension.applicationWillEnterForegroundNotification)) { _ in
+                        viewModel.updateProviders()
                         refreshComplication()
                     }.onAppear {
+                        viewModel.updateProviders()
                         refreshComplication()
                     }
-                    
                 } else {
                     ProgressView()
                 }

@@ -11,7 +11,7 @@ class MockConfigurationPersistence: ConfigurationPersistence {
     func persist(config: HardcodedConfiguration) {
         
     }
-    func update(ring: Int, config: ProviderConfiguration) {
+    func update(config: ProviderConfiguration) {
         
     }
     func restore() -> HardcodedConfiguration? {

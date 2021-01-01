@@ -70,8 +70,6 @@
 		247861FE259A5EBB00E4F1C2 /* UserDefaultsConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 247861512595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift */; };
 		24786206259A5EBE00E4F1C2 /* MockConfigurationPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478615C2595F92800E4F1C2 /* MockConfigurationPersistence.swift */; };
 		2478620E259A5EC300E4F1C2 /* HealthKitProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */; };
-		24786216259A5EC500E4F1C2 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
-		2478621E259A5EC700E4F1C2 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
 		24786226259A5ECF00E4F1C2 /* RingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */; };
 		2478626F259B479700E4F1C2 /* RingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55732590FA8A002CD4A6 /* RingLabel.swift */; };
 		24786297259C885000E4F1C2 /* RingAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24786296259C885000E4F1C2 /* RingAppearance.swift */; };
@@ -80,8 +78,6 @@
 		2478629A259C885000E4F1C2 /* RingAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24786296259C885000E4F1C2 /* RingAppearance.swift */; };
 		24AA546C258D25B4002CD4A6 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
 		24AA546D258D25B4002CD4A6 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
-		24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
-		24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
 		24AA5485258D2812002CD4A6 /* DeviceHealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */; };
 		24AA5486258D2812002CD4A6 /* DeviceHealthKitDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */; };
 		24AA5490258D29EE002CD4A6 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24AA548F258D29EE002CD4A6 /* HealthKit.framework */; };
@@ -103,8 +99,6 @@
 		24AA54F9258FA576002CD4A6 /* DemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54F7258FA576002CD4A6 /* DemoProvider.swift */; };
 		24AA550125909863002CD4A6 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA550025909863002CD4A6 /* Progress.swift */; };
 		24AA550225909863002CD4A6 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA550025909863002CD4A6 /* Progress.swift */; };
-		24AA550A2590AC82002CD4A6 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
-		24AA550B2590AC82002CD4A6 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
 		24AA55132590D74A002CD4A6 /* HealthKitProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */; };
 		24AA55142590D74A002CD4A6 /* HealthKitProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */; };
 		24AA55472590F87A002CD4A6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 24AA55462590F87A002CD4A6 /* WidgetKit.framework */; };
@@ -133,8 +127,6 @@
 		24DEB78B25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
 		24DEB78C25920EF000647442 /* AnyRingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DEB78925920EF000647442 /* AnyRingViewModel.swift */; };
 		24DEB79425920F2900647442 /* HealthKitProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */; };
-		24DEB79C25920F2B00647442 /* HRVProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55092590AC82002CD4A6 /* HRVProvider.swift */; };
-		24DEB7A425920F2E00647442 /* RestHRProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */; };
 		24DEB7AC25920F3000647442 /* RingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA546B258D25B4002CD4A6 /* RingProvider.swift */; };
 		24DEB7B425920F3400647442 /* DemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54F7258FA576002CD4A6 /* DemoProvider.swift */; };
 		24DEB7BC25920F3800647442 /* Progress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA550025909863002CD4A6 /* Progress.swift */; };
@@ -259,7 +251,6 @@
 		2478625F259B472000E4F1C2 /* AnyRingWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnyRingWatch.entitlements; sourceTree = "<group>"; };
 		24786296259C885000E4F1C2 /* RingAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingAppearance.swift; sourceTree = "<group>"; };
 		24AA546B258D25B4002CD4A6 /* RingProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingProvider.swift; sourceTree = "<group>"; };
-		24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestHRProvider.swift; sourceTree = "<group>"; };
 		24AA5484258D2812002CD4A6 /* DeviceHealthKitDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHealthKitDataSource.swift; sourceTree = "<group>"; };
 		24AA548D258D29EE002CD4A6 /* AnyRing.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnyRing.entitlements; sourceTree = "<group>"; };
 		24AA548F258D29EE002CD4A6 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.3.sdk/System/Library/Frameworks/HealthKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -272,7 +263,6 @@
 		24AA54EE258F6AFF002CD4A6 /* RingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingViewModel.swift; sourceTree = "<group>"; };
 		24AA54F7258FA576002CD4A6 /* DemoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoProvider.swift; sourceTree = "<group>"; };
 		24AA550025909863002CD4A6 /* Progress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Progress.swift; sourceTree = "<group>"; };
-		24AA55092590AC82002CD4A6 /* HRVProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HRVProvider.swift; sourceTree = "<group>"; };
 		24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitProvider.swift; sourceTree = "<group>"; };
 		24AA55452590F87A002CD4A6 /* RingWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RingWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		24AA55462590F87A002CD4A6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -508,8 +498,6 @@
 			isa = PBXGroup;
 			children = (
 				24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */,
-				24AA55092590AC82002CD4A6 /* HRVProvider.swift */,
-				24AA547A258D25DF002CD4A6 /* RestHRProvider.swift */,
 				241C7748259DEA3200968D25 /* HealthKitDieatary.swift */,
 			);
 			path = HealthKit;
@@ -829,7 +817,6 @@
 				241C771C259DDAA900968D25 /* CodableHealthKitStructs.swift in Sources */,
 				24D27A1C2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA54BF258E16DB002CD4A6 /* RIng.swift in Sources */,
-				24AA547B258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
 				24AA54C8258E56E6002CD4A6 /* RingDashboard.swift in Sources */,
 				24AA55132590D74A002CD4A6 /* HealthKitProvider.swift in Sources */,
 				241C770F259DDA7800968D25 /* CodableColor.swift in Sources */,
@@ -841,7 +828,6 @@
 				24AA5485258D2812002CD4A6 /* DeviceHealthKitDataSource.swift in Sources */,
 				2478619F2598906F00E4F1C2 /* HalfCircle.swift in Sources */,
 				247861AB259A5B8300E4F1C2 /* TemplateView.swift in Sources */,
-				24AA550A2590AC82002CD4A6 /* HRVProvider.swift in Sources */,
 				246396D8258D21E300866E74 /* AnyRingApp.swift in Sources */,
 				247861522595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift in Sources */,
 				24786297259C885000E4F1C2 /* RingAppearance.swift in Sources */,
@@ -869,7 +855,6 @@
 				241C771D259DDAA900968D25 /* CodableHealthKitStructs.swift in Sources */,
 				24D27A1D2594D8D400F9F0AB /* ConfigurationPersistence.swift in Sources */,
 				24AA54C0258E16DB002CD4A6 /* RIng.swift in Sources */,
-				24AA547C258D25DF002CD4A6 /* RestHRProvider.swift in Sources */,
 				24AA54C9258E56E6002CD4A6 /* RingDashboard.swift in Sources */,
 				24AA55142590D74A002CD4A6 /* HealthKitProvider.swift in Sources */,
 				241C7710259DDA7800968D25 /* CodableColor.swift in Sources */,
@@ -881,7 +866,6 @@
 				24AA5486258D2812002CD4A6 /* DeviceHealthKitDataSource.swift in Sources */,
 				247861A02598906F00E4F1C2 /* HalfCircle.swift in Sources */,
 				247861AC259A5B8300E4F1C2 /* TemplateView.swift in Sources */,
-				24AA550B2590AC82002CD4A6 /* HRVProvider.swift in Sources */,
 				246396D9258D21E300866E74 /* AnyRingApp.swift in Sources */,
 				247861532595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift in Sources */,
 				24786298259C885000E4F1C2 /* RingAppearance.swift in Sources */,
@@ -909,8 +893,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				24639706258D24CD00866E74 /* AnyRingApp.swift in Sources */,
-				24786216259A5EC500E4F1C2 /* HRVProvider.swift in Sources */,
-				2478621E259A5EC700E4F1C2 /* RestHRProvider.swift in Sources */,
 				247861F6259A5EB800E4F1C2 /* ConfigurationPersistence.swift in Sources */,
 				24C38D2A2591054D001F1412 /* TripleRing.swift in Sources */,
 				247861B6259A5E7D00E4F1C2 /* AnyRingViewModel.swift in Sources */,
@@ -944,9 +926,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24AA55762590FA8A002CD4A6 /* RingLabel.swift in Sources */,
-				24DEB79C25920F2B00647442 /* HRVProvider.swift in Sources */,
 				24DEB7C425920F4100647442 /* RingViewModel.swift in Sources */,
-				24DEB7A425920F2E00647442 /* RestHRProvider.swift in Sources */,
 				24AA557E2590FAA5002CD4A6 /* RIng.swift in Sources */,
 				247861542595F90900E4F1C2 /* UserDefaultsConfigurationPersistence.swift in Sources */,
 				2478617F25974D7800E4F1C2 /* Glow.swift in Sources */,
@@ -1122,7 +1102,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRing.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
@@ -1147,7 +1127,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRing.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iOS/Info.plist;
@@ -1308,7 +1288,7 @@
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_ENTITLEMENTS = "AnyRingWatch Extension/AnyRingWatch Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"AnyRingWatch Extension/Preview Content\"";
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				ENABLE_PREVIEWS = YES;
@@ -1334,7 +1314,7 @@
 				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
 				CODE_SIGN_ENTITLEMENTS = "AnyRingWatch Extension/AnyRingWatch Extension.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"AnyRingWatch Extension/Preview Content\"";
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				ENABLE_PREVIEWS = YES;
@@ -1364,7 +1344,7 @@
 				CODE_SIGN_ENTITLEMENTS = AnyRingWatch/AnyRingWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				IBSC_MODULE = AnyRingWatch_Extension;
 				INFOPLIST_FILE = AnyRingWatch/Info.plist;
@@ -1388,7 +1368,7 @@
 				CODE_SIGN_ENTITLEMENTS = AnyRingWatch/AnyRingWatch.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				IBSC_MODULE = AnyRingWatch_Extension;
 				INFOPLIST_FILE = AnyRingWatch/Info.plist;
@@ -1411,7 +1391,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
@@ -1436,7 +1416,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;

@@ -46,6 +46,7 @@ class AnyRingViewModel: ObservableObject {
         
         initTask = handlePermissions(permissions: permissions)
             .receive(on: RunLoop.main)
+            .replaceError(with: false)
             .sink { _ in } receiveValue: { [weak self] success in
                 if (!success) {
                     self?.showingAlert = true
@@ -76,8 +77,8 @@ class AnyRingViewModel: ObservableObject {
         rings?.forEach { $0.refresh() }
     }
     
-    func updateProvider(for ring: RingID, with: HealthKitProvider.HealthKitConfiguration) {
-        // re-create view model for this ring
+    func updateProviders() {
+        // re-create view models
         // by persist the config and re-create everything
         initViewModels()
     }

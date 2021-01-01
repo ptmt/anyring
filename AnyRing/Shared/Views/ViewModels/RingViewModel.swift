@@ -45,23 +45,19 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
             .receive(on: RunLoop.main)
             .replaceError(with: Progress.Empty)
             .sink { [weak self] value in
-                print(">> progress", self?.provider.config, value)
                 self?.progress = value
             }.store(in: &cancellables)
         self.units = configuration.units
     }
     
     func update(config: ProviderConfiguration) {
-        let id = config.ring.rawValue
-        provider.configPersistence.update(ring: id, config: config)
+        provider.configPersistence.update(config: config)
         provider.config = config
         configuration = config
-        print(">> update", config.name)
         refresh()
     }
     
     func updateFromSnapshot(snapshot: RingSnapshot) {
-        let id = configuration.ring.rawValue
         var newConfig = configuration
         var newAppearance = configuration.appearance
         newAppearance.gradient = snapshot.gradient
@@ -72,7 +68,7 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
         }
         newAppearance.outerGlow = snapshot.outerGlow
         newConfig.appearance = newAppearance
-        provider.configPersistence.update(ring: id, config: newConfig)
+        provider.configPersistence.update(config: newConfig)
         configuration = newConfig
         refresh()
     }

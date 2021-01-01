@@ -8,10 +8,12 @@
 import SwiftUI
 import Combine
 import WidgetKit
+import WatchConnectivity
 
 struct ContentView: View {
     
     @ObservedObject var viewModel = AnyRingViewModel()
+    let watchSession = WatchSession()
     
     var body: some View {
         NavigationView {
@@ -20,14 +22,16 @@ struct ContentView: View {
                     MainScreen(rings: rings, days: viewModel.globalConfig.days, onPeriodChange: { period in
                         viewModel.updatePeriod(days: period)
                     })
-                        .environmentObject(viewModel)
-                        .navigationTitle(Text("AnyRing"))
-                        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-                            viewModel.rings?.forEach { $0.refresh() }
-                            refreshWidget()
-                        }.onAppear {
-                            refreshWidget()
-                        }
+                    .environmentObject(viewModel)
+                    .navigationTitle(Text("AnyRing"))
+                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                        viewModel.rings?.forEach { $0.refresh() }
+                        refreshWidget()
+                        watchSession.refreshComplication()
+                    }.onAppear {
+                        refreshWidget()
+                        watchSession.refreshComplication()
+                    }
                 } else {
                     ProgressView().alert(isPresented: $viewModel.showingAlert) {
                         Alert(title: Text("Error"), message: Text("Permission to HealthKit is denied"), dismissButton: .default(Text("OK")))
@@ -38,7 +42,7 @@ struct ContentView: View {
                 Text("Apple HealthKit data appears to be not available")
                     .padding()
             }
-        }
+        }.navigationViewStyle(DoubleColumnNavigationViewStyle())
     }
 }
 
@@ -49,6 +53,37 @@ func refreshWidget() {
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
+}
+
+
+class WatchSession: NSObject, WCSessionDelegate {
+    let wcSession = WCSession.default
+    override init() {
+        super.init()
+        
+        if WCSession.isSupported() && wcSession.isWatchAppInstalled {
+            wcSession.delegate = self
+            wcSession.activate()
+        }
+        
+    }
+    func refreshComplication() {
+        if (wcSession.activationState == .activated) {
+            wcSession.transferCurrentComplicationUserInfo([:])
+        }
+    }
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        print("activated", activationState, error)
+    }
+    
+    func sessionDidBecomeInactive(_ session: WCSession) {
+        
+    }
+    
+    func sessionDidDeactivate(_ session: WCSession) {
+        print("activated")
+    }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {

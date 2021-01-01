@@ -8,12 +8,7 @@
 import Foundation
 
 class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
-    static let key = "Config.v2"
-//    static let defaultConfig = HardcodedConfiguration([
-//        ActivityProvider.Configuration(minValue: 0, maxValue: 200, appearance: RingAppearance(mainColor: CodableColor(.green))),
-//        RestHRProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.pink))),
-//        HRVProvider.Configuration(minValue: 40, maxValue: 70, appearance: RingAppearance(mainColor: CodableColor(.purple)))
-//    ], GlobalConfiguration(days: 3))
+    static let key = "Config.v3"
     static let defaultConfig = HardcodedConfiguration([
         HealthKitProvider.Configuration(ring: .first, healthKitParams: activityMinutesConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
         HealthKitProvider.Configuration(ring: .second, healthKitParams: hrvConfiguration, appearance: RingAppearance(mainColor: CodableColor(.pink))),
@@ -30,11 +25,12 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
             userDefaults.setValue(json, forKey: UserDefaultsConfigurationPersistence.key)
         }
     }
-    func update(ring: Int, config: ProviderConfiguration) {
-        precondition(ring <= 3)
+    func update(config: ProviderConfiguration) {
         var currentConfig = lastReadValue ?? UserDefaultsConfigurationPersistence.defaultConfig
-        currentConfig.configs[ring] = config
-        persist(config: currentConfig)
+        if let index = (currentConfig.configs.firstIndex { $0.ring == config.ring }) {
+            currentConfig.configs[index] = config
+            persist(config: currentConfig)
+        }
     }
     func updateGlobal(_ globalConfig: GlobalConfiguration) {
         var currentConfig = lastReadValue ?? UserDefaultsConfigurationPersistence.defaultConfig
@@ -47,6 +43,7 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
             lastReadValue = decoded
             return decoded
         } else {
+            print("Restoration failed")
             return nil
         }
     }

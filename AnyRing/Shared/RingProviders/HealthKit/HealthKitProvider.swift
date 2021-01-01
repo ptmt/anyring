@@ -33,8 +33,8 @@ let hrConfiguration = HealthKitProvider.HealthKitConfiguration(
     description: "A quantity sample type that measures the user’s heart rate.",
     units: HKUnitCodable.countperminute,
     sampleType: HKObjectTypeCodable.heartRate,
-    minValue: 0,
-    maxValue: 100,
+    minValue: 30,
+    maxValue: 200,
     reversed: true,
     aggregation: .min)
 
@@ -126,9 +126,9 @@ class HealthKitProvider: RingProvider {
     
     static var configurationType: ProviderConfiguration.Type = Configuration.self
     
-    static let name = "HealthKit"
+    static let name = "Apple Health"
     static let description = """
-    HealthKit is local, encrypted storage on your iPhone. Some data sources are available only if you're using Apple Watch or alternatives.
+    Some data sources are available only if you're using Apple Watch.
     """
     
     private let dataSource: HealthKitDataSource
