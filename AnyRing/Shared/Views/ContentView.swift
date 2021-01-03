@@ -21,6 +21,8 @@ struct ContentView: View {
                 if let rings = viewModel.rings {
                     MainScreen(rings: rings, days: viewModel.globalConfig.days, onPeriodChange: { period in
                         viewModel.updatePeriod(days: period)
+                        refreshWidget()
+                        watchSession.refreshComplication()
                     })
                     .environmentObject(viewModel)
                     .navigationTitle(Text("AnyRing"))

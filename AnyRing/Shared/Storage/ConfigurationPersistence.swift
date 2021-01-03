@@ -42,7 +42,9 @@ struct HardcodedConfiguration: Codable {
         let third = try container.decode(HealthKitProvider.Configuration.self, forKey: .third)
         let global = try container.decode(GlobalConfiguration.self, forKey: .global)
         
-        self.configs = [first, second, third]
+        self.configs = [first, second, third].sorted(by: { (a, b) -> Bool in
+            a.ring.rawValue < b.ring.rawValue
+        })
         self.global = global
     }
     

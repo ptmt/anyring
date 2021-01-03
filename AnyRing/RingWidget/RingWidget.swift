@@ -17,6 +17,7 @@ struct Provider: TimelineProvider {
     }
     
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+        viewModel.updateProviders()
         viewModel.getSnapshots { snapshots in
             let entry = SimpleEntry(date: Date(),
                                     size: context.displaySize,
@@ -27,8 +28,10 @@ struct Provider: TimelineProvider {
     }
     
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        let refreshDate = Calendar.current.date(byAdding: .minute, value: 20, to: Date())!
+        let refreshDate = Calendar.current.date(byAdding: .minute, value: 10, to: Date())!
         
+        // make sure we invalidate the providers
+        viewModel.updateProviders()
         viewModel.getSnapshots { snapshots in
             let entry = SimpleEntry(date: Date(),
                                     size: context.displaySize,
