@@ -30,5 +30,5 @@ struct Progress: CustomStringConvertible {
         return "\(Int(absolute))/\(reversed ? Int(minAbsolute) : Int(maxAbsolute))"
     }
     
-    static let Empty = Progress(absolute: 1, maxAbsolute: 100, minAbsolute: 0)
+    static let Empty = Progress(absolute: 0, maxAbsolute: 100, minAbsolute: 0)
 }

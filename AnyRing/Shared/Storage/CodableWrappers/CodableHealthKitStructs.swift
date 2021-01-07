@@ -17,6 +17,7 @@ enum HKUnitCodable: String, Codable {
     case grams
     case count
     case meter
+    case kilometer
     case kilocalorie
     
     var hkunit: HKUnit {
@@ -29,6 +30,7 @@ enum HKUnitCodable: String, Codable {
         case .grams: return HKUnit.gram()
         case .count: return HKUnit.count()
         case .meter: return HKUnit.meter()
+        case .kilometer: return HKUnit.meterUnit(with: .kilo)
         case .kilocalorie: return HKUnit.kilocalorie()
         }
     }

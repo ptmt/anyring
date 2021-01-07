@@ -19,12 +19,12 @@ struct AnyRingApp: App {
     }
 }
 
-class ExtensionDelegate: NSObject, WKExtensionDelegate {
-    var onReload: (() -> Void)?
-    override init() {
-    }
-    
-    func handleUserActivity(_ userInfo: [AnyHashable : Any]?) {
-        print(">> handleUserActivity", userInfo)
-    }
-}
+//class ExtensionDelegate: NSObject, WKExtensionDelegate {
+//    var onReload: (() -> Void)?
+//    override init() {
+//    }
+//    
+//    func handleUserActivity(_ userInfo: [AnyHashable : Any]?) {
+//        print(">> handleUserActivity", userInfo)
+//    }
+//}

@@ -10,21 +10,28 @@ import SwiftUI
 
 struct OuterGlow: ViewModifier {
     let color: Color
-    let simplified: Bool
     
-    init(_ color: Color, simplified: Bool = false) {
+    init(_ color: Color) {
         self.color = color
-        self.simplified = simplified
     }
     
     func body(content: Content) -> some View {
-        if (simplified) {
-            return AnyView(content.shadow(color: color.opacity(0.5), radius: 4))
-        } else {
-            return AnyView(content.shadow(color: color.opacity(0.5), radius: 12)
-                            .shadow(color: color.opacity(0.2), radius: 12)
-                            .shadow(color: color.opacity(0.1), radius: 12))
-        }
+        content
+            .shadow(color: color.opacity(0.5), radius: 12)
+            .shadow(color: color.opacity(0.2), radius: 12)
+            .shadow(color: color.opacity(0.1), radius: 12)
+    }
+}
+
+struct OuterGlowSimplified: ViewModifier {
+    let color: Color
+    
+    init(_ color: Color) {
+        self.color = color
+    }
+    
+    func body(content: Content) -> some View {
+        content.shadow(color: color.opacity(0.5), radius: 4)
     }
 }
 
@@ -52,7 +59,7 @@ struct InnerGlow: ViewModifier {
         return content.overlay(
             ZStack {
                 shape()
-                    .trim(from: 0, to: progress)
+                    .trim(from: 0, to: progress + 0.01)
                     .stroke(Color.clear,
                             lineWidth: lineWidth / 7)
                     .shadow(color: glowColor.opacity(0.2),
@@ -64,7 +71,7 @@ struct InnerGlow: ViewModifier {
                     .frame(width: size, height: size, alignment: .center)
                 if (!halfCircle) {
                     shape()
-                        .trim(from: 0, to: progress)
+                        .trim(from: 0, to: progress + 0.01)
                         .stroke(Color.clear,
                                 lineWidth: lineWidth / 7)
                         .shadow(color: glowColor.opacity(0.2),

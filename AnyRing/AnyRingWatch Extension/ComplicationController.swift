@@ -47,9 +47,13 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
         // make sure we invalide providers since the config can
         // be changed
         viewModel.updateProviders()
-        viewModel.getSnapshots { (currentSnapshot) in
-            let entry = self.createTimelineEntry(forComplication: complication, date: Date(), snapshot: currentSnapshot)
-            handler(entry)
+        viewModel.getSnapshots { (currentSnapshot, error) in
+            if let snapshot = currentSnapshot {
+                let entry = self.createTimelineEntry(forComplication: complication, date: Date(), snapshot: snapshot)
+                handler(entry)
+            } else {
+                handler(nil)
+            }
         }
     }
     
@@ -99,7 +103,7 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     }
     
     func createCircularSmallTemplate(forDate date: Date, snapshot: RingWrapper<RingSnapshot>) -> CLKComplicationTemplate {
-       
+        
         // Create the template using the providers.
         let template = CLKComplicationTemplateGraphicCircularView(ComplicationView(snapshot: snapshot))
         
@@ -123,9 +127,8 @@ struct ComplicationView: View {
                            ring1: snapshot.first,
                            ring2: snapshot.second,
                            ring3: snapshot.third)
-                
+            
         }
-        
     }
 }
 

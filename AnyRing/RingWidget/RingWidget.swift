@@ -18,10 +18,10 @@ struct Provider: TimelineProvider {
     
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
         viewModel.updateProviders()
-        viewModel.getSnapshots { snapshots in
+        viewModel.getSnapshots { snapshots, _ in
             let entry = SimpleEntry(date: Date(),
                                     size: context.displaySize,
-                                    rings: snapshots)
+                                    rings: snapshots ?? staticSnapshot)
             completion(entry)
         }
         
@@ -32,10 +32,10 @@ struct Provider: TimelineProvider {
         
         // make sure we invalidate the providers
         viewModel.updateProviders()
-        viewModel.getSnapshots { snapshots in
+        viewModel.getSnapshots { snapshots, _ in
             let entry = SimpleEntry(date: Date(),
                                     size: context.displaySize,
-                                    rings: snapshots)
+                                    rings: snapshots ?? staticSnapshot)
             
             let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
             completion(timeline)

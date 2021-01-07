@@ -9,8 +9,40 @@ import SwiftUI
 import WatchConnectivity
 import ClockKit
 
+struct WatchDashboard: View {
+    @ObservedObject var ring1: RingViewModel
+    @ObservedObject var ring2: RingViewModel
+    @ObservedObject var ring3: RingViewModel
+    var size: CGFloat
+    var days: Int
+    var body: some View {
+        ScrollView {
+            TripleRingView(size: size,
+                           ring1: ring1.snapshot(),
+                           ring2: ring2.snapshot(),
+                           ring3: ring3.snapshot()).padding(10)
+            VStack(alignment: .leading, spacing: 10) {
+                RingLabel(name: ring1.name,
+                          value: String(describing: ring1.progress),
+                          units: ring1.units,
+                          color: ring1.configuration.appearance.mainColor.color)
+                RingLabel(name: ring2.name,
+                          value: String(describing: ring2.progress),
+                          units: ring2.units,
+                          color: ring2.configuration.appearance.mainColor.color)
+                RingLabel(name: ring3.name,
+                          value: String(describing: ring3.progress),
+                          units: ring3.units,
+                          color: ring3.configuration.appearance.mainColor.color)
+                
+                Text("\(days)-day period")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }.padding(.horizontal, 20)
+        }
+    }
+}
 struct ContentView: View {
-    @WKExtensionDelegateAdaptor(ExtensionDelegate.self) var delegate
     @ObservedObject var viewModel = AnyRingViewModel()
     let session = WCSessionSender()
     
@@ -19,39 +51,21 @@ struct ContentView: View {
             GeometryReader { geometry in
                 let size = min(geometry.size.width, geometry.size.height) - 10
                 if let rings = viewModel.rings {
-                    ScrollView {
-                        TripleRingView(size: size,
-                                       ring1: rings.first.snapshot(),
-                                       ring2: rings.second.snapshot(),
-                                       ring3: rings.third.snapshot()).padding(10)
-                        VStack(alignment: .leading, spacing: 10) {
-                            RingLabel(name: rings.first.name,
-                                      value: String(describing: rings.first.progress),
-                                      units: rings.first.units,
-                                      color: rings.first.configuration.appearance.mainColor.color)
-                            RingLabel(name: rings.second.name,
-                                      value: String(describing: rings.second.progress),
-                                      units: rings.second.units,
-                                      color: rings.second.configuration.appearance.mainColor.color)
-                            RingLabel(name: rings.third.name,
-                                      value: String(describing: rings.third.progress),
-                                      units: rings.third.units,
-                                      color: rings.third.configuration.appearance.mainColor.color)
-                            
-                            Text("Data for \(viewModel.globalConfig.days)-day period")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                        }.padding(.horizontal, 20)
-                    }
+                    WatchDashboard(ring1: rings.first,
+                                   ring2: rings.second,
+                                   ring3: rings.third,
+                                   size: size,
+                                   days: viewModel.globalConfig.days)
                     .onReceive(NotificationCenter.default.publisher(for: WKExtension.applicationWillEnterForegroundNotification)) { _ in
-                       refresh()
+                        session.requestLatestConfig()
+                        refreshComplication()
+                       
                     }.onAppear {
                         session.onConfigUpdated = {
                             viewModel.updateConfigInABatch(config: $0)
-                            refresh()
+                            viewModel.updateProviders()
+                            refreshComplication()
                         }
-                        session.requestLatestConfig()
-                        refresh()
                     }
                 } else {
                     ProgressView()
@@ -62,15 +76,6 @@ struct ContentView: View {
             Text("Apple HealthKit data appears to be not available")
                 .padding()
         }
-    }
-    
-    func refresh() {
-        delegate.onReload = {
-            // refresh view model
-            viewModel.updateProviders()
-        }
-        viewModel.updateProviders()
-        refreshComplication()
     }
 }
 

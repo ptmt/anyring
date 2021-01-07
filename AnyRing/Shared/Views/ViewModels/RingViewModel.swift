@@ -42,11 +42,20 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     
     func refresh() {
         provider.calculateProgress(providerConfig: configuration, globalConfig: globalConfig)
-            .receive(on: RunLoop.main)
-            .replaceError(with: Progress.Empty)
-            .sink { [weak self] value in
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                switch completion {
+                case .failure(let error):
+                  print("calculateProgress finished with error", error)
+                  self?.error = error
+                case .finished:
+                    break;
+                }
+              },
+              receiveValue: { [weak self] value in
                 self?.progress = value
-            }.store(in: &cancellables)
+              })
+            .store(in: &cancellables)
         self.units = configuration.units
     }
     

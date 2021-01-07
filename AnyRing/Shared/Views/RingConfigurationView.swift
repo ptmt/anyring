@@ -57,8 +57,8 @@ struct RingConfigurationView: View {
             newConfig.healthKitParams = healthKitParams
             ring.update(config: newConfig)
             permissionsTask = self.vm.handlePermissions(permissions: [healthKitParams.sampleType.hkSampleType])
-                .receive(on: RunLoop.main)
                 .replaceError(with: false)
+                .receive(on: DispatchQueue.main)
                 .sink { res in
                     
                 }

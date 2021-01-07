@@ -39,6 +39,20 @@ class MockHealthKitDataSource: HealthKitDataSource {
                 return
             }
             
+            if (sampleType == HKQuantityType.quantityType(forIdentifier: .appleStandTime)!) {
+                promise(.success([
+                    HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 110), start: Date(), end: Date()),
+                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 1), start: Date(), end: Date()),
+                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 50), start: Date(), end: Date())
+                ]))
+                return
+            }
+            
+            if (sampleType == HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!) {
+                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: 1100), start: Date(), end: Date())]))
+                return
+            }
+            
             if (sampleType == HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!) {
                 promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 110), start: Date(), end: Date())]))
                 return

@@ -109,8 +109,9 @@ struct RingView: View {
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
                     .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))
-                    .conditionalModifier(outerGlow, OuterGlow(primaryColor, simplified: simplified))
                     .conditionalModifier(!simplified && innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
+                    .conditionalModifier(outerGlow && !simplified && !firstRender, OuterGlow(primaryColor))
+                    .conditionalModifier(outerGlow && simplified && !firstRender, OuterGlow(primaryColor))
                     .rotationEffect(.radians(-Double.pi / 2))
                    
               //  if progress > 1 {

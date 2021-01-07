@@ -17,7 +17,7 @@ protocol ConfigurationProvider {
 class DefaultConfigurationProvider: ConfigurationProvider {
     private var persistence = UserDefaultsConfigurationPersistence()
     func config() -> AnyRingConfig {
-        let config = persistence.restore()! // ?? UserDefaultsConfigurationPersistence.defaultConfig
+        let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
         return config
     }
 }
@@ -36,7 +36,7 @@ class AnyRingViewModel: ObservableObject {
     @Published var globalConfig: GlobalConfiguration = GlobalConfiguration(days: 3)
     
     private var initTask: AnyCancellable? = nil
-    private var snapshotTask: AnyCancellable? = nil
+    private var snapshotTasks = Set<AnyCancellable>()
     
     private var providers: [RingProvider] = []
     private let persistence = UserDefaultsConfigurationPersistence()
@@ -60,8 +60,8 @@ class AnyRingViewModel: ObservableObject {
         let permissions = providers.compactMap { (($0 as? HealthKitProvider)?.config as? HealthKitProvider.Configuration)?.healthKitParams.sampleType.hkSampleType }
         
         initTask = handlePermissions(permissions: permissions)
-            .receive(on: RunLoop.main)
             .replaceError(with: false)
+            .receive(on: DispatchQueue.main)
             .sink { _ in } receiveValue: { [weak self] success in
                 if (!success) {
                     self?.showingAlert = true
@@ -77,21 +77,27 @@ class AnyRingViewModel: ObservableObject {
         var snapshot: RingSnapshot
     }
     
-    func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>) -> Void) {
-        snapshotTask = Publishers.MergeMany(providers.map { provider in
+    func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>?, Error?) -> Void) {
+        Publishers.MergeMany(providers.map { provider in
             provider.calculateProgress(providerConfig: provider.config, globalConfig: globalConfig).tryMap {
                 SnapshotWithId(ring: provider.config.ring, snapshot: RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color)) }
         })
-        .receive(on: RunLoop.main)
         .collect()
-        .sink { _ in
-            
+        .receive(on: DispatchQueue.main)
+        .sink { result in
+            switch(result) {
+            case .failure(let error):
+                print(">> getSnapshots finished with", error)
+                completion(nil, error)
+            case .finished:
+                break;
+            }
         } receiveValue: { result in
             let sorted = result.sorted(by: { (a, b) -> Bool in
                 a.ring.rawValue < b.ring.rawValue
             })
-            completion(RingWrapper(sorted.map { $0.snapshot } ))
-        }
+            completion(RingWrapper(sorted.map { $0.snapshot } ), nil)
+        }.store(in: &snapshotTasks)
     }
     
     func updatePeriod(days: Int) {

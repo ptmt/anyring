@@ -247,8 +247,8 @@ class HealthKitProvider: RingProvider {
         return aggregate(numberOfDays: globalConfig.days,
                          sampleType: healthKitParams.sampleType.hkSampleType,
                          unit: healthKitParams.units.hkunit,
-                         aggregation: healthKitParams.aggregation).tryMap { (sum: Double) -> Progress in
-                            Progress(absolute: sum,
+                         aggregation: healthKitParams.aggregation).tryMap { (aggregated: Double) -> Progress in
+                            return Progress(absolute: aggregated,
                                      maxAbsolute: providerConfig.maxValue,
                                      minAbsolute: providerConfig.minValue,
                                      reversed: healthKitParams.reversed)

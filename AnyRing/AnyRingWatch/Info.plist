@@ -27,8 +27,6 @@
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.potomushto.AnyRing</string>
-	<key>WKExtensionDelegateClassName</key>
-	<string>ExtensionDelegate</string>
 	<key>WKWatchKitApp</key>
 	<true/>
 </dict>
