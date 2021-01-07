@@ -50,9 +50,10 @@ struct HardcodedConfiguration: Codable {
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(configs.first as? HealthKitProvider.Configuration, forKey: .first)
-        try container.encode(configs[1] as? HealthKitProvider.Configuration, forKey: .second)
-        try container.encode(configs[2] as? HealthKitProvider.Configuration, forKey: .third)
+        
+        try container.encode(configs.first { $0.ring == RingID.first } as? HealthKitProvider.Configuration, forKey: .first)
+        try container.encode(configs.first { $0.ring == RingID.second } as? HealthKitProvider.Configuration, forKey: .second)
+        try container.encode(configs.first { $0.ring == RingID.third } as? HealthKitProvider.Configuration, forKey: .third)
         try container.encode(global, forKey: .global)
     }
 }

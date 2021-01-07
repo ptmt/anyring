@@ -22,17 +22,17 @@ struct ContentView: View {
                     MainScreen(rings: rings, days: viewModel.globalConfig.days, onPeriodChange: { period in
                         viewModel.updatePeriod(days: period)
                         refreshWidget()
-                        watchSession.refreshComplication()
+                        watchSession.refresh(config: viewModel.config)
                     })
                     .environmentObject(viewModel)
                     .navigationTitle(Text("AnyRing"))
                     .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                         viewModel.rings?.forEach { $0.refresh() }
                         refreshWidget()
-                        watchSession.refreshComplication()
+                        watchSession.refresh(config: viewModel.config)
                     }.onAppear {
                         refreshWidget()
-                        watchSession.refreshComplication()
+                        watchSession.refresh(config: viewModel.config)
                     }
                 } else {
                     ProgressView().alert(isPresented: $viewModel.showingAlert) {
@@ -69,13 +69,13 @@ class WatchSession: NSObject, WCSessionDelegate {
         }
         
     }
-    func refreshComplication() {
+    func refresh(config: HardcodedConfiguration) {
         if (wcSession.activationState == .activated) {
+            wcSession.transferUserInfo(["config": config])
             wcSession.transferCurrentComplicationUserInfo([:])
         }
     }
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        print("activated", activationState, error)
     }
     
     func sessionDidBecomeInactive(_ session: WCSession) {
@@ -83,7 +83,7 @@ class WatchSession: NSObject, WCSessionDelegate {
     }
     
     func sessionDidDeactivate(_ session: WCSession) {
-        print("activated")
+        print("deactivated")
     }
     
 }

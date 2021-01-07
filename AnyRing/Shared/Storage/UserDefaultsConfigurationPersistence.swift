@@ -12,7 +12,7 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     static let defaultConfig = HardcodedConfiguration([
         HealthKitProvider.Configuration(ring: .first, healthKitParams: activityMinutesConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
         HealthKitProvider.Configuration(ring: .second, healthKitParams: hrvConfiguration, appearance: RingAppearance(mainColor: CodableColor(.pink))),
-        HealthKitProvider.Configuration(ring: .third, healthKitParams: hrConfiguration, appearance: RingAppearance(mainColor: CodableColor(.purple))),
+        HealthKitProvider.Configuration(ring: .third, healthKitParams: hrConfiguration, appearance: RingAppearance(mainColor: CodableColor(.yellow))),
     ], GlobalConfiguration(days: 3))
     
     private let userDefaults = UserDefaults(suiteName: "group.49PJNAT2WC.com.potomushto.AnyRing")!
@@ -43,7 +43,6 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
             lastReadValue = decoded
             return decoded
         } else {
-            print("Restoration failed")
             return nil
         }
     }

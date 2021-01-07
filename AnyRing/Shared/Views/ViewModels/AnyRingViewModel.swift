@@ -10,6 +10,18 @@ import Combine
 import SwiftUI
 import HealthKit
 
+protocol ConfigurationProvider {
+    func config() -> HardcodedConfiguration
+}
+
+class DefaultConfigurationProvider: ConfigurationProvider {
+    private var persistence = UserDefaultsConfigurationPersistence()
+    func config() -> HardcodedConfiguration {
+        let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
+        return config
+    }
+}
+
 class AnyRingViewModel: ObservableObject {
     #if targetEnvironment(simulator)
     // your simulator code
@@ -28,13 +40,16 @@ class AnyRingViewModel: ObservableObject {
     
     private var providers: [RingProvider] = []
     private var persistence = UserDefaultsConfigurationPersistence()
+    private let configurationProvider: ConfigurationProvider
+    private(set) var config: HardcodedConfiguration = UserDefaultsConfigurationPersistence.defaultConfig
     
-    init() {
+    init(_ configurationProvider: ConfigurationProvider = DefaultConfigurationProvider()) {
+        self.configurationProvider = configurationProvider
         defer { initViewModels() }
     }
     
     private func initViewModels() {
-        let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
+        config = configurationProvider.config()
         globalConfig = config.global
         // instanitiate all ring providers
         providers = config.configs.map {
@@ -57,16 +72,25 @@ class AnyRingViewModel: ObservableObject {
             }
     }
     
+    struct SnapshotWithId {
+        var ring: RingID
+        var snapshot: RingSnapshot
+    }
+    
     func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>) -> Void) {
         snapshotTask = Publishers.MergeMany(providers.map { provider in
-            provider.calculateProgress(providerConfig: provider.config, globalConfig: globalConfig).tryMap { RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color) }
+            provider.calculateProgress(providerConfig: provider.config, globalConfig: globalConfig).tryMap {
+                SnapshotWithId(ring: provider.config.ring, snapshot: RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color)) }
         })
         .receive(on: RunLoop.main)
         .collect()
         .sink { _ in
             
         } receiveValue: { result in
-            completion(RingWrapper(result))
+            let sorted = result.sorted(by: { (a, b) -> Bool in
+                a.ring.rawValue < b.ring.rawValue
+            })
+            completion(RingWrapper(sorted.map { $0.snapshot } ))
         }
     }
     

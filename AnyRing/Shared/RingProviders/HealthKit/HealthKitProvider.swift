@@ -56,13 +56,112 @@ let dietaryCaffeineConfiguration = HealthKitProvider.HealthKitConfiguration(
     maxValue: 100,
     aggregation: .sum)
 
+let appleStandTime = HealthKitProvider.HealthKitConfiguration(
+    name: "Standing hours",
+    description: "A quantity sample type that measures the amount of time the user has spent standing.",
+    units: HKUnitCodable.minute,
+    sampleType: HKObjectTypeCodable.appleStandTime,
+    minValue: 0,
+    maxValue: 100,
+    aggregation: .sum)
+
+let pushCount = HealthKitProvider.HealthKitConfiguration(
+    name: "Pushes",
+    description: "A quantity sample type that measures the number of pushes that the user has performed while using a wheelchair.",
+    units: HKUnitCodable.count,
+    sampleType: HKObjectTypeCodable.pushCount,
+    minValue: 0,
+    maxValue: 400,
+    aggregation: .sum)
+
+let stepCount = HealthKitProvider.HealthKitConfiguration(
+    name: "Standing hours",
+    description: "A quantity sample type that measures the amount of time the user has spent standing.",
+    units: HKUnitCodable.count,
+    sampleType: HKObjectTypeCodable.stepCount,
+    minValue: 0,
+    maxValue: 8000,
+    aggregation: .sum)
+
+let distanceWalkingRunning = HealthKitProvider.HealthKitConfiguration(
+    name: "Move Distance",
+    description: "A quantity sample type that measures the distance the user has moved by walking or running.",
+    units: HKUnitCodable.meter,
+    sampleType: HKObjectTypeCodable.appleStandTime,
+    minValue: 0,
+    maxValue: 10000,
+    aggregation: .sum)
+
+let distanceSwimming = HealthKitProvider.HealthKitConfiguration(
+    name: "Swim",
+    description: "A quantity sample type that measures the amount of time the user has spent standing.",
+    units: HKUnitCodable.meter,
+    sampleType: HKObjectTypeCodable.distanceSwimming,
+    minValue: 0,
+    maxValue: 2000,
+    aggregation: .sum)
+
+let flightsClimbed = HealthKitProvider.HealthKitConfiguration(
+    name: "Flights Climbed",
+    description: "A quantity sample type that measures the number flights of stairs that the user has climbed.",
+    units: HKUnitCodable.count,
+    sampleType: HKObjectTypeCodable.flightsClimbed,
+    minValue: 0,
+    maxValue: 2000,
+    aggregation: .sum)
+
+let nikeFuel = HealthKitProvider.HealthKitConfiguration(
+    name: "Nike Fuel",
+    description: "A quantity sample type that measures the number of NikeFuel points the user has earned.",
+    units: HKUnitCodable.count,
+    sampleType: HKObjectTypeCodable.nikeFuel,
+    minValue: 0,
+    maxValue: 2000,
+    aggregation: .sum)
+
+let vo2Max = HealthKitProvider.HealthKitConfiguration(
+    name: "VO2Max",
+    description: "A quantity sample that measures the maximal oxygen consumption during incremental exercise.",
+    units: HKUnitCodable.count,
+    sampleType: HKObjectTypeCodable.vo2Max,
+    minValue: 0,
+    maxValue: 100,
+    aggregation: .sum)
+
+let activeEnergyBurned = HealthKitProvider.HealthKitConfiguration(
+    name: "Active Energy",
+    description: "A quantity sample type that measures the amount of active energy the user has burned.",
+    units: HKUnitCodable.kilocalorie,
+    sampleType: HKObjectTypeCodable.activeEnergyBurned,
+    minValue: 0,
+    maxValue: 100,
+    aggregation: .sum)
+
+let distanceCycling = HealthKitProvider.HealthKitConfiguration(
+    name: "Cycling",
+    description: "A quantity sample type that measures the distance the user has moved by cycling.",
+    units: HKUnitCodable.meter,
+    sampleType: HKObjectTypeCodable.distanceCycling,
+    minValue: 0,
+    maxValue: 10000,
+    aggregation: .sum)
 
 let healthKitProviders = [
     activityMinutesConfiguration,
     hrvConfiguration,
     hrConfiguration,
     bloodAlcoholContentConfiguration,
-    dietaryCaffeineConfiguration
+    dietaryCaffeineConfiguration,
+    appleStandTime,
+    stepCount,
+    distanceWalkingRunning,
+    pushCount,
+    distanceSwimming,
+    flightsClimbed,
+    nikeFuel,
+    vo2Max,
+    activeEnergyBurned,
+    distanceCycling
 ] + dietProviders
 
 enum Aggregation: String, Codable {

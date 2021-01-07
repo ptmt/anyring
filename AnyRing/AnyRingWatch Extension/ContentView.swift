@@ -36,7 +36,7 @@ struct ContentView: View {
                                       units: rings.third.units,
                                       color: rings.third.configuration.appearance.mainColor.color)
                             
-                            Text("\(viewModel.globalConfig.days)-day period")
+                            Text("Data for \(viewModel.globalConfig.days)-day period")
                                 .font(.footnote)
                                 .foregroundColor(.secondary)
                         }.padding(.horizontal, 20)

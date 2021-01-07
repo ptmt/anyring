@@ -15,6 +15,9 @@ enum HKUnitCodable: String, Codable {
     case percent
     case mgrams
     case grams
+    case count
+    case meter
+    case kilocalorie
     
     var hkunit: HKUnit {
         switch(self) {
@@ -24,6 +27,9 @@ enum HKUnitCodable: String, Codable {
         case .percent: return HKUnit.percent()
         case .mgrams: return HKUnit.gramUnit(with: .milli)
         case .grams: return HKUnit.gram()
+        case .count: return HKUnit.count()
+        case .meter: return HKUnit.meter()
+        case .kilocalorie: return HKUnit.kilocalorie()
         }
     }
     
@@ -34,6 +40,16 @@ enum HKUnitCodable: String, Codable {
 
 enum HKObjectTypeCodable: String, Codable {
     case appleExerciseTime
+    case appleStandTime
+    case stepCount
+    case distanceWalkingRunning
+    case pushCount
+    case distanceSwimming
+    case flightsClimbed
+    case nikeFuel
+    case vo2Max
+    case activeEnergyBurned
+    case distanceCycling
     case heartRateVariabilitySDNN
     case heartRate
     case bloodAlcoholContent
@@ -81,6 +97,16 @@ enum HKObjectTypeCodable: String, Codable {
     var hkSampleType: HKSampleType {
         switch(self) {
         case .appleExerciseTime: return HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!
+        case .appleStandTime: return HKObjectType.quantityType(forIdentifier: .appleStandTime)!
+        case .stepCount: return HKObjectType.quantityType(forIdentifier: .stepCount)!
+        case .distanceWalkingRunning: return HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!
+        case .pushCount: return HKObjectType.quantityType(forIdentifier: .pushCount)!
+        case .distanceSwimming: return HKObjectType.quantityType(forIdentifier: .distanceSwimming)!
+        case .flightsClimbed: return HKObjectType.quantityType(forIdentifier: .flightsClimbed)!
+        case .nikeFuel: return HKObjectType.quantityType(forIdentifier: .nikeFuel)!
+        case .vo2Max: return HKObjectType.quantityType(forIdentifier: .vo2Max)!
+        case .activeEnergyBurned: return HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!
+        case .distanceCycling: return HKObjectType.quantityType(forIdentifier: .distanceCycling)!
         case .heartRateVariabilitySDNN: return HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!
         case .heartRate: return HKObjectType.quantityType(forIdentifier: .heartRate)!
         case .bloodAlcoholContent: return HKObjectType.quantityType(forIdentifier: .bloodAlcoholContent)!
