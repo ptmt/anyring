@@ -8,20 +8,24 @@
 import WidgetKit
 import SwiftUI
 
+
 struct Provider: TimelineProvider {
     let viewModel = AnyRingViewModel()
+    let cache = SimpleCache()
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(),
                     size: context.displaySize,
-                    rings: staticSnapshot)
+                    rings: cache.restoreLastSnapshot() ?? staticSnapshot)
     }
     
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
         viewModel.updateProviders()
-        viewModel.getSnapshots { snapshots, _ in
+        viewModel.getSnapshots { snapshots, error in
+            cache.store(lastSnapshot: snapshots)
             let entry = SimpleEntry(date: Date(),
                                     size: context.displaySize,
-                                    rings: snapshots ?? staticSnapshot)
+                                    rings: snapshots ?? cache.restoreLastSnapshot(),
+                                    error: error)
             completion(entry)
         }
         
@@ -32,10 +36,12 @@ struct Provider: TimelineProvider {
         
         // make sure we invalidate the providers
         viewModel.updateProviders()
-        viewModel.getSnapshots { snapshots, _ in
+        viewModel.getSnapshots { snapshots, error in
+            cache.store(lastSnapshot: snapshots)
             let entry = SimpleEntry(date: Date(),
                                     size: context.displaySize,
-                                    rings: snapshots ?? staticSnapshot)
+                                    rings: snapshots ?? cache.restoreLastSnapshot(),
+                                    error: error)
             
             let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
             completion(timeline)
@@ -46,7 +52,8 @@ struct Provider: TimelineProvider {
 struct SimpleEntry: TimelineEntry {
     let date: Date
     let size: CGSize
-    var rings: RingWrapper<RingSnapshot>//? = nil
+    var rings: RingWrapper<RingSnapshot>? = nil
+    var error: Error? = nil
 }
 
 
@@ -54,32 +61,36 @@ struct RingWidgetEntryView : View {
     var entry: Provider.Entry
     
     var body: some View {
-       // if let rings = entry.rings {
-//            ZStack {
-//                Text("\(entry.rings.first.progress)")
-//                Text("\(entry.rings.second.progress)")
-//                Text("\(entry.rings.third.progress)")
-//            }
-//        } else {
-//            Group {
-//                Text("Loading rings").font(.headline)
-//            }
-//        }
-//        if let rings = entry.rings {
+        // if let rings = entry.rings {
+        //            ZStack {
+        //                Text("\(entry.rings.first.progress)")
+        //                Text("\(entry.rings.second.progress)")
+        //                Text("\(entry.rings.third.progress)")
+        //            }
+        //        } else {
+        //            Group {
+        //                Text("Loading rings").font(.headline)
+        //            }
+        //        }
+        if let rings = entry.rings {
             let delta: CGFloat = 15
             let size = min(entry.size.width, entry.size.height) - delta
             VStack {
                 TripleRingView(size: size - delta,
-                               ring1: entry.rings.first,
-                               ring2: entry.rings.second,
-                               ring3: entry.rings.third)
+                               ring1: rings.first,
+                               ring2: rings.second,
+                               ring3: rings.third)
             }
             .padding(.all, delta)
-//        } else {
-//            Group {
-//                Text("Loading rings").font(.headline)
-//            }
-//        }
+        } else if let error = entry.error {
+            Group {
+                Text(error.localizedDescription).font(.body).padding()
+            }
+        } else {
+            Group {
+                Text("Loading rings").font(.headline)
+            }
+        }
         
     }
 }
@@ -99,9 +110,9 @@ struct RingWidget: Widget {
     }
 }
 
-let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, mainColor: Color.secondary),
-                                  RingSnapshot(progress: 1.5, mainColor: Color.secondary),
-                                  RingSnapshot(progress: 0.5, mainColor: Color.secondary)])
+let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, mainColor: Color.secondary.codable),
+                                  RingSnapshot(progress: 1.5, mainColor: Color.secondary.codable),
+                                  RingSnapshot(progress: 0.5, mainColor: Color.secondary.codable)])
 
 struct RingWidget_Previews: PreviewProvider {
     

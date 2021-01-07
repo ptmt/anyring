@@ -111,9 +111,9 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     }
 }
 
-let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, mainColor: Color.pink),
-                                  RingSnapshot(progress: 1.5, mainColor: Color.orange),
-                                  RingSnapshot(progress: 0.1, mainColor: Color.blue)])
+let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, mainColor: CodableColor(Color.pink)),
+                                  RingSnapshot(progress: 1.5, mainColor: CodableColor(Color.orange)),
+                                  RingSnapshot(progress: 0.1, mainColor: CodableColor(Color.blue))])
 
 
 struct ComplicationView: View {

@@ -75,10 +75,10 @@ struct RingView: View {
     var simplified = false
     
     private var primaryColor: Color {
-        snapshot.mainColor
+        snapshot.mainColor.color
     }
     private var secondaryColor: Color? {
-        snapshot.secondaryColor
+        snapshot.secondaryColor?.color
     }
     private var progress: Double {
         snapshot.progress
@@ -110,9 +110,9 @@ struct RingView: View {
                     .fill(gradient)
                     .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))
                     .conditionalModifier(!simplified && innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
-                    .conditionalModifier(outerGlow && !simplified && !firstRender, OuterGlow(primaryColor))
-                    .conditionalModifier(outerGlow && simplified && !firstRender, OuterGlow(primaryColor))
                     .rotationEffect(.radians(-Double.pi / 2))
+                    .conditionalModifier(outerGlow && !simplified, OuterGlow(primaryColor))
+                    .conditionalModifier(outerGlow && simplified, OuterGlowSimplified(primaryColor))
                    
               //  if progress > 1 {
                     RingLineEndView(
@@ -152,10 +152,16 @@ extension View {
 struct RingView_Preview: PreviewProvider {
     static var previews: some View {
         Group {
-            RingView(size: 140, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.green, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)), outerGlow: false), lineWidth: 20.0)
-            RingView(size: 240, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red, gradient: false, outerGlow: false, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
-            RingView(size: 100, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.pink, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
+            RingView(size: 140, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.green.codable, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)).codable, outerGlow: false), lineWidth: 20.0)
+            RingView(size: 240, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red.codable, gradient: false, outerGlow: false, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
+            RingView(size: 100, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.pink.codable, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
                 .preferredColorScheme(.dark)
         }.previewLayout(.fixed(width: 250, height: 250))
+    }
+}
+
+extension Color {
+    var codable: CodableColor {
+        CodableColor(self)
     }
 }

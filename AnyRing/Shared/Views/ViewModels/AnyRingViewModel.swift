@@ -80,7 +80,7 @@ class AnyRingViewModel: ObservableObject {
     func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>?, Error?) -> Void) {
         Publishers.MergeMany(providers.map { provider in
             provider.calculateProgress(providerConfig: provider.config, globalConfig: globalConfig).tryMap {
-                SnapshotWithId(ring: provider.config.ring, snapshot: RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor.color)) }
+                SnapshotWithId(ring: provider.config.ring, snapshot: RingSnapshot(progress: $0.normalized, mainColor: provider.config.appearance.mainColor)) }
         })
         .collect()
         .receive(on: DispatchQueue.main)
@@ -125,7 +125,7 @@ class AnyRingViewModel: ObservableObject {
 
 struct RingWrapper<T> {
     
-    private let list: [T]
+    let list: [T]
     init(_ list: [T]) {
         precondition(list.count == 3)
         self.list = list

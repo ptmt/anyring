@@ -17,13 +17,21 @@ struct MainScreen: View {
     var body: some View {
         Form {
             
-            Section(header: Text("Templates")) {
+            Section {
+                RingDashboard(size: 150,
+                              ring1: rings.first,
+                              ring2: rings.second,
+                              ring3: rings.third,
+                              days: days).padding()
                 TemplatesView { newConfig in
                     rings.first.updateFromSnapshot(snapshot: newConfig.first)
                     rings.second.updateFromSnapshot(snapshot: newConfig.second)
                     rings.third.updateFromSnapshot(snapshot: newConfig.third)
                     onPeriodChange?(vm.globalConfig.days)
                 }
+            }
+            
+            Section {
                 HStack {
                     Text("Days")
                     Picker(selection: $days, label: Text("Days"), content: {
@@ -41,15 +49,6 @@ struct MainScreen: View {
                 Text("You can choose how often the rings get reset. By default Activity Rings in iOS start over every 24 hours")
                     .font(.footnote)
                     .foregroundColor(.secondary)
-            }
-            
-            
-            Section {
-                RingDashboard(size: 150,
-                              ring1: rings.first,
-                              ring2: rings.second,
-                              ring3: rings.third,
-                              days: days).padding()
             }
             
             Section() {

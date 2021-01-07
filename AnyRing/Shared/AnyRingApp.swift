@@ -9,6 +9,9 @@ import SwiftUI
 
 @main
 struct AnyRingApp: App {
+    init() {
+        print(">> init")
+      }
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -134,7 +134,7 @@ let activeEnergyBurned = HealthKitProvider.HealthKitConfiguration(
     units: HKUnitCodable.kilocalorie,
     sampleType: HKObjectTypeCodable.activeEnergyBurned,
     minValue: 0,
-    maxValue: 100,
+    maxValue: 1500,
     aggregation: .sum)
 
 let distanceCycling = HealthKitProvider.HealthKitConfiguration(

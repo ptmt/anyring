@@ -8,11 +8,11 @@
 import Foundation
 import SwiftUI
 
-struct RingSnapshot {
+struct RingSnapshot: Codable {
     let progress: Double
-    let mainColor: Color
+    let mainColor: CodableColor
     var gradient: Bool = false
-    var secondaryColor: Color? = nil
+    var secondaryColor: CodableColor? = nil
     var outerGlow: Bool = true
     var innerGlow: Bool = false
 }

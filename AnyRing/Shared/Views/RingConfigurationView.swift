@@ -25,7 +25,7 @@ struct ConfigTextValue: View {
             }).textFieldStyle(RoundedBorderTextFieldStyle())
             .fixedSize()
             
-            Stepper("", value: $state, in: 0...1000) { s in
+            Stepper("", value: $state, in: 0...50000) { s in
                 if (!s) { onChange(state) }
             }.fixedSize()
         }
@@ -51,6 +51,7 @@ struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
     @EnvironmentObject var vm: AnyRingViewModel
     @State private var permissionsTask: Cancellable? = nil
+    
     var providerSelection: some View {
         SelectProviderScreen(selected: ring.configuration.name) { healthKitParams in
             var newConfig = ring.configuration as! HealthKitProvider.Configuration
@@ -101,7 +102,7 @@ struct RingConfigurationView: View {
                         ring.update(config: newConfig)
                     }
                     
-                    ConfigBoolValue(label: "Reversed goal", isOn: config.healthKitParams.reversed) { changed in
+                    ConfigBoolValue(label: "Reversed direction", isOn: config.healthKitParams.reversed) { changed in
                         var newConfig = config
                         newConfig.healthKitParams.reversed = changed
                         ring.update(config: newConfig)

@@ -10,14 +10,14 @@ import SwiftUI
 
 private let defaultProgress = 1.5
 private func snapshotForColor(_ color: Color) -> RingSnapshot {
-    RingSnapshot(progress: defaultProgress, mainColor: color, gradient: false, outerGlow: false)
+    RingSnapshot(progress: defaultProgress, mainColor: CodableColor(color), gradient: false, outerGlow: false)
 }
 private func snapshotForColorWithGlow(_ color: Color) -> RingSnapshot {
-    RingSnapshot(progress: defaultProgress, mainColor: color, gradient: false, outerGlow: true, innerGlow: true)
+    RingSnapshot(progress: defaultProgress, mainColor: CodableColor(color), gradient: false, outerGlow: true, innerGlow: true)
 }
 
 private func snapshotGradients(_ color: Color, _ secondary: Color) -> RingSnapshot {
-    RingSnapshot(progress: defaultProgress, mainColor: color, gradient: true, secondaryColor: secondary, outerGlow: false)
+    RingSnapshot(progress: defaultProgress, mainColor: CodableColor(color), gradient: true, secondaryColor: CodableColor(secondary), outerGlow: false)
 }
 
 struct TemplatesView: View {
@@ -63,7 +63,7 @@ struct TemplatesView: View {
             HStack {
                 ForEach(0 ..< snapshots.count) { i in
                     let ring = snapshots[i]
-                    TripleRingView(size: 55,
+                    TripleRingView(size: 45,
                                    ring1: ring.first,
                                    ring2: ring.second,
                                    ring3: ring.third,

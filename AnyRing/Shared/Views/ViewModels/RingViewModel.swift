@@ -42,18 +42,23 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     
     func refresh() {
         provider.calculateProgress(providerConfig: configuration, globalConfig: globalConfig)
+            .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 switch completion {
                 case .failure(let error):
                   print("calculateProgress finished with error", error)
-                  self?.error = error
+                  DispatchQueue.main.async {
+                    self?.error = error
+                  }
                 case .finished:
                     break;
                 }
               },
               receiveValue: { [weak self] value in
-                self?.progress = value
+                DispatchQueue.main.async {
+                    self?.progress = value
+                }
               })
             .store(in: &cancellables)
         self.units = configuration.units
@@ -71,10 +76,8 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
         var newAppearance = configuration.appearance
         newAppearance.gradient = snapshot.gradient
         newAppearance.innerGlow = snapshot.innerGlow
-        newAppearance.mainColor = CodableColor(snapshot.mainColor)
-        if let secondaryColor = snapshot.secondaryColor {
-            newAppearance.secondaryColor = CodableColor(secondaryColor)
-        }
+        newAppearance.mainColor = snapshot.mainColor
+        newAppearance.secondaryColor = snapshot.secondaryColor
         newAppearance.outerGlow = snapshot.outerGlow
         newConfig.appearance = newAppearance
         provider.configPersistence.update(config: newConfig)
@@ -83,10 +86,10 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     }
     
     func snapshot() -> RingSnapshot {
-        .init(progress: progress.normalized,
-              mainColor: configuration.appearance.mainColor.color,
+        RingSnapshot(progress: progress.normalized,
+              mainColor: configuration.appearance.mainColor,
               gradient: configuration.appearance.gradient,
-              secondaryColor: configuration.appearance.secondaryColor?.color,
+              secondaryColor: configuration.appearance.secondaryColor,
               outerGlow: configuration.appearance.outerGlow,
               innerGlow: configuration.appearance.innerGlow)
     }
