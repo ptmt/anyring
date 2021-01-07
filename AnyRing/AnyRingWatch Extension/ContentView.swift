@@ -101,11 +101,9 @@ class WCSessionSender: NSObject, WCSessionDelegate {
         super.init()
         onActivated = { [weak self] in
             guard let self = self else { return }
-            print(">> sendMessage")
             self.session.sendMessage(["refresh": [:]]) { [weak self] userInfo in
                 if let json = userInfo["config"] as? Data,
                    let decoded = try? JSONDecoder().decode(AnyRingConfig.self, from: json) {
-                    print(">> recievedMessage")
                     self?.onConfigUpdated?(decoded)
                 }
             } errorHandler: { err in

@@ -69,7 +69,7 @@ struct TemplatesView: View {
                                    ring3: ring.third,
                                    simplified: true).onTapGesture {
                                     onSelect?(ring)
-                                   }
+                                   }.drawingGroup()
                 }
             }
         }
