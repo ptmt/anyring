@@ -11,13 +11,13 @@ import SwiftUI
 import HealthKit
 
 protocol ConfigurationProvider {
-    func config() -> HardcodedConfiguration
+    func config() -> AnyRingConfig
 }
 
 class DefaultConfigurationProvider: ConfigurationProvider {
     private var persistence = UserDefaultsConfigurationPersistence()
-    func config() -> HardcodedConfiguration {
-        let config = persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
+    func config() -> AnyRingConfig {
+        let config = persistence.restore()! // ?? UserDefaultsConfigurationPersistence.defaultConfig
         return config
     }
 }
@@ -39,9 +39,9 @@ class AnyRingViewModel: ObservableObject {
     private var snapshotTask: AnyCancellable? = nil
     
     private var providers: [RingProvider] = []
-    private var persistence = UserDefaultsConfigurationPersistence()
+    private let persistence = UserDefaultsConfigurationPersistence()
     private let configurationProvider: ConfigurationProvider
-    private(set) var config: HardcodedConfiguration = UserDefaultsConfigurationPersistence.defaultConfig
+    private(set) var config: AnyRingConfig = UserDefaultsConfigurationPersistence.defaultConfig
     
     init(_ configurationProvider: ConfigurationProvider = DefaultConfigurationProvider()) {
         self.configurationProvider = configurationProvider
@@ -109,6 +109,10 @@ class AnyRingViewModel: ObservableObject {
     
     func handlePermissions(permissions: [HKObjectType]) -> Future<Bool, Error> {
         return dataSource.requestPermissions(permissions: Set(permissions))
+    }
+    
+    func updateConfigInABatch(config: AnyRingConfig) {
+        persistence.persist(config: config)
     }
 }
 

@@ -22,17 +22,20 @@ struct ContentView: View {
                     MainScreen(rings: rings, days: viewModel.globalConfig.days, onPeriodChange: { period in
                         viewModel.updatePeriod(days: period)
                         refreshWidget()
-                        watchSession.refresh(config: viewModel.config)
+                        watchSession.sendConfigToWatch(config: viewModel.config)
                     })
                     .environmentObject(viewModel)
                     .navigationTitle(Text("AnyRing"))
                     .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                         viewModel.rings?.forEach { $0.refresh() }
                         refreshWidget()
-                        watchSession.refresh(config: viewModel.config)
+                        watchSession.sendConfigToWatch(config: viewModel.config)
                     }.onAppear {
                         refreshWidget()
-                        watchSession.refresh(config: viewModel.config)
+                        watchSession.sendConfigToWatch(config: viewModel.config)
+                        watchSession.onConfig = {
+                            self.viewModel.config
+                        }
                     }
                 } else {
                     ProgressView().alert(isPresented: $viewModel.showingAlert) {
@@ -60,18 +63,23 @@ func refreshWidget() {
 
 class WatchSession: NSObject, WCSessionDelegate {
     let wcSession = WCSession.default
+    var onConfig: (() -> AnyRingConfig)?
     override init() {
         super.init()
-        
-        if WCSession.isSupported() && wcSession.isWatchAppInstalled {
+        if WCSession.isSupported() {
             wcSession.delegate = self
             wcSession.activate()
         }
         
     }
-    func refresh(config: HardcodedConfiguration) {
+    func sendConfigToWatch(config: AnyRingConfig) {
         if (wcSession.activationState == .activated) {
-            wcSession.transferUserInfo(["config": config])
+            do {
+                let encoded = try JSONEncoder().encode(config)
+                try wcSession.updateApplicationContext(["config": encoded])
+            } catch {
+                print(error)
+            }
             wcSession.transferCurrentComplicationUserInfo([:])
         }
     }
@@ -83,9 +91,21 @@ class WatchSession: NSObject, WCSessionDelegate {
     }
     
     func sessionDidDeactivate(_ session: WCSession) {
-        print("deactivated")
     }
     
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
+        if let onConfig = onConfig {
+            do {
+                let encoded = try JSONEncoder().encode(onConfig())
+                replyHandler(["config": encoded])
+            } catch {
+                print(error)
+                replyHandler([:])
+            }
+        } else {
+            replyHandler([:])
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {

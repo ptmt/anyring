@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import WatchConnectivity
 import ClockKit
 
 struct ContentView: View {
-    
+    @WKExtensionDelegateAdaptor(ExtensionDelegate.self) var delegate
     @ObservedObject var viewModel = AnyRingViewModel()
+    let session = WCSessionSender()
     
     var body: some View {
         if (viewModel.dataSource.isAvailable() && !viewModel.showingAlert) {
@@ -42,11 +44,14 @@ struct ContentView: View {
                         }.padding(.horizontal, 20)
                     }
                     .onReceive(NotificationCenter.default.publisher(for: WKExtension.applicationWillEnterForegroundNotification)) { _ in
-                        viewModel.updateProviders()
-                        refreshComplication()
+                       refresh()
                     }.onAppear {
-                        viewModel.updateProviders()
-                        refreshComplication()
+                        session.onConfigUpdated = {
+                            viewModel.updateConfigInABatch(config: $0)
+                            refresh()
+                        }
+                        session.requestLatestConfig()
+                        refresh()
                     }
                 } else {
                     ProgressView()
@@ -57,6 +62,15 @@ struct ContentView: View {
             Text("Apple HealthKit data appears to be not available")
                 .padding()
         }
+    }
+    
+    func refresh() {
+        delegate.onReload = {
+            // refresh view model
+            viewModel.updateProviders()
+        }
+        viewModel.updateProviders()
+        refreshComplication()
     }
 }
 
@@ -70,5 +84,48 @@ func refreshComplication() {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+class WCSessionSender: NSObject, WCSessionDelegate {
+    var onActivated: (() -> Void)?
+    var onConfigUpdated: ((AnyRingConfig) -> Void)?
+    let session = WCSession.default
+    override init() {
+        super.init()
+        onActivated = { [weak self] in
+            guard let self = self else { return }
+            self.session.sendMessage(["refresh": [:]]) { [weak self] userInfo in
+                if let json = userInfo["config"] as? Data,
+                   let decoded = try? JSONDecoder().decode(AnyRingConfig.self, from: json) {
+                    self?.onConfigUpdated?(decoded)
+                }
+            } errorHandler: { err in
+                print(">> error", err)
+            }
+        }
+        session.delegate = self
+        session.activate()
+        
+    }
+    func requestLatestConfig() {
+        onActivated?()
+    }
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?)
+    {
+        if (activationState == .activated) {
+            onActivated?()
+        }
+    }
+    
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
+        if let json = applicationContext["config"] as? Data {
+            if let decoded = try? JSONDecoder().decode(AnyRingConfig.self, from: json) {
+                onConfigUpdated?(decoded)
+            }
+        }
+    }
+    
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
     }
 }

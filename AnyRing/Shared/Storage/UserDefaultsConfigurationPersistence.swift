@@ -9,17 +9,17 @@ import Foundation
 
 class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     static let key = "Config.v3"
-    static let defaultConfig = HardcodedConfiguration([
+    static let defaultConfig = AnyRingConfig([
         HealthKitProvider.Configuration(ring: .first, healthKitParams: activityMinutesConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
-        HealthKitProvider.Configuration(ring: .second, healthKitParams: hrvConfiguration, appearance: RingAppearance(mainColor: CodableColor(.pink))),
-        HealthKitProvider.Configuration(ring: .third, healthKitParams: hrConfiguration, appearance: RingAppearance(mainColor: CodableColor(.yellow))),
+        HealthKitProvider.Configuration(ring: .second, healthKitParams: appleStandTime, appearance: RingAppearance(mainColor: CodableColor(.pink))),
+        HealthKitProvider.Configuration(ring: .third, healthKitParams: activeEnergyBurned, appearance: RingAppearance(mainColor: CodableColor(.yellow))),
     ], GlobalConfiguration(days: 3))
     
     private let userDefaults = UserDefaults(suiteName: "group.49PJNAT2WC.com.potomushto.AnyRing")!
     
-    private var lastReadValue: HardcodedConfiguration?
+    private var lastReadValue: AnyRingConfig?
     
-    func persist(config: HardcodedConfiguration) {
+    func persist(config: AnyRingConfig) {
         if let json = try? JSONEncoder().encode(config) {
             lastReadValue = config
             userDefaults.setValue(json, forKey: UserDefaultsConfigurationPersistence.key)
@@ -37,9 +37,9 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         currentConfig.global = globalConfig
         persist(config: currentConfig)
     }
-    func restore() -> HardcodedConfiguration? {
+    func restore() -> AnyRingConfig? {
         if let json = userDefaults.value(forKey: UserDefaultsConfigurationPersistence.key) as? Data {
-            let decoded = try? JSONDecoder().decode(HardcodedConfiguration.self, from: json)
+            let decoded = try? JSONDecoder().decode(AnyRingConfig.self, from: json)
             lastReadValue = decoded
             return decoded
         } else {

@@ -8,13 +8,13 @@
 import Foundation
 
 class MockConfigurationPersistence: ConfigurationPersistence {
-    func persist(config: HardcodedConfiguration) {
+    func persist(config: AnyRingConfig) {
         
     }
     func update(config: ProviderConfiguration) {
         
     }
-    func restore() -> HardcodedConfiguration? {
+    func restore() -> AnyRingConfig? {
         nil
     }
 }

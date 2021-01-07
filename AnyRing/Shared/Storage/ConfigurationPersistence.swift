@@ -8,13 +8,13 @@
 import Foundation
 
 protocol ConfigurationPersistence {
-    func persist(config: HardcodedConfiguration)
+    func persist(config: AnyRingConfig)
     func update(config: ProviderConfiguration)
-    func restore() -> HardcodedConfiguration?
+    func restore() -> AnyRingConfig?
 }
 
 
-struct HardcodedConfiguration: Codable {
+struct AnyRingConfig: Codable {
     var configs: [ProviderConfiguration]
     var global: GlobalConfiguration
     

@@ -75,7 +75,7 @@ let pushCount = HealthKitProvider.HealthKitConfiguration(
     aggregation: .sum)
 
 let stepCount = HealthKitProvider.HealthKitConfiguration(
-    name: "Standing hours",
+    name: "Step count",
     description: "A quantity sample type that measures the amount of time the user has spent standing.",
     units: HKUnitCodable.count,
     sampleType: HKObjectTypeCodable.stepCount,
@@ -87,7 +87,7 @@ let distanceWalkingRunning = HealthKitProvider.HealthKitConfiguration(
     name: "Move Distance",
     description: "A quantity sample type that measures the distance the user has moved by walking or running.",
     units: HKUnitCodable.meter,
-    sampleType: HKObjectTypeCodable.appleStandTime,
+    sampleType: HKObjectTypeCodable.distanceWalkingRunning,
     minValue: 0,
     maxValue: 10000,
     aggregation: .sum)
@@ -148,10 +148,6 @@ let distanceCycling = HealthKitProvider.HealthKitConfiguration(
 
 let healthKitProviders = [
     activityMinutesConfiguration,
-    hrvConfiguration,
-    hrConfiguration,
-    bloodAlcoholContentConfiguration,
-    dietaryCaffeineConfiguration,
     appleStandTime,
     stepCount,
     distanceWalkingRunning,
@@ -161,7 +157,11 @@ let healthKitProviders = [
     nikeFuel,
     vo2Max,
     activeEnergyBurned,
-    distanceCycling
+    distanceCycling,
+    hrvConfiguration,
+    hrConfiguration,
+    bloodAlcoholContentConfiguration,
+    dietaryCaffeineConfiguration,
 ] + dietProviders
 
 enum Aggregation: String, Codable {

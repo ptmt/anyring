@@ -22,6 +22,7 @@ struct MainScreen: View {
                     rings.first.updateFromSnapshot(snapshot: newConfig.first)
                     rings.second.updateFromSnapshot(snapshot: newConfig.second)
                     rings.third.updateFromSnapshot(snapshot: newConfig.third)
+                    onPeriodChange?(vm.globalConfig.days)
                 }
                 HStack {
                     Text("Days")
