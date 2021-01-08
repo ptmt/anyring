@@ -20,9 +20,7 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     private var lastReadValue: AnyRingConfig?
     
     func persist(config: AnyRingConfig) {
-        print(">> persist config")
         if let json = try? JSONEncoder().encode(config) {
-            print(">> persisted suscessfully")
             lastReadValue = config
             userDefaults.setValue(json, forKey: UserDefaultsConfigurationPersistence.key)
         }
@@ -41,10 +39,8 @@ class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     }
     
     func restore() -> AnyRingConfig? {
-        print(">> restore config")
         if let json = userDefaults.value(forKey: UserDefaultsConfigurationPersistence.key) as? Data {
             let decoded = try? JSONDecoder().decode(AnyRingConfig.self, from: json)
-            print(">> restored config successfully", decoded != nil)
             lastReadValue = decoded
             return decoded
         } else {

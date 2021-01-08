@@ -56,6 +56,7 @@ struct RingConfigurationView: View {
         SelectProviderScreen(selected: ring.configuration.name) { healthKitParams in
             var newConfig = ring.configuration as! HealthKitProvider.Configuration
             newConfig.healthKitParams = healthKitParams
+            print("new config", healthKitParams.maxValue)
             ring.update(config: newConfig)
             permissionsTask = self.vm.handlePermissions(permissions: [healthKitParams.sampleType.hkSampleType])
                 .replaceError(with: false)

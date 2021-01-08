@@ -22,7 +22,8 @@ struct MainScreen: View {
                               ring1: rings.first,
                               ring2: rings.second,
                               ring3: rings.third,
-                              days: days).padding()
+                              days: days,
+                              shape: .rectangular).padding()
                 TemplatesView { newConfig in
                     rings.first.updateFromSnapshot(snapshot: newConfig.first)
                     rings.second.updateFromSnapshot(snapshot: newConfig.second)
@@ -73,9 +74,29 @@ struct MainScreen: View {
 struct MainScreen_Preview: PreviewProvider {
     static var previews: some View {
         MainScreen(rings: RingWrapper([
-                                        DemoProvider().viewModel( globalConfig:  GlobalConfiguration.Default),
-                                        DemoProvider().viewModel(globalConfig:  GlobalConfiguration.Default),
+                                        DemoProvider(
+                                            initValue: 50,
+                                            config: DemoProvider.Configuration(
+                                                name: "FirstRing",
+                                                ring: .first,
+                                                minValue: 0,
+                                                maxValue: 100,
+                                                appearance: RingAppearance(
+                                                    mainColor: CodableColor(.red)),
+                                                units: "M"))
+                                            .viewModel(globalConfig: GlobalConfiguration.Default),
+                                        DemoProvider(initValue: 50,
+                                                     config: DemoProvider.Configuration(
+                                                         name: "SecondRing",
+                                                         ring: .second,
+                                                         minValue: 0,
+                                                         maxValue: 100,
+                                                         appearance: RingAppearance(
+                                                             mainColor: CodableColor(.blue)),
+                                                         units: "M")
+                                        ).viewModel(globalConfig:  GlobalConfiguration.Default),
                                         DemoProvider().viewModel(globalConfig:  GlobalConfiguration.Default)]),  days: 3)
+            .environmentObject(AnyRingViewModel())
     }
 }
 

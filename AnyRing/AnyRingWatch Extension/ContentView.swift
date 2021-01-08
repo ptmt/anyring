@@ -20,7 +20,8 @@ struct WatchDashboard: View {
             TripleRingView(size: size,
                            ring1: ring1.snapshot(),
                            ring2: ring2.snapshot(),
-                           ring3: ring3.snapshot()).padding(10)
+                           ring3: ring3.snapshot(),
+                           shape: RingShape.rectangular).padding(10)
             VStack(alignment: .leading, spacing: 10) {
                 RingLabel(name: ring1.name,
                           value: String(describing: ring1.progress),

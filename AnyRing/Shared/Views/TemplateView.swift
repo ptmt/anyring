@@ -67,7 +67,8 @@ struct TemplatesView: View {
                                    ring1: ring.first,
                                    ring2: ring.second,
                                    ring3: ring.third,
-                                   simplified: true).onTapGesture {
+                                   simplified: true,
+                                   shape: .rectangular).onTapGesture {
                                     onSelect?(ring)
                                    }.drawingGroup()
                 }

@@ -54,8 +54,10 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/AnyRing">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "246396F4258D24CD00866E74"
@@ -63,7 +65,7 @@
             BlueprintName = "AnyRingWatch"
             ReferencedContainer = "container:AnyRing.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
       <AdditionalOptions>
          <AdditionalOption
             key = "NSZombieEnabled"
@@ -78,8 +80,10 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "2"
+         BundleIdentifier = "com.apple.Carousel"
+         RemotePath = "/AnyRing">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "246396F4258D24CD00866E74"
@@ -87,7 +91,16 @@
             BlueprintName = "AnyRingWatch"
             ReferencedContainer = "container:AnyRing.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "246396F4258D24CD00866E74"
+            BuildableName = "AnyRingWatch.app"
+            BlueprintName = "AnyRingWatch"
+            ReferencedContainer = "container:AnyRing.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

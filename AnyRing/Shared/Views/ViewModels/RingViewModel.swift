@@ -56,6 +56,7 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
                 }
               },
               receiveValue: { [weak self] value in
+                print(">> value", value)
                 DispatchQueue.main.async {
                     self?.progress = value
                 }

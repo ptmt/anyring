@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RingShape: Shape {
+struct RingCircleShape: Shape {
     var endAngle: Double
     var animatableData: Double {
             get { endAngle }
@@ -21,12 +21,12 @@ struct RingShape: Shape {
         let height = rect.height
         let radius = min(width, height) / 2
         let center = CGPoint(x: width / 2, y: height / 2)
-        let endAngleNormalized = Angle(degrees: endAngle + RingShape.baseAngle)
+        let endAngleNormalized = Angle(degrees: endAngle + RingCircleShape.baseAngle)
         
         return Path { path in
             path.addArc(center: center,
                         radius: radius,
-                        startAngle: Angle(degrees: RingShape.baseAngle),
+                        startAngle: Angle(degrees: RingCircleShape.baseAngle),
                         endAngle: endAngleNormalized,
                         clockwise: false)
         }
@@ -95,8 +95,8 @@ struct RingView: View {
         let angle: Double = progress * 360
         let gradientSecondaryColor = snapshot.gradient ? (secondaryColor ?? primaryColor.opacity(0.5)) : primaryColor
         let gradient = AngularGradient(gradient: Gradient(colors: [gradientSecondaryColor, primaryColor]), center: .center,
-                                       startAngle: Angle(degrees: RingShape.baseAngle),
-                                       endAngle: Angle(degrees: angle  + RingShape.baseAngle))
+                                       startAngle: Angle(degrees: RingCircleShape.baseAngle),
+                                       endAngle: Angle(degrees: angle  + RingCircleShape.baseAngle))
         
         GeometryReader { geometry in
             ZStack {
@@ -105,7 +105,7 @@ struct RingView: View {
                     .opacity(0.2)
                     .foregroundColor(primaryColor)
                 
-                RingShape(endAngle: angle)
+                RingCircleShape(endAngle: angle)
                     .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                     .fill(gradient)
                     .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))

@@ -8,6 +8,10 @@
 import Foundation
 import SwiftUI
 
+enum RingShape: String, Codable {
+    case circle, rectangular
+}
+
 struct RingSnapshot: Codable {
     let progress: Double
     let mainColor: CodableColor
@@ -23,25 +27,49 @@ struct TripleRingView: View {
     let ring2: RingSnapshot
     let ring3: RingSnapshot
     var simplified: Bool = false
+    var shape: RingShape = .rectangular
     private let margin: CGFloat = 1.5
     var body: some View {
         ZStack {
-            let lineWidth = size / 9
-            RingView(
-                size: size,
-                snapshot: ring1,
-                lineWidth: lineWidth,
-                simplified: simplified)
-            RingView(
-                size: size - 2 * (lineWidth + margin),
-                snapshot: ring2,
-                lineWidth: lineWidth,
-                simplified: simplified)
-            RingView(
-                size: size - 4 * (lineWidth + margin),
-                snapshot: ring3,
-                lineWidth: lineWidth,
-                simplified: simplified)
+            switch (shape) {
+            case .circle:
+                let lineWidth = size / 9
+                let margin: CGFloat = 1.5
+                RingView(
+                    size: size,
+                    snapshot: ring1,
+                    lineWidth: lineWidth,
+                    simplified: simplified)
+                RingView(
+                    size: size - 2 * (lineWidth + margin),
+                    snapshot: ring2,
+                    lineWidth: lineWidth,
+                    simplified: simplified)
+                RingView(
+                    size: size - 4 * (lineWidth + margin),
+                    snapshot: ring3,
+                    lineWidth: lineWidth,
+                    simplified: simplified)
+            case .rectangular:
+                let lineWidth = size / 9
+                let margin: CGFloat = 1.5
+                RectangularView(
+                    size: size,
+                    snapshot: ring1,
+                    lineWidth: lineWidth,
+                    simplified: simplified)
+                RectangularView(
+                    size: size - 2 * (lineWidth + margin),
+                    snapshot: ring2,
+                    lineWidth: lineWidth,
+                    simplified: simplified)
+                RectangularView(
+                    size: size - 4 * (lineWidth + margin),
+                    snapshot: ring3,
+                    lineWidth: lineWidth,
+                    simplified: simplified)
+            }
+            
         }
     }
 }
