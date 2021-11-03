@@ -18,7 +18,7 @@ protocol RingProvider {
     var config: ProviderConfiguration { get set }
     var configPersistence: ConfigurationPersistence { get }
     
-    // var requiredHKPermission: HKSampleType? { get }
+
     func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel
     func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error>
 }

@@ -56,13 +56,12 @@ struct RingConfigurationView: View {
         SelectProviderScreen(selected: ring.configuration.name) { healthKitParams in
             var newConfig = ring.configuration as! HealthKitProvider.Configuration
             newConfig.healthKitParams = healthKitParams
-            print("new config", healthKitParams.maxValue)
             ring.update(config: newConfig)
             permissionsTask = self.vm.handlePermissions(permissions: [healthKitParams.sampleType.hkSampleType])
                 .replaceError(with: false)
                 .receive(on: DispatchQueue.main)
                 .sink { res in
-                    
+                    print(">> res", res)
                 }
         }
     }
@@ -92,12 +91,12 @@ struct RingConfigurationView: View {
                 
                 if let config = ring.configuration as? HealthKitProvider.Configuration {
                     
-                    ConfigTextValue(label: config.healthKitParams.reversed ? "Goal" : "Empty Ring", state: ring.configuration.minValue) { changed in
+                    ConfigTextValue(label: config.healthKitParams.reversed ? "Goal" : "Start from", state: ring.configuration.minValue) { changed in
                         var newConfig = ring.configuration
                         newConfig.minValue = changed
                         ring.update(config: newConfig)
                     }
-                    ConfigTextValue(label: config.healthKitParams.reversed ? "Empty Ring" : "Goal", state:  ring.configuration.maxValue) { changed in
+                    ConfigTextValue(label: config.healthKitParams.reversed ? "Start from" : "Goal", state:  ring.configuration.maxValue) { changed in
                         var newConfig = ring.configuration
                         newConfig.maxValue = changed
                         ring.update(config: newConfig)

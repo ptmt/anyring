@@ -24,17 +24,21 @@ class DeviceHealthKitDataSource: HealthKitDataSource {
             if Bundle.main.bundlePath.contains("Widget") {
                 promise(.success(true))
             }
-            let allSatisfy = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
-            if (allSatisfy) {
+            let allGranted = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
+            if (allGranted) {
                 promise(.success(true))
                 return
             }
+            
+ 
 
             self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
+                
                 if let error = error {
-                    print(">> request auth", error)
+                    print("DeviceHealthKitDataSource: request auth", error)
                     promise(.failure(error))
                 } else {
+                    print("DeviceHealthKitDataSource: success", success, permissions)
                     promise(.success(success))
                 }
             }

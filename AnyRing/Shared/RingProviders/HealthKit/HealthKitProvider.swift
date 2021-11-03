@@ -10,14 +10,14 @@ import HealthKit
 import Combine
 
 
-let activityMinutesConfiguration = HealthKitProvider.HealthKitConfiguration(
-    name: "Activity Minutes",
-    description: "A quantity sample type that measures the amount of time the user spent exercising.",
-    units: HKUnitCodable.minute,
-    sampleType: HKObjectTypeCodable.appleExerciseTime,
-    minValue: 0,
-    maxValue: 200,
-    aggregation: .sum)
+//let activityMinutesConfiguration = HealthKitProvider.HealthKitConfiguration(
+//    name: "Activity Minutes",
+//    description: "A quantity sample type that measures the amount of time the user spent exercising.",
+//    units: HKUnitCodable.minute,
+//    sampleType: HKObjectTypeCodable.appleExerciseTime,
+//    minValue: 0,
+//    maxValue: 200,
+//    aggregation: .sum)
 
 let hrvConfiguration = HealthKitProvider.HealthKitConfiguration(
     name: "HRV",
@@ -56,14 +56,14 @@ let dietaryCaffeineConfiguration = HealthKitProvider.HealthKitConfiguration(
     maxValue: 100,
     aggregation: .sum)
 
-let appleStandTime = HealthKitProvider.HealthKitConfiguration(
-    name: "Standing hours",
-    description: "A quantity sample type that measures the amount of time the user has spent standing.",
-    units: HKUnitCodable.minute,
-    sampleType: HKObjectTypeCodable.appleStandTime,
-    minValue: 0,
-    maxValue: 100,
-    aggregation: .sum)
+//let appleStandTime = HealthKitProvider.HealthKitConfiguration(
+//    name: "Standing hours",
+//    description: "A quantity sample type that measures the amount of time the user has spent standing.",
+//    units: HKUnitCodable.minute,
+//    sampleType: HKObjectTypeCodable.appleStandTime,
+//    minValue: 0,
+//    maxValue: 100,
+//    aggregation: .sum)
 
 let pushCount = HealthKitProvider.HealthKitConfiguration(
     name: "Pushes",
@@ -83,14 +83,14 @@ let stepCount = HealthKitProvider.HealthKitConfiguration(
     maxValue: 8000,
     aggregation: .sum)
 
-let distanceWalkingRunning = HealthKitProvider.HealthKitConfiguration(
-    name: "Move Distance",
-    description: "A quantity sample type that measures the distance the user has moved by walking or running.",
-    units: HKUnitCodable.meter,
-    sampleType: HKObjectTypeCodable.distanceWalkingRunning,
-    minValue: 0,
-    maxValue: 10000,
-    aggregation: .sum)
+//let distanceWalkingRunning = HealthKitProvider.HealthKitConfiguration(
+//    name: "Distance",
+//    description: "A quantity sample type that measures the distance the user has moved by walking or running.",
+//    units: HKUnitCodable.meter,
+//    sampleType: HKObjectTypeCodable.distanceWalkingRunning,
+//    minValue: 0,
+//    maxValue: 10000,
+//    aggregation: .sum)
 
 let distanceSwimming = HealthKitProvider.HealthKitConfiguration(
     name: "Swim",
@@ -147,10 +147,7 @@ let distanceCycling = HealthKitProvider.HealthKitConfiguration(
     aggregation: .sum)
 
 let healthKitProviders = [
-    activityMinutesConfiguration,
-    appleStandTime,
     stepCount,
-    distanceWalkingRunning,
     pushCount,
     distanceSwimming,
     flightsClimbed,

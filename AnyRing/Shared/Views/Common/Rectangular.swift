@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftUI
-
+import UIKit
 
 struct RectangularShape: Shape {
     var progress: Double
@@ -40,49 +40,32 @@ struct RectangularShape: Shape {
             )
             
             var covered: Double = 0
-            RectangularShape.segments.forEach { segment in
-                
-                
-                //                let endPointX = width * segment.x
-                //                let rectWidth = endPointX - path.currentPoint!.x >= 0 ? max(lineWidth, abs(endPointX - path.currentPoint!.x)) : min(-lineWidth, endPointX - path.currentPoint!.x)
-                //                let endPointY = height * segment.y
-                //                let rectHeight = endPointY - path.currentPoint!.y >= 0 ? max(lineWidth, abs(endPointY - path.currentPoint!.y)) :  min(-lineWidth, endPointY - path.currentPoint!.y)
-                //                let isHorizontal = rectWidth > rectHeight
-                //
-                //
-                //                path.addRect(.init(origin: path.currentPoint!, size:
-                //                                    .init(width: rectWidth,
-                //                                          height: rectHeight)))
-                //                let endPoint = CGPoint(x: isHorizontal ? endPointX - lineWidth : endPointX, y: isHorizontal ? endPointY : endPointY - lineWidth)
-                //                print(">> draw size", rectWidth, rectHeight, "from", path.currentPoint, "to", endPoint)
-                //                path.move(to: endPoint)
-                let delta = covered == 0 || covered + 0.13 > 1 ? 0.25 / 2 : 0.25
-                if (covered + delta <= progress) {
-                    path.addLine(
-                        to: CGPoint(
-                            x: width * segment.x,
-                            y: height * segment.y
-                        )
-                    )
-                } else {
-                    let finalDelta = CGFloat(progress - covered) / CGFloat(delta)
-                    if (finalDelta > 0) {
-                        let isHorizontal = abs(path.currentPoint!.x - segment.x * width) > 0.1
-                        let x = isHorizontal ? path.currentPoint!.x + finalDelta * (width * segment.x - path.currentPoint!.x) : width * segment.x
-                        let y = isHorizontal ? height * segment.y : path.currentPoint!.y - finalDelta * (path.currentPoint!.y - height * segment.y)
-//                        print("current", path.currentPoint, isHorizontal, CGPoint(
-//                            x: width * segment.x,
-//                            y: height * segment.y
-//                        ), "\n finalDelta=", progress, CGFloat(progress - covered), finalDelta, "\nx, y", x, y)
+            while (covered < progress) {
+                RectangularShape.segments.forEach { segment in
+                    let delta = covered.truncatingRemainder(dividingBy: 1.0) == 0 || covered.truncatingRemainder(dividingBy: 1.0) + 0.13 > 1 ? 0.25 / 2 : 0.25
+                    if (covered + delta <= progress) {
                         path.addLine(
                             to: CGPoint(
-                                x: x,
-                                y: y
+                                x: width * segment.x,
+                                y: height * segment.y
                             )
                         )
+                    } else {
+                        let finalDelta = CGFloat(progress - covered) / CGFloat(delta)
+                        if (progress - covered > 0) {
+                            let isHorizontal = abs(path.currentPoint!.x - segment.x * width) > 0.1
+                            let x = isHorizontal ? path.currentPoint!.x + finalDelta * (width * segment.x - path.currentPoint!.x) : width * segment.x
+                            let y = isHorizontal ? height * segment.y : path.currentPoint!.y - finalDelta * (path.currentPoint!.y - height * segment.y)
+                            path.addLine(
+                                to: CGPoint(
+                                    x: x,
+                                    y: y
+                                )
+                            )
+                        }
                     }
+                    covered = covered + delta
                 }
-                covered = covered + delta
             }
         }
     }
@@ -118,21 +101,19 @@ struct RectLineEndView: View {
     
     var body: some View {
         var covered: Double = 0
-        var offsetX: Double = 0
+        var offsetX: Double = Double(offsetRadius)
         var offsetY: Double = 0
         let width: Double = Double(offsetRadius * 2)
         let height: Double = Double(offsetRadius * 2)
         var i = 0
-        var lastSegment: CGPoint = .zero
         while (covered < finalProgress) {
             i = i + 1
             RectangularShape.segments.forEach { segment in
-                let delta = covered == 0 || covered.truncatingRemainder(dividingBy: 1.0) + 0.13 > 1 ? 0.25 / 2 : 0.25
+                let delta = covered.truncatingRemainder(dividingBy: 1.0) == 0 || covered.truncatingRemainder(dividingBy: 1.0) + 0.13 > 1 ? 0.25 / 2 : 0.25
                 if (covered + delta <= finalProgress) {
                     offsetX = Double(segment.x) * width
                     offsetY = Double(segment.y) * height
                 } else {
-                    lastSegment = segment
                     let finalDelta = (finalProgress - covered) / delta
                     if (finalProgress - covered > 0) {
                         let isHorizontal = abs(offsetX - Double(segment.x) * width) > 0.1
@@ -141,7 +122,7 @@ struct RectLineEndView: View {
                             width * Double(segment.x)
                         let y = isHorizontal ?
                             height * Double(segment.y) :
-                            offsetY + finalDelta * (width * Double(segment.y) - offsetY)
+                            offsetY + finalDelta * (height * Double(segment.y) - offsetY)
                         offsetX = x
                         offsetY = y
                     }
@@ -154,7 +135,8 @@ struct RectLineEndView: View {
             .frame(width: lineWidth,
                    height: lineWidth,
                    alignment: .top)
-            .shadow(color: Color.black.opacity(0.4), radius: 3, x: lastSegment.x * 4, y: -lastSegment.y * 4)
+            .border(primaryColor.blend(with: UIColor(Color.primary.opacity(0.5))), width: 2)
+            .shadow(color: Color.black.opacity(0.4), radius: 4, x: 0, y: 0)
             .offset(x: CGFloat(offsetX) - offsetRadius, y: CGFloat(offsetY) - offsetRadius)
             .onAppear(perform: {
                 finalProgress = progress
@@ -193,23 +175,23 @@ struct RectangularView: View {
     @State private var firstRender = true
     
     var body: some View {
-        let baseAngle: Double = 0 // -(360 / 8)
+        let baseAngle: Double = -90
         let angle: Double = progress * 360
-        let gradientSecondaryColor = (secondaryColor ?? primaryColor.blend(with: UIColor(Color.primary)))
+        let gradientSecondaryColor = (secondaryColor ?? primaryColor.blend(with: UIColor(Color.primary.inverted)))
         let gradient = AngularGradient(gradient: Gradient(colors: [gradientSecondaryColor, primaryColor]), center: .center,
                                        startAngle: Angle(degrees: baseAngle),
                                        endAngle: Angle(degrees: angle  + baseAngle))
         
-        let linearGradient = LinearGradient(gradient: Gradient(colors: [gradientSecondaryColor, primaryColor]),
-                                            startPoint: .init(x: 0, y: 0),
-                                            endPoint: .init(x: 1, y: 1))
+//        let linearGradient = LinearGradient(gradient: Gradient(colors: [gradientSecondaryColor, primaryColor]),
+//                                            startPoint: .init(x: 0, y: 0),
+//                                            endPoint: .init(x: 1, y: 1))
         
         GeometryReader { geometry in
             ZStack {
                 Rectangle()
                     .stroke(style: StrokeStyle.init(lineWidth: lineWidth, lineCap: .round, lineJoin: .miter))
                     .fill(primaryColor)
-                    .opacity(0.30)
+                    .opacity(0.14)
                 
                 RectangularShape(progress: progress)
                     .stroke(style: StrokeStyle.init(lineWidth: lineWidth, lineCap: .butt, lineJoin: .miter))
@@ -242,9 +224,9 @@ struct RectangularView: View {
 struct RectangularView_Preview: PreviewProvider {
     static var previews: some View {
         Group {
-            RectangularView(size: 140, snapshot: RingSnapshot(progress: 0.30, mainColor: Color.green.codable, gradient: true, secondaryColor: Color.blue.codable, outerGlow: false), lineWidth: 20.0)
+            RectangularView(size: 140, snapshot: RingSnapshot(progress: 0, mainColor: Color.green.codable, gradient: true, secondaryColor: Color.blue.codable, outerGlow: false), lineWidth: 20.0)
             RectangularView(size: 240, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.red.codable, gradient: false, outerGlow: false, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
-            RectangularView(size: 100, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.pink.codable, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
+            RectangularView(size: 100, snapshot: RingSnapshot(progress: 1.15, mainColor: Color.pink.codable, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
                 .preferredColorScheme(.dark)
         }.previewLayout(.fixed(width: 250, height: 250))
     }

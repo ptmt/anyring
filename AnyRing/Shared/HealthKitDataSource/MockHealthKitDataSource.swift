@@ -58,6 +58,11 @@ class MockHealthKitDataSource: HealthKitDataSource {
                 return
             }
             
+            if (sampleType == HKObjectType.quantityType(forIdentifier: .stepCount)!) {
+                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.count(), doubleValue: 5100), start: Date(), end: Date())]))
+                return
+            }
+            
             promise(.success([]))
         }
     }

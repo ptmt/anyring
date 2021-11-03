@@ -39,6 +39,10 @@ struct WatchDashboard: View {
                 Text("\(days)-day period")
                     .font(.footnote)
                     .foregroundColor(.secondary)
+                
+                Button("Refresh") {
+                    print("refresh")
+                }
             }.padding(.horizontal, 20)
         }
     }

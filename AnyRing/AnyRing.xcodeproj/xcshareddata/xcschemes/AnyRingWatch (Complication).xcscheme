@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "246396B5258D21E300866E74"
-               BuildableName = "AnyRing.app"
+               BuildableName = "AnyProgress.app"
                BlueprintName = "AnyRing (iOS)"
                ReferencedContainer = "container:AnyRing.xcodeproj">
             </BuildableReference>
@@ -58,7 +58,7 @@
       <RemoteRunnable
          runnableDebuggingMode = "2"
          BundleIdentifier = "com.apple.Carousel"
-         RemotePath = "/AnyRing">
+         RemotePath = "/AnyProgress">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "246396F4258D24CD00866E74"
@@ -78,7 +78,7 @@
       <RemoteRunnable
          runnableDebuggingMode = "2"
          BundleIdentifier = "com.apple.Carousel"
-         RemotePath = "/AnyRing">
+         RemotePath = "/AnyProgress">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "246396F4258D24CD00866E74"

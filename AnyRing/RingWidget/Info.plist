@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>RingWidget</string>
+	<string>AnyProgress Widget</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -26,8 +26,8 @@
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
 	<key>NSHealthShareUsageDescription</key>
-	<string>AnyRing Widget requires an access to HealthKit for certain ring providers</string>
+	<string>AnyProgress Widget requires an access to HealthKit for certain ring providers</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>AnyRing uses HealthKit only in a read-only mode</string>
+	<string>AnyProgress uses HealthKit only in a read-only mode</string>
 </dict>
 </plist>

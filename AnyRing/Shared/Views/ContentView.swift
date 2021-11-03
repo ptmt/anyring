@@ -9,6 +9,7 @@ import SwiftUI
 import Combine
 import WidgetKit
 import WatchConnectivity
+import UIKit
 
 struct ContentView: View {
     
@@ -25,7 +26,7 @@ struct ContentView: View {
                         watchSession.sendConfigToWatch(config: viewModel.config)
                     })
                     .environmentObject(viewModel)
-                    .navigationTitle(Text("AnyRing"))
+                    .navigationTitle(Text("AnyProgress"))
                     .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                         viewModel.rings?.forEach { $0.refresh() }
                         refreshWidget()
@@ -38,9 +39,17 @@ struct ContentView: View {
                         }
                     }
                 } else {
-                    ProgressView().alert(isPresented: $viewModel.showingAlert) {
-                        Alert(title: Text("Error"), message: Text("Permission to HealthKit is denied"), dismissButton: .default(Text("OK")))
-                    }.navigationTitle(Text("AnyRing"))
+                    if (viewModel.showingAlert) {
+                        VStack(spacing: 8) {
+                            Text("Permission to HealthKit is denied").bold()
+                            Button("Open HealthKit") {
+                                UIApplication.shared.open(URL(string: "x-apple-health://")!, options: [:], completionHandler: nil)
+                            }
+                            Text("Check Sharing -> Apps")
+                        }.navigationTitle(Text("AnyProgress"))
+                    } else {
+                        ProgressView().navigationTitle(Text("AnyProgress"))
+                    }
                 }
                 
             } else {
@@ -73,7 +82,7 @@ class WatchSession: NSObject, WCSessionDelegate {
         
     }
     func sendConfigToWatch(config: AnyRingConfig) {
-        if (wcSession.activationState == .activated) {
+        if (wcSession.activationState == .activated && wcSession.isWatchAppInstalled) {
             do {
                 let encoded = try JSONEncoder().encode(config)
                 try wcSession.updateApplicationContext(["config": encoded])

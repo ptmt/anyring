@@ -74,3 +74,20 @@ struct TripleRingView: View {
     }
 }
 
+
+
+struct RipleRingView_Preview: PreviewProvider {
+    static var previews: some View {
+        
+            TripleRingView(size: 500,
+                           ring1: TemplatesView.snapshotForColorWithGlow(Color.init(hex: 0xffe6e6)),
+                           ring2: TemplatesView.snapshotForColorWithGlow(Color.init(hex: 0xffabe1)),
+                           ring3: TemplatesView.snapshotForColorWithGlow(Color.init(hex: 0xa685e2)),
+                           shape: .rectangular
+            )
+       
+            .preferredColorScheme(.dark)
+        .previewLayout(.fixed(width: 1024, height: 1024))
+//            .background(Color.black)
+    }
+}

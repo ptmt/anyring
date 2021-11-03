@@ -87,7 +87,6 @@ class AnyRingViewModel: ObservableObject {
         .sink { result in
             switch(result) {
             case .failure(let error):
-                print(">> getSnapshots finished with", error)
                 completion(nil, error)
             case .finished:
                 break;

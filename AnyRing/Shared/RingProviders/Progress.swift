@@ -31,4 +31,8 @@ struct Progress: CustomStringConvertible {
     }
     
     static let Empty = Progress(absolute: 0, maxAbsolute: 100, minAbsolute: 0)
+    
+    var empty: Bool {
+        absolute == normMin
+    }
 }

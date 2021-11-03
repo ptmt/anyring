@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>AnyRingWatch Extension</string>
+	<string>$(PRODUCT_NAME)Watch Extension</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -33,7 +33,7 @@
 		<string>com.apple.watchkit</string>
 	</dict>
 	<key>NSHealthShareUsageDescription</key>
-	<string>AnyRing uses HealthKit data to draw rings</string>
+	<string>$(PRODUCT_NAME) uses HealthKit data to draw rings</string>
 	<key>WKExtensionDelegateClassName</key>
 	<string>ExtensionDelegate</string>
 </dict>

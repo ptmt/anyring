@@ -15,7 +15,7 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     
     func getComplicationDescriptors(handler: @escaping ([CLKComplicationDescriptor]) -> Void) {
         let descriptors = [
-            CLKComplicationDescriptor(identifier: "complication", displayName: "AnyRing", supportedFamilies: [.graphicCircular, .modularSmall])
+            CLKComplicationDescriptor(identifier: "complication", displayName: "AnyProgress", supportedFamilies: [.graphicCircular, .modularSmall])
             // Multiple complication support can be added here with more descriptors
         ]
         
@@ -126,7 +126,9 @@ struct ComplicationView: View {
             TripleRingView(size: size,
                            ring1: snapshot.first,
                            ring2: snapshot.second,
-                           ring3: snapshot.third)
+                           ring3: snapshot.third,
+                           simplified: true,
+                           shape: .circle)
             
         }
     }

@@ -61,17 +61,6 @@ struct RingWidgetEntryView : View {
     var entry: Provider.Entry
     
     var body: some View {
-        // if let rings = entry.rings {
-        //            ZStack {
-        //                Text("\(entry.rings.first.progress)")
-        //                Text("\(entry.rings.second.progress)")
-        //                Text("\(entry.rings.third.progress)")
-        //            }
-        //        } else {
-        //            Group {
-        //                Text("Loading rings").font(.headline)
-        //            }
-        //        }
         if let rings = entry.rings {
             let delta: CGFloat = 15
             let size = min(entry.size.width, entry.size.height) - delta
@@ -105,8 +94,8 @@ struct RingWidget: Widget {
             RingWidgetEntryView(entry: entry)
         }
         .supportedFamilies([.systemSmall, .systemLarge])
-        .configurationDisplayName("AnyRing")
-        .description("Configure custom rings, using external data providers and based on any time interval")
+        .configurationDisplayName("AnyProgress")
+        .description("Configure custom progress trackers, using external data providers and make them based on any time interval")
     }
 }
 

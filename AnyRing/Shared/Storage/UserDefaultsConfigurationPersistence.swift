@@ -10,8 +10,8 @@ import Foundation
 class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     static let key = "Config.v3"
     static let defaultConfig = AnyRingConfig([
-        HealthKitProvider.Configuration(ring: .first, healthKitParams: activityMinutesConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
-        HealthKitProvider.Configuration(ring: .second, healthKitParams: appleStandTime, appearance: RingAppearance(mainColor: CodableColor(.pink))),
+        HealthKitProvider.Configuration(ring: .first, healthKitParams: hrvConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
+        HealthKitProvider.Configuration(ring: .second, healthKitParams: stepCount, appearance: RingAppearance(mainColor: CodableColor(.pink))),
         HealthKitProvider.Configuration(ring: .third, healthKitParams: activeEnergyBurned, appearance: RingAppearance(mainColor: CodableColor(.yellow))),
     ], GlobalConfiguration(days: 3))
     

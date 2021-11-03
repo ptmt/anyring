@@ -12,12 +12,22 @@ struct MainScreen: View {
     @EnvironmentObject var vm: AnyRingViewModel
     @State var days: Int
     @State var selection = 1
+    @State var showAlert = true
     var onPeriodChange: ((Int) -> Void)?
     
     var body: some View {
         Form {
-            
+            if (isEmpty && showAlert) {
+                Section {
+                    Text("Looks like there are no data available. Make sure you granted the permissions in Apple Health (Check Sharing -> Apps -> AnyProgress)").font(.footnote)
+                    Button("Open HealthKit") {
+                        showAlert = false
+                        UIApplication.shared.open(URL(string: "x-apple-health://")!, options: [:], completionHandler: nil)
+                    }
+                }
+            }
             Section {
+                
                 RingDashboard(size: 150,
                               ring1: rings.first,
                               ring2: rings.second,
@@ -47,12 +57,12 @@ struct MainScreen: View {
                         onPeriodChange?(days)
                     })
                 }
-                Text("You can choose how often the rings get reset. By default Activity Rings in iOS start over every 24 hours")
+                Text("Specify how often the progress gets reset. For example you can aggregate number of steps over 3 days")
                     .font(.footnote)
                     .foregroundColor(.secondary)
             }
             
-            Section() {
+            Section(header: Text("Configuration")) {
                 Picker(selection: $selection, label: Text(""), content: {
                     Text("Ring 1").tag(1)
                     Text("Ring 2").tag(2)
@@ -67,6 +77,8 @@ struct MainScreen: View {
             }
         }
     }
+    
+    private var isEmpty: Bool { rings.list.allSatisfy { $0.progress.empty } }
 }
 
 
