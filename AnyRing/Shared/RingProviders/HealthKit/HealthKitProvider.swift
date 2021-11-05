@@ -260,8 +260,14 @@ class HealthKitProvider: RingProvider {
     
     private func aggregate(numberOfDays: Int, sampleType: HKSampleType, unit: HKUnit, aggregation: Aggregation) -> AnyPublisher<Double, Error> {
         
+        let calendar = Calendar.current
+        // We calculate start of day, not the exact time
+        let timeInDay = Date().addingTimeInterval(TimeInterval(-Double(numberOfDays - 1) * secondsInDayApprox))
+        
+        let startOfTheDay = calendar.startOfDay(for: timeInDay)
+        
         return dataSource.fetchSamples(
-            withStart: Date().addingTimeInterval(TimeInterval(-Double(numberOfDays) * secondsInDayApprox)),
+            withStart: startOfTheDay,
             to: Date(),
             ofType: sampleType)
             .tryMap { results -> Double in
