@@ -60,8 +60,8 @@ struct RingConfigurationView: View {
             permissionsTask = self.vm.handlePermissions(permissions: [healthKitParams.sampleType.hkSampleType])
                 .replaceError(with: false)
                 .receive(on: DispatchQueue.main)
-                .sink { res in
-                    print(">> res", res)
+                .sink { _ in
+                    
                 }
         }
     }

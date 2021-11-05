@@ -12,22 +12,11 @@ struct MainScreen: View {
     @EnvironmentObject var vm: AnyRingViewModel
     @State var days: Int
     @State var selection = 1
-    @State var showAlert = true
     var onPeriodChange: ((Int) -> Void)?
     
     var body: some View {
         Form {
-            if (isEmpty && showAlert) {
-                Section {
-                    Text("Looks like there are no data available. Make sure you granted the permissions in Apple Health (Check Sharing -> Apps -> AnyProgress)").font(.footnote)
-                    Button("Open HealthKit") {
-                        showAlert = false
-                        UIApplication.shared.open(URL(string: "x-apple-health://")!, options: [:], completionHandler: nil)
-                    }
-                }
-            }
             Section {
-                
                 RingDashboard(size: 150,
                               ring1: rings.first,
                               ring2: rings.second,
@@ -78,7 +67,6 @@ struct MainScreen: View {
         }
     }
     
-    private var isEmpty: Bool { rings.list.allSatisfy { $0.progress.empty } }
 }
 
 
