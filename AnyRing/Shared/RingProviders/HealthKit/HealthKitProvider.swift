@@ -261,33 +261,31 @@ class HealthKitProvider: RingProvider {
     private func aggregate(numberOfDays: Int, sampleType: HKSampleType, unit: HKUnit, aggregation: Aggregation) -> AnyPublisher<Double, Error> {
         
         let calendar = Calendar.current
+        
         // We calculate start of day, not the exact time
-        let timeInDay = Date().addingTimeInterval(TimeInterval(-Double(numberOfDays - 1) * secondsInDayApprox))
+        let timeInDay = numberOfDays > 1 ?  Date().addingTimeInterval(TimeInterval(-Double(numberOfDays - 1) * secondsInDayApprox)) : Date()
         
         let startOfTheDay = calendar.startOfDay(for: timeInDay)
         
-        return dataSource.fetchSamples(
+        
+        print(">> startOfTheDay", numberOfDays, timeInDay, startOfTheDay, Date() - startOfTheDay)
+        
+        return dataSource.fetchStatistics(
             withStart: startOfTheDay,
             to: Date(),
-            ofType: sampleType)
-            .tryMap { results -> Double in
-                switch(aggregation) {
-                case .sum: return results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
-                    sum + (sample as! HKQuantitySample).quantity.doubleValue(for: unit)
-                }
-                case .avg:  return (results.reduce(0) {(sum: Double, sample: HKSample) -> Double in
-                    sum + (sample as! HKQuantitySample).quantity.doubleValue(for: unit)
-                }) / Double(results.count)
-                case .min:  return (results.min { (sample1, sample2) -> Bool in
-                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: unit)
-                } as? HKQuantitySample)?.quantity.doubleValue(for: unit) ?? 0
-                case .max:  return (results.max { (sample1, sample2) -> Bool in
-                    (sample1 as! HKQuantitySample).quantity.doubleValue(for: unit) < (sample2 as! HKQuantitySample).quantity.doubleValue(for: unit)
-                } as? HKQuantitySample)?.quantity.doubleValue(for: unit) ?? 0
-                }
-            }.eraseToAnyPublisher()
+            ofType: sampleType,
+            unit: unit,
+            aggregation: aggregation).eraseToAnyPublisher()
     }
 }
 
 
 let secondsInDayApprox: Double = 60 * 60 * 24
+
+extension Date {
+
+    static func - (lhs: Date, rhs: Date) -> TimeInterval {
+        return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
+    }
+
+}

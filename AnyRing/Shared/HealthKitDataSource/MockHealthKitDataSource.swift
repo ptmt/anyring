@@ -22,48 +22,40 @@ class MockHealthKitDataSource: HealthKitDataSource {
         }
     }
     
-    func fetchSamples(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType) -> Future<HKSamples, Error> {
+    func fetchStatistics(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType, unit: HKUnit, aggregation: Aggregation) -> Future<Double, Error> {
         
         return Future() { promise in
             if (sampleType == HKQuantityType.quantityType(forIdentifier: .heartRate)!) {
-                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.count().unitDivided(by: HKUnit.minute()), doubleValue: 55), start: Date(), end: Date())]))
+                promise(.success(55))
                 return
             }
             
             if (sampleType == HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!) {
-                promise(.success([
-                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.secondUnit(with: .milli), doubleValue: 110), start: Date(), end: Date()),
-                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.secondUnit(with: .milli), doubleValue: 1), start: Date(), end: Date()),
-                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.secondUnit(with: .milli), doubleValue: 50), start: Date(), end: Date())
-                ]))
+                promise(.success(110))
                 return
             }
             
             if (sampleType == HKQuantityType.quantityType(forIdentifier: .appleStandTime)!) {
-                promise(.success([
-                    HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 110), start: Date(), end: Date()),
-                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 1), start: Date(), end: Date()),
-                                HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 50), start: Date(), end: Date())
-                ]))
+                promise(.success(8))
                 return
             }
             
             if (sampleType == HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!) {
-                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.kilocalorie(), doubleValue: 1100), start: Date(), end: Date())]))
+                promise(.success(1100))
                 return
             }
             
             if (sampleType == HKObjectType.quantityType(forIdentifier: .appleExerciseTime)!) {
-                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.minute(), doubleValue: 110), start: Date(), end: Date())]))
+                promise(.success(110))
                 return
             }
             
             if (sampleType == HKObjectType.quantityType(forIdentifier: .stepCount)!) {
-                promise(.success([HKQuantitySample(type: sampleType as! HKQuantityType, quantity: HKQuantity(unit: HKUnit.count(), doubleValue: 5100), start: Date(), end: Date())]))
+                promise(.success(5100))
                 return
             }
             
-            promise(.success([]))
+            promise(.success(0))
         }
     }
 }

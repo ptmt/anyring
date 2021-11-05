@@ -20,8 +20,10 @@ struct ConfigTextValue: View {
             Text(label)
             Spacer()
             
-            TextField("Min", value: $state, formatter: DoubleFormatter(), onEditingChanged: { s in
+            TextField("value", value: $state, formatter: DoubleFormatter(), onEditingChanged: { s in
                 if (!s) { onChange(state) }
+            }, onCommit: {
+                onChange(state)
             }).textFieldStyle(RoundedBorderTextFieldStyle())
             .fixedSize()
             

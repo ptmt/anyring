@@ -23,11 +23,11 @@ struct Progress: CustomStringConvertible {
     }
     
     var normalized: Double {
-        reversed ? (maxAbsolute - absolute) / normMax : absolute / normMax
+        absolute.isNaN ? 0 : (reversed ? (maxAbsolute - absolute) / normMax : absolute / normMax)
     }
     
     var description: String {
-        return "\(Int(absolute))/\(reversed ? Int(minAbsolute) : Int(maxAbsolute))"
+        return "\((absolute))/\(reversed ? (minAbsolute) : (maxAbsolute))"
     }
     
     static let Empty = Progress(absolute: 0, maxAbsolute: 100, minAbsolute: 0)
