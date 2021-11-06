@@ -267,9 +267,6 @@ class HealthKitProvider: RingProvider {
         
         let startOfTheDay = calendar.startOfDay(for: timeInDay)
         
-        
-        print(">> startOfTheDay", numberOfDays, timeInDay, startOfTheDay, Date() - startOfTheDay)
-        
         return dataSource.fetchStatistics(
             withStart: startOfTheDay,
             to: Date(),

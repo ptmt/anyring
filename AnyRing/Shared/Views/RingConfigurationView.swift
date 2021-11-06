@@ -20,11 +20,10 @@ struct ConfigTextValue: View {
             Text(label)
             Spacer()
             
-            TextField("value", value: $state, formatter: DoubleFormatter(), onEditingChanged: { s in
-                if (!s) { onChange(state) }
-            }, onCommit: {
+            TextField("value", value: $state, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle()).keyboardType(.numberPad)
+                .onSubmit {
                 onChange(state)
-            }).textFieldStyle(RoundedBorderTextFieldStyle())
+            }
             .fixedSize()
             
             Stepper("", value: $state, in: 0...50000) { s in

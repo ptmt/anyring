@@ -23,7 +23,7 @@ struct Progress: CustomStringConvertible {
     }
     
     var normalized: Double {
-        absolute.isNaN ? 0 : (reversed ? (maxAbsolute - absolute) / normMax : absolute / normMax)
+        (absolute.isNaN || minAbsolute >= maxAbsolute) ? 0 : (reversed ? (maxAbsolute - absolute) / normMax : absolute / normMax)
     }
     
     var description: String {
