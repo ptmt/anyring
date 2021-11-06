@@ -13,6 +13,7 @@ import Combine
 struct ConfigTextValue: View {
     var label: String
     @State var state: Double
+    
     var onChange: (Double) -> Void
     
     var body: some View {
@@ -20,15 +21,16 @@ struct ConfigTextValue: View {
             Text(label)
             Spacer()
             
-            TextField("value", value: $state, formatter: DoubleFormatter()).textFieldStyle(RoundedBorderTextFieldStyle()).keyboardType(.numberPad)
-                .onSubmit {
-                onChange(state)
+            TextField("value", value: $state, format: .number).onChange(of: state) { value in
+                onChange(value)
             }
-            .fixedSize()
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardType(.numberPad)
+                .fixedSize()
             
-            Stepper("", value: $state, in: 0...50000) { s in
-                if (!s) { onChange(state) }
-            }.fixedSize()
+//            Stepper("", value: $state, in: 0...50000) { s in
+//                if (!s) { onChange(state) }
+//            }.fixedSize()
         }
     }
 }
@@ -97,6 +99,7 @@ struct RingConfigurationView: View {
                         newConfig.minValue = changed
                         ring.update(config: newConfig)
                     }
+                    
                     ConfigTextValue(label: config.healthKitParams.reversed ? "Start from" : "Goal", state:  ring.configuration.maxValue) { changed in
                         var newConfig = ring.configuration
                         newConfig.maxValue = changed
@@ -152,38 +155,5 @@ struct RingConfigurationView_Preview: PreviewProvider {
         Form {
             RingConfigurationView(ring: DemoProvider().viewModel(globalConfig:  GlobalConfiguration.Default))
         }
-    }
-}
-
-
-public class DoubleFormatter: Formatter {
-    
-    override public func string(for obj: Any?) -> String? {
-        var retVal: String?
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        
-        if let dbl = obj as? Double {
-            retVal = formatter.string(from: NSNumber(value: dbl))
-        } else {
-            retVal = nil
-        }
-        
-        return retVal
-    }
-    
-    override public func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
-        
-        var retVal = true
-        
-        if let dbl = Double(string), let objok = obj {
-            objok.pointee = dbl as AnyObject?
-            retVal = true
-        } else {
-            retVal = false
-        }
-        
-        return retVal
-        
     }
 }

@@ -46,7 +46,7 @@ struct MainScreen: View {
                         onPeriodChange?(days)
                     })
                 }
-                Text("Specify how often the progress gets reset. For example you can aggregate number of steps over 3 days")
+                Text("Specify how often the progress starts from the beginning. For example you can aggregate number of steps over 3 days")
                     .font(.footnote)
                     .foregroundColor(.secondary)
             }

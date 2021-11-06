@@ -27,12 +27,22 @@ struct Progress: CustomStringConvertible {
     }
     
     var description: String {
-        return "\((absolute))/\(reversed ? (minAbsolute) : (maxAbsolute))"
+        return "\((absolute).IntOrString)/\((reversed ? (minAbsolute) : (maxAbsolute)).IntOrString)"
     }
     
     static let Empty = Progress(absolute: 0, maxAbsolute: 100, minAbsolute: 0)
     
     var empty: Bool {
         absolute == normMin
+    }
+}
+
+extension Double {
+    var IntOrString: String {
+        if self >= Double(Int.min) && self < Double(Int.max) {
+            return String(Int(self))
+        } else {
+            return String(self)
+        }
     }
 }

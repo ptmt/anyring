@@ -56,7 +56,6 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
                 }
               },
               receiveValue: { [weak self] value in
-                print("Provider.receiveValue", value)
                 DispatchQueue.main.async {
                     self?.progress = value
                 }
@@ -66,6 +65,7 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
     }
     
     func update(config: ProviderConfiguration) {
+        print(">> update config", config)
         provider.configPersistence.update(config: config)
         provider.config = config
         configuration = config
@@ -82,6 +82,8 @@ class RingViewModel: ObservableObject, CustomStringConvertible {
         newAppearance.outerGlow = snapshot.outerGlow
         newConfig.appearance = newAppearance
         provider.configPersistence.update(config: newConfig)
+        
+        print(">> updateFromSnapshot", configuration)
         configuration = newConfig
         refresh()
     }
