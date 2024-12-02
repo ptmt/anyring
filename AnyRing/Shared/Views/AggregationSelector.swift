@@ -22,8 +22,8 @@ struct ConfigAggregation: View {
                 Text("Max").tag(Aggregation.max)
             })
             .pickerStyle(SegmentedPickerStyle())
-            .onChange(of: tag) { value in
-              onChange(value)
+            .onChange(of: tag) {
+              onChange(tag)
             }
         }
     }

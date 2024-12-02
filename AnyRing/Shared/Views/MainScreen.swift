@@ -42,9 +42,9 @@ struct MainScreen: View {
                         Text("7").tag(7)
                     })
                     .pickerStyle(SegmentedPickerStyle())
-                    .onChange(of: days, perform: { value in
+                    .onChange(of: days) {
                         onPeriodChange?(days)
-                    })
+                    }
                 }
                 Text("Specify how often the progress starts from the beginning. For example you can aggregate number of steps over 3 days")
                     .font(.footnote)

@@ -21,7 +21,7 @@ struct CodableColor: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
-        if let uiColor = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? UIColor {
+        if let uiColor = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
             self.color = Color(uiColor)
         } else {
             self.color = Color.red // fail silently

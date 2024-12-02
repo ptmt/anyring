@@ -21,8 +21,8 @@ struct ConfigTextValue: View {
             Text(label)
             Spacer()
             
-            TextField("value", value: $state, format: .number).onChange(of: state) { value in
-                onChange(value)
+            TextField("value", value: $state, format: .number).onChange(of: state) {
+                onChange(state)
             }
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.numberPad)
@@ -43,8 +43,8 @@ struct ConfigBoolValue: View {
     var body: some View {
         Toggle(isOn: $isOn) {
             Text(label)
-        }.onChange(of: isOn) { value in
-            onChange(value)
+        }.onChange(of: isOn) {
+            onChange(isOn)
         }
     }
 }

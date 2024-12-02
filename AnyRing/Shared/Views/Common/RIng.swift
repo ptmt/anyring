@@ -60,9 +60,9 @@ struct RingLineEndView: View {
             .onAppear(perform: {
                 finalProgress = progress
             })
-            .onChange(of: progress, perform: { value in
-                finalProgress = value
-            })
+            .onChange(of: progress) {
+                finalProgress = progress
+            }
     }
 }
 
