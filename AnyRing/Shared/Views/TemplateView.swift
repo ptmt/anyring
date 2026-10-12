@@ -62,16 +62,19 @@ struct TemplatesView: View {
     var body: some View {
         ScrollView(.horizontal) {
             HStack {
-                ForEach(0 ..< snapshots.count) { i in
+                ForEach(0 ..< snapshots.count, id: \.self) { i in
                     let ring = snapshots[i]
-                    TripleRingView(size: 45,
+                    Button { onSelect?(ring) } label: {
+                    TripleRingView(size: 52,
                                    ring1: ring.first,
                                    ring2: ring.second,
                                    ring3: ring.third,
                                    simplified: true,
-                                   shape: .rectangular).onTapGesture {
-                                    onSelect?(ring)
-                                   }.drawingGroup()
+                                   shape: .rectangular)
+                    .padding(6)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Color palette \(i + 1)")
                 }
             }
         }

@@ -1,67 +1,54 @@
-//
-//  AnyRingConfig.swift
-//  AnyRing
-//
-//  Created by Dmitriy Loktev on 07.01.2021.
-//
-
 import Foundation
 
-struct AnyRingConfig: Codable {
-    var configs: [ProviderConfiguration]
+/// Keeps the original Config.v3 wire format so existing installations migrate in place.
+struct AnyRingConfig: Codable, Equatable, Sendable {
+    var configs: [any ProviderConfiguration]
     var global: GlobalConfiguration
-    
-    enum CodingKeys: String, CodingKey {
-        case first
-        case second
-        case third
-        case global
-    }
-    
-    init(_ list: [ProviderConfiguration], _ global: GlobalConfiguration) {
+
+    enum CodingKeys: String, CodingKey { case first, second, third, global }
+
+    init(_ list: [any ProviderConfiguration], _ global: GlobalConfiguration) {
         precondition(list.count == 3)
-        configs = list.sorted(by: { (a, b) -> Bool in
-            a.ring.rawValue < b.ring.rawValue
-        })
+        configs = list.sorted { $0.ring.rawValue < $1.ring.rawValue }
         self.global = global
     }
-    
+
     init(from decoder: Decoder) throws {
-        
-        // first ring is always
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let first = try container.decode(HealthKitProvider.Configuration.self, forKey: .first)
-        let second = try container.decode(HealthKitProvider.Configuration.self, forKey: .second)
-        let third = try container.decode(HealthKitProvider.Configuration.self, forKey: .third)
-        let global = try container.decode(GlobalConfiguration.self, forKey: .global)
-        
-        self.configs = [first, second, third].sorted(by: { (a, b) -> Bool in
-            a.ring.rawValue < b.ring.rawValue
-        })
-        self.global = global
+        let first = try container.decode(HealthKitProvider.Configuration.self, forKey: .first).migratingLegacyConfiguration()
+        let second = try container.decode(HealthKitProvider.Configuration.self, forKey: .second).migratingLegacyConfiguration()
+        let third = try container.decode(HealthKitProvider.Configuration.self, forKey: .third).migratingLegacyConfiguration()
+        global = try container.decode(GlobalConfiguration.self, forKey: .global)
+        configs = [first, second, third]
+        guard first.ring == .first, second.ring == .second, third.ring == .third,
+              (1...365).contains(global.days),
+              configs.allSatisfy({ $0.minValue.isFinite && $0.maxValue.isFinite }) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath,
+                                                   debugDescription: "Invalid ring configuration"))
+        }
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
-        try container.encode(configs.first { $0.ring == RingID.first } as? HealthKitProvider.Configuration, forKey: .first)
-        try container.encode(configs.first { $0.ring == RingID.second } as? HealthKitProvider.Configuration, forKey: .second)
-        try container.encode(configs.first { $0.ring == RingID.third } as? HealthKitProvider.Configuration, forKey: .third)
+        for (id, key) in [(RingID.first, CodingKeys.first), (.second, .second), (.third, .third)] {
+            guard let config = configs.first(where: { $0.ring == id }) as? HealthKitProvider.Configuration else {
+                throw EncodingError.invalidValue(configs, .init(codingPath: encoder.codingPath,
+                                                                debugDescription: "Missing HealthKit ring"))
+            }
+            try container.encode(config, forKey: key)
+        }
         try container.encode(global, forKey: .global)
     }
-}
 
-extension AnyRingConfig: Equatable {
-    static func == (lhs: AnyRingConfig, rhs: AnyRingConfig) -> Bool {
-        let lhsData = try? JSONEncoder().encode(lhs)
-        let rhsData = try? JSONEncoder().encode(rhs)
-        return lhsData == rhsData
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        guard let a = try? encoder.encode(lhs), let b = try? encoder.encode(rhs) else { return false }
+        return a == b
     }
-    
-    
 }
 
-struct GlobalConfiguration: Codable, Equatable {
-    static var Default = GlobalConfiguration(days: 3)
+struct GlobalConfiguration: Codable, Equatable, Sendable {
+    static let Default = GlobalConfiguration(days: 3)
     var days: Int
 }

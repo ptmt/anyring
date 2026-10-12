@@ -38,6 +38,16 @@
                ReferencedContainer = "container:AnyRing.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F33CA88110B648279B6816B3"
+               BuildableName = "AnyRingTests.xctest"
+               BlueprintName = "AnyRingTests"
+               ReferencedContainer = "container:AnyRing.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

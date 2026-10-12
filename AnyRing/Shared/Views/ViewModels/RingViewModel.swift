@@ -1,103 +1,74 @@
-//
-//  RingViewModel.swift
-//  AnyRing
-//
-//  Created by Dmitriy Loktev on 20.12.2020.
-//
-
 import Foundation
 import Combine
 
-class RingViewModel: ObservableObject, CustomStringConvertible {
-    @Published var progress: Progress = Progress.Empty
-    @Published var error: Error? = nil
-    @Published var configuration: ProviderConfiguration
-    @Published var units: String
+@MainActor
+final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvertible {
+    @Published private(set) var progress = Progress.Empty
+    @Published private(set) var error: Error?
+    @Published private(set) var configuration: any ProviderConfiguration
+    @Published private(set) var units: String
+    @Published private(set) var isRefreshing = false
     var globalConfig: GlobalConfiguration
-    
-    var name: String {
-        configuration.name
-    }
-    
-    var fullName: String {
-        "\(type(of: provider).name) / \(name)"
-    }
-    
-    var providerDescription: String {
-        type(of: provider).description
-    }
-    
-    private var provider: RingProvider
-    private var cancellables = Set<AnyCancellable>()
-    
-    init(provider: RingProvider, globalConfig: GlobalConfiguration) {
+    var onConfigurationChanged: ((any ProviderConfiguration) -> Void)?
+
+    var name: String { configuration.name }
+    var fullName: String { "\(type(of: provider).name) / \(name)" }
+    var providerDescription: String { type(of: provider).description }
+    private let provider: any RingProvider
+    private var refreshTask: AnyCancellable?
+    private var refreshGeneration = 0
+
+    init(provider: any RingProvider, globalConfig: GlobalConfiguration) {
         self.provider = provider
         self.globalConfig = globalConfig
-        self.configuration = provider.config
-        self.units = provider.config.units
-        defer {
-            refresh()
-        }
+        configuration = provider.config
+        units = provider.config.units
+        refresh()
     }
-    
+
     func refresh() {
-        provider.calculateProgress(providerConfig: configuration, globalConfig: globalConfig)
-            .subscribe(on: DispatchQueue.global())
+        refreshTask?.cancel()
+        refreshGeneration += 1
+        let generation = refreshGeneration
+        isRefreshing = true
+        error = nil
+        units = configuration.units
+        refreshTask = provider.calculateProgress(providerConfig: configuration, globalConfig: globalConfig)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                switch completion {
-                case .failure(let error):
-                  print("calculateProgress finished with error", error)
-                  DispatchQueue.main.async {
-                    self?.error = error
-                  }
-                case .finished:
-                    break;
-                }
-              },
-              receiveValue: { [weak self] value in
-                DispatchQueue.main.async {
-                    self?.progress = value
-                }
-              })
-            .store(in: &cancellables)
-        self.units = configuration.units
+            .sink { [weak self] completion in
+                guard let self, self.refreshGeneration == generation else { return }
+                self.isRefreshing = false
+                if case .failure(let error) = completion { self.error = error }
+            } receiveValue: { [weak self] value in
+                guard let self, self.refreshGeneration == generation else { return }
+                self.progress = value
+            }
     }
-    
-    func update(config: ProviderConfiguration) {
-        print(">> update config", config)
-        provider.configPersistence.update(config: config)
+
+    func update(config: any ProviderConfiguration) {
+        guard config.minValue.isFinite, config.maxValue.isFinite else { return }
         provider.config = config
         configuration = config
+        if let onConfigurationChanged { onConfigurationChanged(config) }
+        else { provider.configPersistence.update(config: config) }
         refresh()
     }
-    
+
     func updateFromSnapshot(snapshot: RingSnapshot) {
-        var newConfig = configuration
-        var newAppearance = configuration.appearance
-        newAppearance.gradient = snapshot.gradient
-        newAppearance.innerGlow = snapshot.innerGlow
-        newAppearance.mainColor = snapshot.mainColor
-        newAppearance.secondaryColor = snapshot.secondaryColor
-        newAppearance.outerGlow = snapshot.outerGlow
-        newConfig.appearance = newAppearance
-        provider.configPersistence.update(config: newConfig)
-        
-        print(">> updateFromSnapshot", configuration)
-        configuration = newConfig
-        refresh()
+        var updated = configuration
+        updated.appearance = RingAppearance(mainColor: snapshot.mainColor, gradient: snapshot.gradient,
+                                             secondaryColor: snapshot.secondaryColor,
+                                             outerGlow: snapshot.outerGlow, innerGlow: snapshot.innerGlow)
+        update(config: updated)
     }
-    
+
     func snapshot() -> RingSnapshot {
-        RingSnapshot(progress: progress.normalized,
-              mainColor: configuration.appearance.mainColor,
-              gradient: configuration.appearance.gradient,
-              secondaryColor: configuration.appearance.secondaryColor,
-              outerGlow: configuration.appearance.outerGlow,
-              innerGlow: configuration.appearance.innerGlow)
+        RingSnapshot(progress: progress.normalized, mainColor: configuration.appearance.mainColor,
+                     gradient: configuration.appearance.gradient,
+                     secondaryColor: configuration.appearance.secondaryColor,
+                     outerGlow: configuration.appearance.outerGlow,
+                     innerGlow: configuration.appearance.innerGlow)
     }
-    
-    var description: String {
-        return progress.description + units
-    }
+
+    var description: String { progress.description + units }
 }

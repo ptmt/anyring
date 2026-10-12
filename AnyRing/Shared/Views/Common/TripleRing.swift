@@ -12,7 +12,7 @@ enum RingShape: String, Codable {
     case circle, rectangular
 }
 
-struct RingSnapshot: Codable {
+struct RingSnapshot: Codable, Sendable {
     let progress: Double
     let mainColor: CodableColor
     var gradient: Bool = false

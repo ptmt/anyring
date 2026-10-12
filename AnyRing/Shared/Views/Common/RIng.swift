@@ -1,167 +1,57 @@
-//
-//  RIng.swift
-//  AnyRing
-//
-//  Created by Dmitriy Loktev on 19.12.2020.
-//
-
 import SwiftUI
 
 struct RingCircleShape: Shape {
     var endAngle: Double
     var animatableData: Double {
-            get { endAngle }
-            set { endAngle = newValue }
-        }
-    
-    // We used to compensate the start
-    static let baseAngle: Double = 0
+        get { endAngle }
+        set { endAngle = newValue }
+    }
+    static let baseAngle = 0.0
     func path(in rect: CGRect) -> Path {
-        let width = rect.width
-        let height = rect.height
-        let radius = min(width, height) / 2
-        let center = CGPoint(x: width / 2, y: height / 2)
-        let endAngleNormalized = Angle(degrees: endAngle + RingCircleShape.baseAngle)
-        
-        return Path { path in
-            path.addArc(center: center,
-                        radius: radius,
-                        startAngle: Angle(degrees: RingCircleShape.baseAngle),
-                        endAngle: endAngleNormalized,
-                        clockwise: false)
+        Path { path in
+            path.addArc(center: CGPoint(x: rect.midX, y: rect.midY), radius: min(rect.width, rect.height) / 2,
+                        startAngle: .degrees(-90), endAngle: .degrees(-90 + endAngle), clockwise: false)
         }
-    }
-}
-
-struct RingLineEndView: View {
-    var progress: Double
-    var offsetRadius: CGFloat
-    var lineWidth: CGFloat
-    var primaryColor: Color
-    var innerGlow: Bool
-    @State private var finalProgress: Double = 0
-    
-    var animatableData: Double {
-        get { finalProgress }
-        set { finalProgress = newValue }
-    }
-    
-    var body: some View {
-        Circle()
-            .fill(primaryColor)
-            .frame(width: lineWidth,
-                   height: lineWidth,
-                   alignment: .center)
-            .rotationEffect(.degrees(finalProgress * 360))
-            .conditionalModifier(innerGlow, InnerGlow(primaryColor, size: lineWidth - 1, lineWidth: lineWidth - 1, progress: 1.0, halfCircle: true))
-            .shadow(color: Color.black.opacity(0.4), radius: 3, x: 4, y: 0)
-            .offset(x: 0, y: -offsetRadius)
-            .rotationEffect(.degrees(finalProgress * 360))
-            .onAppear(perform: {
-                finalProgress = progress
-            })
-            .onChange(of: progress) {
-                finalProgress = progress
-            }
     }
 }
 
 struct RingView: View {
-    var size: CGFloat
-    var snapshot: RingSnapshot
-    var lineWidth: CGFloat
-    
-    // improve fps by disabling animation and some glows
+    let size: CGFloat
+    let snapshot: RingSnapshot
+    let lineWidth: CGFloat
     var simplified = false
-    
-    private var primaryColor: Color {
-        snapshot.mainColor.color
-    }
-    private var secondaryColor: Color? {
-        snapshot.secondaryColor?.color
-    }
-    private var progress: Double {
-        snapshot.progress
-    }
-    private var outerGlow: Bool {
-        snapshot.outerGlow
-    }
-    private var innerGlow: Bool {
-        snapshot.innerGlow
-    }
-    @State private var firstRender = true
-    
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
-        let angle: Double = progress * 360
-        let gradientSecondaryColor = snapshot.gradient ? (secondaryColor ?? primaryColor.opacity(0.5)) : primaryColor
-        let gradient = AngularGradient(gradient: Gradient(colors: [gradientSecondaryColor, primaryColor]), center: .center,
-                                       startAngle: Angle(degrees: RingCircleShape.baseAngle),
-                                       endAngle: Angle(degrees: angle  + RingCircleShape.baseAngle))
-        
-        GeometryReader { geometry in
-            ZStack {
-                Circle()
-                    .stroke(style: StrokeStyle.init(lineWidth: lineWidth, lineCap: .round))
-                    .opacity(0.2)
-                    .foregroundColor(primaryColor)
-                
-                RingCircleShape(endAngle: angle)
-                    .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    .fill(gradient)
-                    .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))
-                    .conditionalModifier(!simplified && innerGlow, InnerGlow(primaryColor, size: size, lineWidth: lineWidth, progress: progress))
-                    .rotationEffect(.radians(-Double.pi / 2))
-                    .conditionalModifier(outerGlow && !simplified, OuterGlow(primaryColor))
-                    .conditionalModifier(outerGlow && simplified, OuterGlowSimplified(primaryColor))
-                   
-              //  if progress > 1 {
-                    RingLineEndView(
-                        progress: progress,
-                        offsetRadius: geometry.size.width / 2,
-                        lineWidth: lineWidth,
-                        primaryColor: primaryColor,
-                        innerGlow: innerGlow)
-                        .animation(simplified ? nil : .easeInOut(duration: firstRender ? progress : 0.5))
-              //  }
+        let progress = snapshot.progress.isFinite ? max(0, snapshot.progress) : 0
+        let main = snapshot.mainColor.color
+        let secondary = snapshot.gradient ? snapshot.secondaryColor?.color ?? main.opacity(0.5) : main
+        ZStack {
+            Circle().stroke(main.opacity(0.15), lineWidth: lineWidth)
+            RingCircleShape(endAngle: min(progress, 1) * 360)
+                .stroke(AngularGradient(colors: [secondary, main], center: .center, startAngle: .degrees(-90), endAngle: .degrees(270)),
+                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .conditionalModifier(snapshot.outerGlow && !simplified, OuterGlow(main))
+                .conditionalModifier(snapshot.innerGlow && !simplified, InnerGlow(main, size: size, lineWidth: lineWidth, progress: min(progress, 1)))
+            if progress > 0 {
+                Circle().fill(main).frame(width: lineWidth, height: lineWidth)
+                    .shadow(color: .black.opacity(0.25), radius: 2)
+                    .offset(y: -(size - lineWidth) / 2)
+                    .rotationEffect(.degrees(progress.truncatingRemainder(dividingBy: 1) * 360))
             }
         }
-        .padding(.all, lineWidth / 2)
+        .padding(lineWidth / 2)
         .frame(width: size, height: size)
-        .onChange(of: progress, perform: { value in
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(Int(progress) * 1000)) {
-                firstRender = false
-            }
-        })
+        .animation(simplified || reduceMotion ? nil : .easeInOut(duration: 0.35), value: snapshot.progress)
     }
-
 }
 
 extension View {
-    // If condition is met, apply modifier, otherwise, leave the view untouched
-    public func conditionalModifier<T>(_ condition: Bool, _ modifier: T) -> some View where T: ViewModifier {
-        Group {
-            if condition {
-                self.modifier(modifier)
-            } else {
-                self
-            }
-        }
-    }
-}
-
-struct RingView_Preview: PreviewProvider {
-    static var previews: some View {
-        Group {
-            RingView(size: 140, snapshot: RingSnapshot(progress: 1.5, mainColor: Color.green.codable, gradient: true, secondaryColor: Color(#colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)).codable, outerGlow: false), lineWidth: 20.0)
-            RingView(size: 240, snapshot: RingSnapshot(progress: 1.75, mainColor: Color.red.codable, gradient: false, outerGlow: false, innerGlow: true), lineWidth: 40.0).preferredColorScheme(.dark)
-            RingView(size: 100, snapshot: RingSnapshot(progress: 0.75, mainColor: Color.pink.codable, gradient: false, outerGlow: false, innerGlow: false), lineWidth: 20.0)
-                .preferredColorScheme(.dark)
-        }.previewLayout(.fixed(width: 250, height: 250))
+    func conditionalModifier<T: ViewModifier>(_ condition: Bool, _ modifier: T) -> some View {
+        Group { if condition { self.modifier(modifier) } else { self } }
     }
 }
 
 extension Color {
-    var codable: CodableColor {
-        CodableColor(self)
-    }
+    var codable: CodableColor { CodableColor(self) }
 }

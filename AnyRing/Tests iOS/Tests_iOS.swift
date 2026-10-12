@@ -1,42 +1,53 @@
-//
-//  Tests_iOS.swift
-//  Tests iOS
-//
-//  Created by Dmitriy Loktev on 18.12.2020.
-//
-
 import XCTest
 
-class Tests_iOS: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+final class Tests_iOS: XCTestCase {
+    @MainActor
+    func testDashboardAndMetricEditor() {
         let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
         app.launch()
-
-        // Use recording to get started writing UI tests.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        XCTAssertTrue(app.navigationBars["AnyProgress"].waitForExistence(timeout: 10))
+        let ring = app.buttons["ring1"]
+        if !ring.isHittable { app.swipeUp() }
+        XCTAssertTrue(ring.waitForExistence(timeout: 5))
+        ring.tap()
+        XCTAssertTrue(app.navigationBars["Ring 1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textFields["goal"].exists)
+        XCTAssertTrue(app.switches["Gradient"].exists)
     }
 
-    func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
-        }
+    @MainActor
+    func testProviderSearchAndSelection() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        app.launch()
+        let ring = app.buttons["ring1"]
+        if !ring.isHittable { app.swipeUp() }
+        XCTAssertTrue(ring.waitForExistence(timeout: 5))
+        ring.tap()
+        app.buttons["HRV"].tap()
+        XCTAssertTrue(app.navigationBars["Health Metrics"].waitForExistence(timeout: 5))
+        let search = app.searchFields.firstMatch
+        search.tap()
+        search.typeText("Caffeine")
+        let metric = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Caffeine'")).firstMatch
+        XCTAssertTrue(metric.waitForExistence(timeout: 5))
+        metric.tap()
+        XCTAssertTrue(app.navigationBars["Ring 1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Caffeine"].exists)
+    }
+    @MainActor
+    func testTrackingPeriodPersistsAfterRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        app.launch()
+        let period = app.segmentedControls["trackingPeriod"]
+        XCTAssertTrue(period.waitForExistence(timeout: 5))
+        period.buttons["7"].tap()
+        app.terminate()
+        app.launchArguments = []
+        app.launch()
+        XCTAssertTrue(period.waitForExistence(timeout: 5))
+        XCTAssertTrue(period.buttons["7"].isSelected)
     }
 }

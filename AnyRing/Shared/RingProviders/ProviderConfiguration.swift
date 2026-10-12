@@ -8,12 +8,12 @@
 import Foundation
 import Combine
 
-enum RingID: Int, Codable {
+enum RingID: Int, Codable, Sendable {
     case first, second, third
 }
 
-protocol ProviderConfiguration: Codable {
-    var provider: RingProvider.Type { get }
+protocol ProviderConfiguration: Codable, Sendable {
+    @MainActor var provider: RingProvider.Type { get }
     var ring: RingID { get }
     var name: String { get set }
     

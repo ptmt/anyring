@@ -122,11 +122,11 @@ let nikeFuel = HealthKitProvider.HealthKitConfiguration(
 let vo2Max = HealthKitProvider.HealthKitConfiguration(
     name: "VO2Max",
     description: "A quantity sample that measures the maximal oxygen consumption during incremental exercise.",
-    units: HKUnitCodable.count,
+    units: HKUnitCodable.oxygenUptake,
     sampleType: HKObjectTypeCodable.vo2Max,
     minValue: 0,
     maxValue: 100,
-    aggregation: .sum)
+    aggregation: .avg)
 
 let activeEnergyBurned = HealthKitProvider.HealthKitConfiguration(
     name: "Active Energy",
@@ -161,7 +161,7 @@ let healthKitProviders = [
     dietaryCaffeineConfiguration,
 ] + dietProviders
 
-enum Aggregation: String, Codable {
+enum Aggregation: String, Codable, Sendable {
     case avg = "Avg"
     case sum = "Sum"
     case min = "Min"
@@ -170,7 +170,7 @@ enum Aggregation: String, Codable {
 
 class HealthKitProvider: RingProvider {
     
-    struct HealthKitConfiguration: Codable, Hashable {
+    struct HealthKitConfiguration: Codable, Hashable, Sendable {
         var name: String
         var description: String
         var units: HKUnitCodable
@@ -220,7 +220,7 @@ class HealthKitProvider: RingProvider {
         }
     }
     
-    static var configurationType: ProviderConfiguration.Type = Configuration.self
+    static let configurationType: ProviderConfiguration.Type = Configuration.self
     
     static let name = "Apple Health"
     static let description = """
@@ -254,7 +254,7 @@ class HealthKitProvider: RingProvider {
     
     private var cancellable: AnyCancellable?
     
-    func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
+    @MainActor func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
         RingViewModel(provider: self, globalConfig: globalConfig)
     }
     
@@ -263,13 +263,14 @@ class HealthKitProvider: RingProvider {
         let calendar = Calendar.current
         
         // We calculate start of day, not the exact time
-        let timeInDay = numberOfDays > 1 ?  Date().addingTimeInterval(TimeInterval(-Double(numberOfDays - 1) * secondsInDayApprox)) : Date()
+        let now = Date()
+        let timeInDay = calendar.date(byAdding: .day, value: -(max(numberOfDays, 1) - 1), to: now) ?? now
         
         let startOfTheDay = calendar.startOfDay(for: timeInDay)
         
         return dataSource.fetchStatistics(
             withStart: startOfTheDay,
-            to: Date(),
+            to: now,
             ofType: sampleType,
             unit: unit,
             aggregation: aggregation).eraseToAnyPublisher()
@@ -285,4 +286,19 @@ extension Date {
         return lhs.timeIntervalSinceReferenceDate - rhs.timeIntervalSinceReferenceDate
     }
 
+}
+
+
+extension HealthKitProvider.Configuration {
+    func migratingLegacyConfiguration() -> Self {
+        var migrated = self
+        if healthKitParams.sampleType == .vo2Max {
+            if healthKitParams.units == .count { migrated.healthKitParams.units = .oxygenUptake }
+            if healthKitParams.aggregation == .sum { migrated.healthKitParams.aggregation = .avg }
+        }
+        if healthKitParams.sampleType == .dietaryEnergyConsumed, healthKitParams.units == .mgrams {
+            migrated.healthKitParams.units = .kilocalorie
+        }
+        return migrated
+    }
 }

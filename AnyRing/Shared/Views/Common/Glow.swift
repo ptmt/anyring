@@ -101,5 +101,5 @@ struct AnyShape: Shape {
         return _path(rect)
     }
     
-    private let _path: (CGRect) -> Path
+    private let _path: @Sendable (CGRect) -> Path
 }

@@ -1,125 +1,97 @@
-//
-//  DataSource.swift
-//  AnyRing
-//
-//  Created by Dmitriy Loktev on 18.12.2020.
-//
-
 import Foundation
 import HealthKit
 import Combine
 
+/// Immutable bridge for Combine promises and Objective-C completion handlers.
+/// These APIs deliver on arbitrary queues; the closure must arrange any actor-bound work itself.
+final class SendableCallback<Value>: @unchecked Sendable {
+    private let callback: (Value) -> Void
+    init(_ callback: @escaping (Value) -> Void) { self.callback = callback }
+    func call(_ value: Value) { callback(value) }
+}
 
-class DeviceHealthKitDataSource: HealthKitDataSource {
+@MainActor
+final class DeviceHealthKitDataSource: HealthKitDataSource {
     let healthStore = HKHealthStore()
-    
-    func isAvailable() -> Bool {
-        return HKHealthStore.isHealthDataAvailable()
-    }
-    
-    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
-    
-        return Future() { promise in
-            // We can't request the rights we it's an widget
-            if Bundle.main.bundlePath.contains("Widget") {
-                promise(.success(true))
-            }
-            let allGranted = permissions.allSatisfy {  self.healthStore.authorizationStatus(for: $0) == .sharingAuthorized }
-            if (allGranted) {
-                promise(.success(true))
-                return
-            }
-            
- 
+    private var observerQueries: [HKObserverQuery] = []
 
-            self.healthStore.requestAuthorization(toShare: [], read: permissions) { (success, error) in
-                
-                if let error = error {
-                    print("DeviceHealthKitDataSource: request auth", error)
-                    promise(.failure(error))
-                } else {
-                    promise(.success(success))
-                }
+    func isAvailable() -> Bool { HKHealthStore.isHealthDataAvailable() }
+
+    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
+        // Read authorization is intentionally private; authorizationStatus is for writing only.
+        Future { promise in
+            guard Bundle.main.bundleURL.pathExtension != "appex" else { promise(.success(true)); return }
+            let callback = SendableCallback(promise)
+            self.healthStore.requestAuthorization(toShare: [], read: permissions) { success, error in
+                if let error { callback.call(.failure(error)) }
+                else { callback.call(.success(success)) }
             }
         }
     }
-    
-    func fetchStatistics(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType, unit: HKUnit, aggregation: Aggregation) -> Future<Double, Error> {
-        
-        return Future() { promise in
-            
-            let predicate = HKQuery.predicateForSamples(
-                withStart: startDate,
-                end: endDate,
-                options: .strictStartDate
-            )
-//
-//            let query = HKSampleQuery(sampleType: sampleType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortByDate], resultsHandler: { (query, results, error) in
-//                if let error = error {
-//                    promise(Result.failure(error))
-//                } else {
-//                    print(">> results", results)
-//                    promise(Result.success(results!))
-//                }
-//            })
-            
-            
-            var option: HKStatisticsOptions = .discreteAverage
-            switch(aggregation) {
-            case .sum: option = .cumulativeSum
-            case .min: option = .discreteMin
-            case .max: option = .discreteMin
-            default: option = .discreteAverage
+
+    nonisolated static func statisticsOption(for aggregation: Aggregation) -> HKStatisticsOptions {
+        switch aggregation {
+        case .sum: .cumulativeSum
+        case .avg: .discreteAverage
+        case .min: .discreteMin
+        case .max: .discreteMax
+        }
+    }
+
+    func fetchStatistics(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType,
+                         unit: HKUnit, aggregation: Aggregation) -> Future<Double, Error> {
+        Future { promise in
+            guard let quantityType = sampleType as? HKQuantityType else {
+                promise(.failure(HealthDataError.unsupportedType)); return
             }
-            
-           
-            let query = HKStatisticsQuery(
-                quantityType: (sampleType as! HKQuantityType),
-                quantitySamplePredicate: predicate,
-                options: option
-            ) { _, result, _ in
-                guard let result = result else {
-                    promise(Result.success(0))
-                    return
-                }
-                var aggregated: Double = 0
-                switch(aggregation) {
-                case .sum: aggregated = result.sumQuantity()?.doubleValue(for: unit) ?? 0
-                case .avg: aggregated = result.averageQuantity()?.doubleValue(for: unit) ?? 0
-                case .min: aggregated = result.minimumQuantity()?.doubleValue(for: unit) ?? 0
-                case .max: aggregated = result.maximumQuantity()?.doubleValue(for: unit) ?? 0
-                }
-                promise(Result.success(aggregated))
-                
+            let cumulative = quantityType.aggregationStyle == .cumulative
+            guard cumulative == (aggregation == .sum) else {
+                promise(.failure(HealthDataError.unsupportedAggregation)); return
             }
-            
+            let callback = SendableCallback(promise)
+            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+            let query = HKStatisticsQuery(quantityType: quantityType, quantitySamplePredicate: predicate,
+                                          options: Self.statisticsOption(for: aggregation)) { _, result, error in
+                if let error { callback.call(.failure(error)); return }
+                let quantity: HKQuantity?
+                switch aggregation {
+                case .sum: quantity = result?.sumQuantity()
+                case .avg: quantity = result?.averageQuantity()
+                case .min: quantity = result?.minimumQuantity()
+                case .max: quantity = result?.maximumQuantity()
+                }
+                do { callback.call(.success(try Self.quantityValue(quantity, unit: unit))) }
+                catch { callback.call(.failure(error)) }
+            }
             self.healthStore.execute(query)
         }
     }
-    
-    func getTodaysSteps(completion: @escaping (Double) -> Void) {
-        let stepsQuantityType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
-        
-        let now = Date()
-        let startOfDay = Calendar.current.startOfDay(for: now)
-        let predicate = HKQuery.predicateForSamples(
-            withStart: startOfDay,
-            end: now,
-            options: .strictStartDate
-        )
-        
-        let query = HKStatisticsQuery(
-            quantityType: stepsQuantityType,
-            quantitySamplePredicate: predicate,
-            options: .cumulativeSum
-        ) { _, result, _ in
-            guard let result = result, let sum = result.sumQuantity() else {
-                completion(0.0)
-                return
+
+    nonisolated static func quantityValue(_ quantity: HKQuantity?, unit: HKUnit) throws -> Double {
+        guard let quantity else { return 0 }
+        guard quantity.is(compatibleWith: unit) else { throw HealthDataError.incompatibleUnit }
+        return quantity.doubleValue(for: unit)
+    }
+
+    func observe(types: Set<HKSampleType>, onChange: @escaping @Sendable () -> Void) {
+        observerQueries.forEach { healthStore.stop($0) }
+        observerQueries = types.map { type in
+            HKObserverQuery(sampleType: type, predicate: nil) { _, completion, error in
+                if error == nil { onChange() }
+                completion()
             }
-            completion(sum.doubleValue(for: HKUnit.count()))
         }
-        
-        healthStore.execute(query)
+        observerQueries.forEach { healthStore.execute($0) }
+    }
+}
+
+enum HealthDataError: LocalizedError {
+    case unsupportedType, unsupportedAggregation, incompatibleUnit
+    var errorDescription: String? {
+        switch self {
+        case .incompatibleUnit: "The unit does not match the selected health metric."
+        case .unsupportedType: "This health data type does not support statistics."
+        case .unsupportedAggregation: "This aggregation is unavailable for the selected health data. Choose Sum for cumulative data, or Average, Minimum, or Maximum for discrete data."
+        }
     }
 }

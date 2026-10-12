@@ -1,103 +1,73 @@
-//
-//  MainScreen.swift
-//  AnyRing
-//
-//  Created by Dmitriy Loktev on 19.12.2020.
-//
-
 import SwiftUI
 
 struct MainScreen: View {
-    var rings: RingWrapper<RingViewModel>
-    @EnvironmentObject var vm: AnyRingViewModel
-    @State var days: Int
-    @State var selection = 1
-    var onPeriodChange: ((Int) -> Void)?
-    
+    let rings: RingWrapper<RingViewModel>
+    @EnvironmentObject private var viewModel: AnyRingViewModel
+    #if os(iOS)
+    @EnvironmentObject private var connectivity: WatchConnectivityCoordinator
+    #endif
+
     var body: some View {
         Form {
             Section {
-                RingDashboard(size: 150,
-                              ring1: rings.first,
-                              ring2: rings.second,
-                              ring3: rings.third,
-                              days: days,
-                              shape: .rectangular).padding()
-                TemplatesView { newConfig in
-                    rings.first.updateFromSnapshot(snapshot: newConfig.first)
-                    rings.second.updateFromSnapshot(snapshot: newConfig.second)
-                    rings.third.updateFromSnapshot(snapshot: newConfig.third)
-                    onPeriodChange?(vm.globalConfig.days)
-                }
+                RingDashboard(size: 210, ring1: rings.first, ring2: rings.second,
+                              ring3: rings.third, days: viewModel.globalConfig.days, shape: .rectangular)
+                    .padding(.vertical, 16)
             }
-            
-            Section {
-                HStack {
-                    Text("Days")
-                    Picker(selection: $days, label: Text("Days"), content: {
-                        Text("1").tag(1)
-                        Text("2").tag(2)
-                        Text("3").tag(3)
-                        Text("5").tag(5)
-                        Text("7").tag(7)
-                    })
-                    .pickerStyle(SegmentedPickerStyle())
-                    .onChange(of: days) {
-                        onPeriodChange?(days)
+            Section("Tracking Period") {
+                Picker("Days", selection: Binding(get: { viewModel.globalConfig.days }, set: viewModel.updatePeriod)) {
+                    ForEach(Array(Set([1, 2, 3, 5, 7, viewModel.globalConfig.days])).sorted(), id: \.self) { days in
+                        Text("\(days)").tag(days)
                     }
                 }
-                Text("Specify how often the progress starts from the beginning. For example you can aggregate number of steps over 3 days")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
+                .pickerStyle(.segmented)
+                .accessibilityIdentifier("trackingPeriod")
+                Text("Track progress from the start of the first day through today.")
+                    .font(.footnote).foregroundStyle(.secondary)
             }
-            
-            Section(header: Text("Configuration")) {
-                Picker(selection: $selection, label: Text(""), content: {
-                    Text("Ring 1").tag(1)
-                    Text("Ring 2").tag(2)
-                    Text("Ring 3").tag(3)
-                }).pickerStyle(SegmentedPickerStyle())
+            Section("Your Rings") {
+                ringLink(rings.first, number: 1)
+                ringLink(rings.second, number: 2)
+                ringLink(rings.third, number: 3)
             }
-            
-            switch(selection) {
-            case 2: RingConfigurationView(ring: rings.second).environmentObject(vm)
-            case 3: RingConfigurationView(ring: rings.third).environmentObject(vm)
-            default: RingConfigurationView(ring: rings.first).environmentObject(vm)
+            Section("Color Palettes") {
+                TemplatesView { snapshots in
+                    rings.first.updateFromSnapshot(snapshot: snapshots.first)
+                    rings.second.updateFromSnapshot(snapshot: snapshots.second)
+                    rings.third.updateFromSnapshot(snapshot: snapshots.third)
+                }
+                .padding(.vertical, 8)
             }
+            #if os(iOS)
+            Section("Apple Watch") {
+                Label(connectivity.status, systemImage: "applewatch")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                Text("Settings sync automatically. Each device reads its own Apple Health data.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            #endif
         }
+        .formStyle(.grouped)
     }
-    
-}
 
-
-
-struct MainScreen_Preview: PreviewProvider {
-    static var previews: some View {
-        MainScreen(rings: RingWrapper([
-                                        DemoProvider(
-                                            initValue: 50,
-                                            config: DemoProvider.Configuration(
-                                                name: "FirstRing",
-                                                ring: .first,
-                                                minValue: 0,
-                                                maxValue: 100,
-                                                appearance: RingAppearance(
-                                                    mainColor: CodableColor(.red)),
-                                                units: "M"))
-                                            .viewModel(globalConfig: GlobalConfiguration.Default),
-                                        DemoProvider(initValue: 50,
-                                                     config: DemoProvider.Configuration(
-                                                         name: "SecondRing",
-                                                         ring: .second,
-                                                         minValue: 0,
-                                                         maxValue: 100,
-                                                         appearance: RingAppearance(
-                                                             mainColor: CodableColor(.blue)),
-                                                         units: "M")
-                                        ).viewModel(globalConfig:  GlobalConfiguration.Default),
-                                        DemoProvider().viewModel(globalConfig:  GlobalConfiguration.Default)]),  days: 3)
-            .environmentObject(AnyRingViewModel())
+    private func ringLink(_ ring: RingViewModel, number: Int) -> some View {
+        NavigationLink {
+            Form { RingConfigurationView(ring: ring).environmentObject(viewModel) }
+                .navigationTitle("Ring \(number)")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "circle.circle.fill")
+                    .font(.title2).foregroundStyle(ring.configuration.appearance.mainColor.color)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(ring.name).font(.headline)
+                    Text("Ring \(number) · \(ring.units)").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+        .accessibilityIdentifier("ring\(number)")
     }
 }
-
-

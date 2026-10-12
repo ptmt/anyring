@@ -1,121 +1,106 @@
-//
-//  RingWidget.swift
-//  RingWidget
-//
-//  Created by Dmitriy Loktev on 21.12.2020.
-//
-
 import WidgetKit
 import SwiftUI
 
-
 struct Provider: TimelineProvider {
-    let viewModel = AnyRingViewModel()
-    let cache = SimpleCache()
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(),
-                    size: context.displaySize,
-                    rings: cache.restoreLastSnapshot() ?? staticSnapshot)
+        SimpleEntry(date: Date(), rings: staticSnapshot, names: ["HRV", "Steps", "Energy"])
     }
-    
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        viewModel.updateProviders()
-        viewModel.getSnapshots { snapshots, error in
-            cache.store(lastSnapshot: snapshots)
-            let entry = SimpleEntry(date: Date(),
-                                    size: context.displaySize,
-                                    rings: snapshots ?? cache.restoreLastSnapshot(),
-                                    error: error)
-            completion(entry)
+
+    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> Void) {
+        if context.isPreview { completion(placeholder(in: context)); return }
+        load(completion: completion)
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> Void) {
+        let callback = SendableCallback(completion)
+        load { entry in
+            callback.call(Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(600))))
         }
-        
     }
-    
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        let refreshDate = Calendar.current.date(byAdding: .minute, value: 10, to: Date())!
-        
-        // make sure we invalidate the providers
-        viewModel.updateProviders()
-        viewModel.getSnapshots { snapshots, error in
-            cache.store(lastSnapshot: snapshots)
-            let entry = SimpleEntry(date: Date(),
-                                    size: context.displaySize,
-                                    rings: snapshots ?? cache.restoreLastSnapshot(),
-                                    error: error)
-            
-            let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
-            completion(timeline)
+
+    private func load(completion: @escaping (SimpleEntry) -> Void) {
+        let callback = SendableCallback(completion)
+        Task { @MainActor in
+            // A fresh model per request reads current shared storage and never prompts for permission.
+            let model = AnyRingViewModel(requestAuthorization: false)
+            let config = model.config
+            let cache = SimpleCache()
+            model.getSnapshots { [model] snapshots, _ in
+                _ = model // Keep the providers alive until HealthKit completes.
+                cache.store(lastSnapshot: snapshots, config: config)
+                callback.call(SimpleEntry(date: Date(), rings: snapshots ?? cache.restoreLastSnapshot(config: config),
+                                          names: config.configs.map(\.name)))
+            }
         }
     }
 }
 
-struct SimpleEntry: TimelineEntry {
+struct SimpleEntry: TimelineEntry, Sendable {
     let date: Date
-    let size: CGSize
-    var rings: RingWrapper<RingSnapshot>? = nil
-    var error: Error? = nil
+    var rings: RingWrapper<RingSnapshot>?
+    let names: [String]
 }
 
+struct RingWidgetEntryView: View {
+    let entry: SimpleEntry
+    @Environment(\.widgetFamily) private var family
 
-struct RingWidgetEntryView : View {
-    var entry: Provider.Entry
-    
     var body: some View {
-        if let rings = entry.rings {
-            let delta: CGFloat = 15
-            let size = min(entry.size.width, entry.size.height) - delta
-            VStack {
-                TripleRingView(size: size - delta,
-                               ring1: rings.first,
-                               ring2: rings.second,
-                               ring3: rings.third)
-            }
-            .padding(.all, delta)
-        } else if let error = entry.error {
-            Group {
-                Text(error.localizedDescription).font(.body).padding()
-            }
-        } else {
-            Group {
-                Text("Loading rings").font(.headline)
+        Group {
+            if let rings = entry.rings {
+                switch family {
+                case .accessoryInline:
+                    Text("\(entry.names.first ?? "Progress") \(Int(min(999, max(0, rings.first.progress * 100))))%")
+                case .accessoryRectangular:
+                    HStack {
+                        ringGraphic(rings, size: 50)
+                        VStack(alignment: .leading) {
+                            ForEach(Array(entry.names.enumerated()), id: \.offset) { index, name in
+                                Text("\(name) \(Int(min(999, max(0, rings.list[index].progress * 100))))%")
+                                    .font(.caption2)
+                            }
+                        }
+                    }
+                default:
+                    GeometryReader { geometry in
+                        let size = max(20, min(geometry.size.width, geometry.size.height))
+                        ringGraphic(rings, size: size)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+            } else {
+                Text("Open AnyProgress to load health data").font(.caption)
             }
         }
-        
+        .containerBackground(.background, for: .widget)
+        .privacySensitive()
+    }
+
+    private func ringGraphic(_ rings: RingWrapper<RingSnapshot>, size: CGFloat) -> some View {
+        TripleRingView(size: size, ring1: rings.first, ring2: rings.second, ring3: rings.third,
+                       simplified: true, shape: family == .accessoryCircular ? .circle : .rectangular)
+            .accessibilityLabel("Your three progress rings")
+            .widgetAccentable()
     }
 }
 
 @main
 struct RingWidget: Widget {
-    let kind: String = "RingWidget"
-    
+    let kind = "RingWidget"
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            
-            RingWidgetEntryView(entry: entry)
-        }
-        .supportedFamilies([.systemSmall, .systemLarge])
-        .configurationDisplayName("AnyProgress")
-        .description("Configure custom progress trackers, using external data providers and make them based on any time interval")
+        StaticConfiguration(kind: kind, provider: Provider()) { entry in RingWidgetEntryView(entry: entry) }
+            .configurationDisplayName("AnyProgress")
+            .description("Your custom Apple Health progress rings.")
+            #if os(watchOS)
+            .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+            #else
+            .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
+            #endif
     }
 }
 
-let staticSnapshot = RingWrapper([RingSnapshot(progress: 0.4, mainColor: Color.secondary.codable),
-                                  RingSnapshot(progress: 1.5, mainColor: Color.secondary.codable),
-                                  RingSnapshot(progress: 0.5, mainColor: Color.secondary.codable)])
-
-struct RingWidget_Previews: PreviewProvider {
-    
-    
-    static var previews: some View {
-        Group {
-            RingWidgetEntryView(entry: SimpleEntry(date: Date(), size: .init(width: 150, height: 150), rings: staticSnapshot))
-                .previewContext(WidgetPreviewContext(family: .systemSmall))
-            //            RingWidgetEntryView(entry: SimpleEntry(date: Date(), size:
-            //                                                   .init(width: 50, height: 50)))
-            //                .previewContext(WidgetPreviewContext(family: .systemLarge))
-            //            RingWidgetEntryView(entry: SimpleEntry(date: Date(), size: .init(width: 50, height: 50)))
-            //                .previewContext(WidgetPreviewContext(family: .systemMedium)).preferredColorScheme(.dark)
-        }
-        
-    }
-}
+let staticSnapshot = RingWrapper([
+    RingSnapshot(progress: 0.7, mainColor: CodableColor(.green)),
+    RingSnapshot(progress: 0.5, mainColor: CodableColor(.pink)),
+    RingSnapshot(progress: 0.9, mainColor: CodableColor(.yellow))
+])

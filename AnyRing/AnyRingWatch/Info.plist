@@ -27,7 +27,11 @@
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.potomushto.AnyRing</string>
-	<key>WKWatchKitApp</key>
+	<key>WKApplication</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>AnyProgress reads your selected health metrics to calculate your progress rings.</string>
+	<key>CLKComplicationPrincipalClass</key>
+	<string>$(PRODUCT_MODULE_NAME).ComplicationController</string>
 </dict>
 </plist>

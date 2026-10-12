@@ -25,7 +25,7 @@ class DemoProvider: RingProvider {
     }
     
     var units: String = "KCAL"
-    static var name: String = "Demo"
+    static let name: String = "Demo"
     static let description: String = "Demo provider"
     var config: ProviderConfiguration
     let configPersistence: ConfigurationPersistence
@@ -45,7 +45,7 @@ class DemoProvider: RingProvider {
         self.configPersistence = MockConfigurationPersistence()
     }
     
-    func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
+    @MainActor func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
         RingViewModel(provider: self, globalConfig: globalConfig)
     }
     

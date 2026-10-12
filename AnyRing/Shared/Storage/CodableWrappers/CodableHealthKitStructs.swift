@@ -8,7 +8,7 @@
 import Foundation
 import HealthKit
 
-enum HKUnitCodable: String, Codable {
+enum HKUnitCodable: String, Codable, Sendable {
     case minute
     case millisecond
     case countperminute
@@ -16,6 +16,7 @@ enum HKUnitCodable: String, Codable {
     case mgrams
     case grams
     case count
+    case oxygenUptake
     case meter
     case kilometer
     case kilocalorie
@@ -29,6 +30,7 @@ enum HKUnitCodable: String, Codable {
         case .percent: return HKUnit.percent()
         case .mgrams: return HKUnit.gramUnit(with: .milli)
         case .grams: return HKUnit.gram()
+        case .oxygenUptake: return HKUnit(from: "ml/kg*min")
         case .count: return HKUnit.count()
         case .meter: return HKUnit.meter()
         case .kilometer: return HKUnit.meterUnit(with: .kilo)
@@ -42,7 +44,7 @@ enum HKUnitCodable: String, Codable {
     }
 }
 
-enum HKObjectTypeCodable: String, Codable {
+enum HKObjectTypeCodable: String, Codable, Sendable {
     case appleExerciseTime
     case appleStandTime
     case stepCount

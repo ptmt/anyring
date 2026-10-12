@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 protocol ConfigurationPersistence {
     func persist(config: AnyRingConfig)
     func update(config: ProviderConfiguration)

@@ -1,11 +1,3 @@
-//
-//  RingLabel.swift
-//  AnyRing
-//
-//  Created by Dmitriy Loktev on 21.12.2020.
-//
-
-import Foundation
 import SwiftUI
 
 struct RingLabel: View {
@@ -16,10 +8,8 @@ struct RingLabel: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(name).font(.footnote)
-            (
-                Text(String(describing: value)).bold() +
-                    Text(" " + units).font(.footnote)
-            ).foregroundColor(color)
+            Text("\(Text(value).bold()) \(Text(units).font(.footnote))").foregroundStyle(color)
         }
+        .accessibilityElement(children: .combine)
     }
 }

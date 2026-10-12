@@ -12,6 +12,7 @@ import HealthKit
 
 typealias HKSamples = [HKSample]
 
+@MainActor
 protocol HealthKitDataSource {
     func isAvailable() -> Bool
     func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error>

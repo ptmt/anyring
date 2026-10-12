@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Progress: CustomStringConvertible {
+struct Progress: CustomStringConvertible, Sendable {
     
     let absolute: Double
     let maxAbsolute: Double
@@ -23,7 +23,7 @@ struct Progress: CustomStringConvertible {
     }
     
     var normalized: Double {
-        (absolute.isNaN || minAbsolute >= maxAbsolute) ? 0 : (reversed ? (maxAbsolute - absolute) / normMax : absolute / normMax)
+        (!absolute.isFinite || !minAbsolute.isFinite || !maxAbsolute.isFinite || minAbsolute >= maxAbsolute) ? 0 : max(0, reversed ? (maxAbsolute - absolute) / normMax : (absolute - minAbsolute) / normMax)
     }
     
     var description: String {

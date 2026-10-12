@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RingAppearance: Codable {
+struct RingAppearance: Codable, Sendable {
     var mainColor: CodableColor
     var gradient: Bool = false
     var secondaryColor: CodableColor? = nil
