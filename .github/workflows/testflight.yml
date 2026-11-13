@@ -17,13 +17,13 @@ permissions:
   contents: read
 
 env:
-  # Stable version published in the actions/runner-images macos-26 inventory.
-  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+  # Xcode 27 is required: Swift 6.3.3 in Xcode 26.6 crashes in IRGen on MainScreen.swift.
+  DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
 
 jobs:
   build:
     name: Build iOS
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -34,13 +34,12 @@ jobs:
           xcodebuild -version
           python3 -m unittest discover -s ci/tests -v
           bash -n ci/testflight.sh
-      # arm64 only: Swift 6.3.3 in Xcode 26.6 crashes in IRGen on the x86_64 simulator slice.
       - name: Build for simulator
         run: |
           xcodebuild -project AnyRing/AnyRing.xcodeproj -scheme 'AnyRing (iOS)' \
             -configuration Debug -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/ios-simulator" \
-            ARCHS=arm64 CODE_SIGNING_ALLOWED=NO build
+            CODE_SIGNING_ALLOWED=NO build
       - name: Check Release archive
         run: |
           xcodebuild -project AnyRing/AnyRing.xcodeproj -scheme 'AnyRing (iOS)' \
@@ -55,7 +54,7 @@ jobs:
     if: >-
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && inputs.publish)
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 40
     environment: testflight
     concurrency:

@@ -1,8 +1,8 @@
 # CI and TestFlight
 
-The [iOS workflow](../.github/workflows/testflight.yml) runs on GitHub's `macos-26`
-runner with Xcode 26.6. It uses native `xcodebuild` signing and upload; Fastlane
-is not required.
+The [iOS workflow](../.github/workflows/testflight.yml) runs on GitHub's `xcode-27`
+runner with Xcode 27.2; the Swift compiler in Xcode 26.6 crashes on this project.
+It uses native `xcodebuild` signing and upload; Fastlane is not required.
 
 | Trigger | Result |
 | --- | --- |
