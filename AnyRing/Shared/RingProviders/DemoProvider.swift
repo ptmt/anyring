@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 import HealthKit
 import SwiftUI
 
@@ -49,14 +48,9 @@ class DemoProvider: RingProvider {
         RingViewModel(provider: self, globalConfig: globalConfig)
     }
     
-    func requestNeededPermissions() -> Future<Bool, Error> {
-        return Future() { promise in
-            promise(.success(true))
-        }
-    }
-    
-    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error> {
-        Result<Progress, Error>.Publisher(.success(Progress(absolute: initValue, maxAbsolute: providerConfig.maxValue, minAbsolute: providerConfig.minValue))).eraseToAnyPublisher()
+    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) async throws -> Progress {
+        try Task.checkCancellation()
+        return Progress(absolute: initValue, maxAbsolute: providerConfig.maxValue, minAbsolute: providerConfig.minValue)
     }
     
     var requiredHKPermission: HKSampleType? = nil

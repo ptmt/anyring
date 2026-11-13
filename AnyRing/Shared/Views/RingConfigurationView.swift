@@ -1,11 +1,10 @@
 import SwiftUI
-import Combine
 import HealthKit
 
 struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
     @EnvironmentObject private var viewModel: AnyRingViewModel
-    @State private var permissionTask: AnyCancellable?
+    @State private var permissionTask: Task<Void, Never>?
 
     private func binding<Value>(_ get: @escaping (any ProviderConfiguration) -> Value,
                                 _ set: @escaping (inout any ProviderConfiguration, Value) -> Void) -> Binding<Value> {
@@ -23,9 +22,12 @@ struct RingConfigurationView: View {
                     guard var changed = ring.configuration as? HealthKitProvider.Configuration else { return }
                     changed.healthKitParams = parameters
                     ring.update(config: changed)
-                    permissionTask = viewModel.handlePermissions(permissions: [parameters.sampleType.hkSampleType])
-                        .receive(on: DispatchQueue.main)
-                        .sink(receiveCompletion: { _ in }, receiveValue: { _ in viewModel.refresh() })
+                    permissionTask?.cancel()
+                    permissionTask = Task {
+                        // Keep the existing behavior: refresh after a completed prompt, even false.
+                        if (try? await viewModel.handlePermissions(permissions: [parameters.sampleType.hkSampleType])) != nil,
+                           !Task.isCancelled { viewModel.refresh() }
+                    }
                 }
             } label: { Label(ring.name, systemImage: "heart.fill") }
             if let config = ring.configuration as? HealthKitProvider.Configuration {
@@ -68,6 +70,7 @@ struct RingConfigurationView: View {
             Toggle("Inner Glow", isOn: binding({ $0.appearance.innerGlow }, { $0.appearance.innerGlow = $1 }))
             Toggle("Outer Glow", isOn: binding({ $0.appearance.outerGlow }, { $0.appearance.outerGlow = $1 }))
         }
+        .onDisappear { permissionTask?.cancel() }
     }
 
     private func numericField(_ label: String, value: Binding<Double>) -> some View {

@@ -32,18 +32,16 @@ struct Provider: TimelineProvider {
             // Real HealthKit also on Simulator; fixtures belong only in previews/tests.
             let model = AnyRingViewModel(persistence: persistence, dataSource: DeviceHealthKitDataSource(requireSamples: true), requestAuthorization: false)
             let cache = persistence.widgetCache
-            model.getSnapshots { [model] snapshots, _ in
-                _ = model // Keep the providers alive until HealthKit completes.
-                guard persistence.restore() == config else {
-                    callback.call(SimpleEntry(date: Date(), rings: nil, names: [], readingDate: nil))
-                    return
-                }
-                cache.store(lastSnapshot: snapshots, config: config)
-                let reading = cache.restoreReading(config: config)
-                callback.call(SimpleEntry(date: Date(), rings: reading.map { RingWrapper($0.rings) },
-                                          names: config.configs.map(\.name), readingDate: reading?.date,
-                                          shape: config.global.shape))
+            let snapshots = try? await model.getSnapshots()
+            guard persistence.restore() == config else {
+                callback.call(SimpleEntry(date: Date(), rings: nil, names: [], readingDate: nil))
+                return
             }
+            cache.store(lastSnapshot: snapshots, config: config)
+            let reading = cache.restoreReading(config: config)
+            callback.call(SimpleEntry(date: Date(), rings: reading.map { RingWrapper($0.rings) },
+                                      names: config.configs.map(\.name), readingDate: reading?.date,
+                                      shape: config.global.shape))
         }
     }
 }

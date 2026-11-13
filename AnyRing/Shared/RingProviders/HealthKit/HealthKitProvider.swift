@@ -7,7 +7,6 @@
 
 import Foundation
 import HealthKit
-import Combine
 
 
 //let activityMinutesConfiguration = HealthKitProvider.HealthKitConfiguration(
@@ -238,45 +237,24 @@ class HealthKitProvider: RingProvider {
     }
     
     
-    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error> {
-        let healthKitParams = (providerConfig as! Configuration).healthKitParams
-        return aggregate(numberOfDays: globalConfig.days,
-                         sampleType: healthKitParams.sampleType.hkSampleType,
-                         unit: healthKitParams.units.hkunit,
-                         aggregation: healthKitParams.aggregation)
-                         // HealthKit resolves its Future on a background queue. Hop before
-                         // the actor-isolated transform, not only before the UI subscriber.
-                         .receive(on: DispatchQueue.main)
-                         .tryMap { (aggregated: Double) -> Progress in
-                            return Progress(absolute: aggregated,
-                                     maxAbsolute: providerConfig.maxValue,
-                                     minAbsolute: providerConfig.minValue,
-                                     reversed: healthKitParams.reversed)
-                         }.eraseToAnyPublisher()
-    }
-    
-    private var cancellable: AnyCancellable?
-    
-    @MainActor func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
-        RingViewModel(provider: self, globalConfig: globalConfig)
-    }
-    
-    private func aggregate(numberOfDays: Int, sampleType: HKSampleType, unit: HKUnit, aggregation: Aggregation) -> AnyPublisher<Double, Error> {
-        
+    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) async throws -> Progress {
+        try Task.checkCancellation()
+        let parameters = (providerConfig as! Configuration).healthKitParams
         let calendar = Calendar.current
-        
-        // We calculate start of day, not the exact time
         let now = Date()
-        let timeInDay = calendar.date(byAdding: .day, value: -(max(numberOfDays, 1) - 1), to: now) ?? now
-        
-        let startOfTheDay = calendar.startOfDay(for: timeInDay)
-        
-        return dataSource.fetchStatistics(
-            withStart: startOfTheDay,
-            to: now,
-            ofType: sampleType,
-            unit: unit,
-            aggregation: aggregation).eraseToAnyPublisher()
+        let firstDay = calendar.date(byAdding: .day, value: -(max(globalConfig.days, 1) - 1), to: now) ?? now
+        let value = try await dataSource.fetchStatistics(
+            withStart: calendar.startOfDay(for: firstDay), to: now,
+            ofType: parameters.sampleType.hkSampleType, unit: parameters.units.hkunit,
+            aggregation: parameters.aggregation)
+        // Await resumes on MainActor even when HealthKit completes on a background queue.
+        try Task.checkCancellation()
+        return Progress(absolute: value, maxAbsolute: providerConfig.maxValue,
+                        minAbsolute: providerConfig.minValue, reversed: parameters.reversed)
+    }
+
+    func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel {
+        RingViewModel(provider: self, globalConfig: globalConfig)
     }
 }
 

@@ -6,11 +6,10 @@
 //
 
 import Foundation
-import Combine
 import HealthKit
 
 @MainActor
-protocol RingProvider: AnyObject {
+protocol RingProvider: AnyObject, Sendable {
     init(dataSource: HealthKitDataSource,
          config: ProviderConfiguration,
          configPersistence: ConfigurationPersistence)
@@ -21,5 +20,5 @@ protocol RingProvider: AnyObject {
     
 
     @MainActor func viewModel(globalConfig: GlobalConfiguration) -> RingViewModel
-    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) -> AnyPublisher<Progress, Error>
+    func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) async throws -> Progress
 }

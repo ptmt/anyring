@@ -105,7 +105,7 @@ final class Tests_iOS: XCTestCase {
         capture(app, name: "Shape gallery continued")
         heart.tap()
         app.terminate()
-        app.launchArguments = []
+        app.launchArguments = ["--ui-testing", "--preserve-test-settings"]
         app.launch()
         for _ in 0..<6 {
             if picker.isHittable { break }

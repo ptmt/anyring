@@ -165,9 +165,7 @@ struct ConfigurationTests {
         config.configs[2].maxValue = 500
         persistence.persist(config: config)
         let model = AnyRingViewModel(persistence: persistence, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
-        let rings: RingWrapper<RingSnapshot>? = await withCheckedContinuation { continuation in
-            model.getSnapshots { rings, _ in continuation.resume(returning: rings) }
-        }
+        let rings: RingWrapper<RingSnapshot>? = try await model.getSnapshots()
         #expect(model.config.configs.first?.name == "My recovery")
         #expect(rings?.first.progress == 0.5)
         #expect(rings?.second.progress == 0.51)
@@ -215,8 +213,6 @@ struct ConfigurationTests {
     }
 }
 
-import Combine
-
 /// HealthKit delivers authorization and query results on arbitrary background queues.
 /// Synthetic values only: never reads or writes the user's Health database.
 @MainActor
@@ -237,13 +233,12 @@ final class BackgroundHealthDataSource: HealthKitDataSource {
     }
 
     func isAvailable() -> Bool { true }
-    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
-        Future { promise in
-            let callback = SendableCallback(promise)
+    func requestPermissions(permissions: Set<HKObjectType>) async throws -> Bool {
+        try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                 self.authorized = (try? self.authorization.get()) == true
                 let result = self.authorization
-                self.deliver { callback.call(result) }
+                self.deliver { continuation.resume(with: result) }
             }
         }
     }
@@ -252,15 +247,14 @@ final class BackgroundHealthDataSource: HealthKitDataSource {
         queue.asyncAfter(deadline: .now() + 0.02, execute: body)
     }
     func fetchStatistics(withStart: Date, to: Date, ofType: HKSampleType,
-                         unit: HKUnit, aggregation: Aggregation) -> Future<Double, Error> {
+                         unit: HKUnit, aggregation: Aggregation) async throws -> Double {
         readCount += 1
         let result: Result<Double, Error>
         if !authorized || reading == .empty { result = .failure(HealthDataError.noSamples) }
         else if reading == .denied { result = .failure(HKError(.errorAuthorizationDenied)) }
         else { result = .success(42) }
-        return Future { promise in
-            let callback = SendableCallback(promise)
-            self.deliver { callback.call(result) }
+        return try await withCheckedThrowingContinuation { continuation in
+            self.deliver { continuation.resume(with: result) }
         }
     }
 }
@@ -330,6 +324,233 @@ struct BackgroundHealthDeliveryTests {
         #expect(model.showingAlert)
         #expect((model.authorizationError != nil) == throwsError)
         #expect(source.readCount == 3) // Only initial reads, not an authorization-triggered refresh.
+    }
+}
+
+/// Deliberately ignores cancellation to exercise late results from superseded work.
+@MainActor
+private final class ControlledHealthDataSource: HealthKitDataSource {
+    struct Read {
+        let type: HKSampleType
+        let start: Date
+        let end: Date
+        let complete: (Result<Double, Error>) -> Void
+    }
+    var reads: [Read] = []
+    var permissions: [(Result<Bool, Error>) -> Void] = []
+    func isAvailable() -> Bool { true }
+    func requestPermissions(permissions: Set<HKObjectType>) async throws -> Bool {
+        try await withCheckedThrowingContinuation { continuation in
+            self.permissions.append { continuation.resume(with: $0) }
+        }
+    }
+    func fetchStatistics(withStart start: Date, to end: Date, ofType type: HKSampleType,
+                         unit: HKUnit, aggregation: Aggregation) async throws -> Double {
+        try await withCheckedThrowingContinuation { continuation in
+            self.reads.append(Read(type: type, start: start, end: end, complete: { continuation.resume(with: $0) }))
+        }
+    }
+}
+
+@MainActor
+private final class CancellableHealthDataSource: HealthKitDataSource {
+    var activeReads = 0
+    var cancelledReads = 0
+    func isAvailable() -> Bool { true }
+    func requestPermissions(permissions: Set<HKObjectType>) async throws -> Bool { true }
+    func fetchStatistics(withStart: Date, to: Date, ofType: HKSampleType,
+                         unit: HKUnit, aggregation: Aggregation) async throws -> Double {
+        activeReads += 1
+        defer { activeReads -= 1 }
+        do { try await Task.sleep(for: .seconds(30)) }
+        catch { cancelledReads += 1; throw error }
+        return 42
+    }
+}
+
+@Suite @MainActor
+struct HealthRefreshTests {
+    private func model(_ source: ControlledHealthDataSource, authorize: Bool = false) -> AnyRingViewModel {
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "RefreshTests.\(UUID())")!)
+        let model = AnyRingViewModel(persistence: persistence, dataSource: source, requestAuthorization: authorize)
+        persistence.persist(config: model.config)
+        return model
+    }
+
+    private func settle() async throws { try await Task.sleep(for: .milliseconds(50)) }
+
+    @Test func shapeEditRefreshesTheInvalidatedWidgetCache() async throws {
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "ShapeCacheTests.\(UUID())")!)
+        let model = AnyRingViewModel(persistence: persistence, dataSource: MockHealthKitDataSource())
+        persistence.persist(config: model.config)
+        for _ in 0..<100 {
+            if persistence.widgetCache.restoreReading(config: model.config) != nil { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(persistence.widgetCache.restoreReading(config: model.config) != nil)
+        model.updateShape(.heart)
+        for _ in 0..<100 {
+            if persistence.widgetCache.restoreReading(config: model.config) != nil { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let reading = try #require(persistence.widgetCache.restoreReading(config: model.config))
+        #expect(reading.configuration.global.shape == .heart)
+        #expect(reading.rings.count == 3)
+        #expect(reading.rings[1].progress == 5100 / model.config.configs[1].maxValue)
+    }
+
+    @Test func widgetRefreshRejectsLateResultsAndRetainsLastGoodReadingOnFailure() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        try await settle()
+        source.reads.forEach { $0.complete(.success(1)) }
+        model.refreshWidgetSnapshot()
+        try await settle()
+        let obsolete = Array(source.reads.suffix(3))
+        model.updateShape(.heart)
+        model.refreshWidgetSnapshot()
+        try await settle()
+        let current = Array(source.reads.suffix(3))
+        current.forEach { $0.complete(.success(42)) }
+        try await settle()
+        let saved = try #require(model.persistence.widgetCache.restoreReading(config: model.config))
+        #expect(saved.configuration.global.shape == .heart)
+        obsolete.forEach { $0.complete(.success(999)) }
+        try await settle()
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.date == saved.date)
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.rings[1].progress == 42 / model.config.configs[1].maxValue)
+        model.refreshWidgetSnapshot()
+        try await settle()
+        source.reads.suffix(3).forEach { $0.complete(.failure(HealthDataError.noSamples)) }
+        try await settle()
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.date == saved.date)
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.rings[1].progress == 42 / model.config.configs[1].maxValue)
+    }
+
+    @Test func simultaneousSnapshotsReadAllMetricsIndependently() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        try await settle()
+        source.reads.forEach { $0.complete(.success(1)) }
+        var results: [RingWrapper<RingSnapshot>] = []
+        let first = Task { results.append(try await model.getSnapshots()) }
+        let second = Task { results.append(try await model.getSnapshots()) }
+        try await settle()
+        #expect(source.reads.count == 9)
+        #expect(Set(source.reads.suffix(6).map(\.type)).count == 3)
+        for read in source.reads.suffix(6).reversed() { read.complete(.success(42)) }
+        try await settle()
+        try await first.value
+        try await second.value
+        #expect(results.count == 2)
+        #expect(results.allSatisfy { $0.list.count == 3 })
+    }
+
+    @Test func supersededRefreshCannotReplaceProgressOrError() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        try await settle()
+        let ring = model.rings!.first
+        var changed = ring.configuration
+        changed.maxValue = 200
+        ring.update(config: changed)
+        try await settle()
+        #expect(source.reads.count == 4)
+        source.reads[3].complete(.success(80))
+        try await settle()
+        source.reads[0].complete(.failure(HealthDataError.noSamples))
+        try await settle()
+        #expect(ring.progress.absolute == 80)
+        #expect(ring.progress.maxAbsolute == 200)
+        #expect(ring.error == nil)
+        #expect(!ring.isRefreshing)
+        ring.refresh()
+        try await settle()
+        source.reads.last!.complete(.failure(HealthDataError.noSamples))
+        try await settle()
+        #expect(ring.error is HealthDataError)
+        #expect(ring.progress.absolute == 80) // Keep last good reading on error.
+        source.reads[1...2].forEach { $0.complete(.success(1)) }
+    }
+
+    @Test func staleAuthorizationCannotRefreshReplacementConfiguration() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source, authorize: true)
+        try await settle()
+        model.updateProviders()
+        try await settle()
+        #expect(source.permissions.count == 2)
+        source.permissions[0](.failure(HealthDataError.noSamples))
+        source.permissions[1](.success(false))
+        try await settle()
+        #expect(model.showingAlert)
+        #expect(model.authorizationError == nil)
+        #expect(source.reads.count == 6)
+        source.reads.forEach { $0.complete(.success(1)) }
+    }
+
+    @Test func cancellationStopsOnlyTheOwningSnapshotQueries() async throws {
+        let source = CancellableHealthDataSource()
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "CancelTests.\(UUID())")!)
+        var model: AnyRingViewModel? = AnyRingViewModel(persistence: persistence, dataSource: source, requestAuthorization: false)
+        try await settle()
+        let first = Task { [model = model!] in try await model.getSnapshots() }
+        let second = Task { [model = model!] in try await model.getSnapshots() }
+        try await settle()
+        #expect(source.activeReads == 9)
+        first.cancel()
+        do { _ = try await first.value; Issue.record("Cancelled snapshot returned progress") }
+        catch { #expect(error is CancellationError) }
+        #expect(source.cancelledReads == 3)
+        #expect(source.activeReads == 6)
+        second.cancel()
+        do { _ = try await second.value; Issue.record("Cancelled snapshot returned progress") }
+        catch { #expect(error is CancellationError) }
+        #expect(source.activeReads == 3)
+        model = nil
+        try await settle()
+        #expect(source.activeReads == 0)
+        #expect(source.cancelledReads == 9)
+    }
+
+    @Test func providerPassesCalendarWindowAndRejectsAlreadyCancelledRead() async throws {
+        let source = ControlledHealthDataSource()
+        let config = UserDefaultsConfigurationPersistence.defaultConfig.configs[0]
+        let provider = HealthKitProvider(dataSource: source, config: config, configPersistence: MockConfigurationPersistence())
+        let task = Task { try await provider.calculateProgress(providerConfig: config, globalConfig: GlobalConfiguration(days: 7)) }
+        try await settle()
+        let read = try #require(source.reads.first)
+        let expected = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -6, to: read.end)!)
+        #expect(read.start == expected)
+        read.complete(.success(42))
+        #expect(try await task.value.absolute == 42)
+        let cancelled = Task { try await provider.calculateProgress(providerConfig: config, globalConfig: .Default) }
+        cancelled.cancel()
+        do { _ = try await cancelled.value; Issue.record("Cancelled read returned progress") }
+        catch { #expect(error is CancellationError) }
+        #expect(source.reads.count == 1)
+    }
+
+    @Test func snapshotRetainsConfigurationAtRequestStart() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        try await settle()
+        let original = model.config.configs[0].appearance
+        var result: RingWrapper<RingSnapshot>?
+        let snapshot = Task { result = try await model.getSnapshots() }
+        try await settle()
+        var changed = model.rings!.first.configuration
+        changed.appearance.mainColor = CodableColor(.purple)
+        changed.maxValue = 999
+        model.rings!.first.update(config: changed)
+        try await settle()
+        source.reads.forEach { $0.complete(.success(42)) }
+        try await settle()
+        try await snapshot.value
+        #expect(result?.first.mainColor.red == original.mainColor.red)
+        #expect(result?.first.mainColor.green == original.mainColor.green)
+        #expect(result?.first.mainColor.blue == original.mainColor.blue)
+        #expect(model.persistence.restore()?.configs[0].maxValue == 999)
     }
 }
 

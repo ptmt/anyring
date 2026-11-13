@@ -27,7 +27,8 @@ final class AnyRingViewModel: ObservableObject {
     @Published private(set) var config: AnyRingConfig
     var onConfigurationChanged: ((AnyRingConfig) -> Void)?
 
-    private var permissionTask: AnyCancellable?
+    private var permissionTask: Task<Void, Never>?
+    private var widgetTask: Task<Void, Never>?
     private var providers: [any RingProvider] = []
     private var generation = 0
     private var widgetGeneration = 0
@@ -69,19 +70,24 @@ final class AnyRingViewModel: ObservableObject {
         let types = Set(config.configs.compactMap { ($0 as? HealthKitProvider.Configuration)?.healthKitParams.sampleType.hkSampleType })
         observeHealthChanges()
         guard requestAuthorization else { return }
-        permissionTask = dataSource.requestPermissions(permissions: Set(types))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] result in
-                guard let self, self.generation == currentGeneration else { return }
-                if case .failure(let error) = result {
-                    self.showingAlert = true
-                    self.authorizationError = error.localizedDescription
-                }
-            } receiveValue: { [weak self] success in
-                guard let self, self.generation == currentGeneration else { return }
+        let dataSource = dataSource
+        permissionTask = Task { [weak self] in
+            do {
+                let success = try await dataSource.requestPermissions(permissions: Set(types))
+                guard !Task.isCancelled, let self, self.generation == currentGeneration else { return }
                 self.showingAlert = !success
                 if success { self.refresh() }
+            } catch {
+                guard !Task.isCancelled, let self, self.generation == currentGeneration else { return }
+                self.showingAlert = true
+                self.authorizationError = error.localizedDescription
             }
+        }
+    }
+
+    deinit {
+        permissionTask?.cancel()
+        widgetTask?.cancel()
     }
 
     private func observeHealthChanges() {
@@ -103,11 +109,14 @@ final class AnyRingViewModel: ObservableObject {
         widgetGeneration += 1
         let generation = widgetGeneration
         let requestedConfig = config
-        getSnapshots { [weak self] snapshots, _ in
-            guard let self, self.widgetGeneration == generation,
+        widgetTask?.cancel()
+        let providers = providers
+        widgetTask = Task { [weak self] in
+            // An unavailable reading keeps the last matching cache and its original date.
+            guard let snapshots = try? await Self.getSnapshots(providers: providers, config: requestedConfig),
+                  !Task.isCancelled, let self, self.widgetGeneration == generation,
                   self.config == requestedConfig,
-                  self.persistence.restore() == requestedConfig,
-                  let snapshots else { return }
+                  self.persistence.restore() == requestedConfig else { return }
             self.persistence.widgetCache.store(lastSnapshot: snapshots, config: requestedConfig)
             WidgetCenter.shared.reloadAllTimelines()
         }
@@ -133,6 +142,7 @@ final class AnyRingViewModel: ObservableObject {
         globalConfig = updated.global
         persistence.persist(config: updated)
         rings?.forEach { $0.globalConfig = updated.global }
+        if requestAuthorization { refreshWidgetSnapshot() }
         onConfigurationChanged?(updated)
     }
 
@@ -163,31 +173,32 @@ final class AnyRingViewModel: ObservableObject {
         installProviders()
     }
 
-    func handlePermissions(permissions: [HKObjectType]) -> Future<Bool, Error> {
-        dataSource.requestPermissions(permissions: Set(permissions))
+    func handlePermissions(permissions: [HKObjectType]) async throws -> Bool {
+        try await dataSource.requestPermissions(permissions: Set(permissions))
     }
 
-    /// Each request owns its cancellable; widget timeline requests cannot cancel each other.
-    func getSnapshots(completion: @escaping (RingWrapper<RingSnapshot>?, Error?) -> Void) {
-        let currentConfig = config
-        var task: AnyCancellable?
-        task = Publishers.MergeMany(providers.map { provider in
-            provider.calculateProgress(providerConfig: provider.config, globalConfig: currentConfig.global)
-                .map { (provider.config.ring, RingSnapshot(progress: $0.normalized,
-                       mainColor: provider.config.appearance.mainColor,
-                       gradient: provider.config.appearance.gradient,
-                       secondaryColor: provider.config.appearance.secondaryColor,
-                       outerGlow: provider.config.appearance.outerGlow,
-                       innerGlow: provider.config.appearance.innerGlow)) }
-        })
-        .collect()
-        .receive(on: DispatchQueue.main)
-        .sink { result in
-            if case .failure(let error) = result { completion(nil, error) }
-            task?.cancel(); task = nil
-        } receiveValue: { snapshots in
-            guard snapshots.count == 3 else { completion(nil, nil); return }
-            completion(RingWrapper(snapshots.sorted { $0.0.rawValue < $1.0.rawValue }.map(\.1)), nil)
+    /// Each caller owns its child queries; concurrent widget requests remain independent.
+    func getSnapshots() async throws -> RingWrapper<RingSnapshot> {
+        try await Self.getSnapshots(providers: providers, config: config)
+    }
+
+    private static func getSnapshots(providers: [any RingProvider], config: AnyRingConfig) async throws -> RingWrapper<RingSnapshot> {
+        try await withThrowingTaskGroup(of: (RingID, RingSnapshot).self) { group in
+            for (provider, requested) in zip(providers, config.configs) {
+                group.addTask {
+                    let progress = try await provider.calculateProgress(providerConfig: requested, globalConfig: config.global)
+                    return (requested.ring, RingSnapshot(progress: progress.normalized,
+                        mainColor: requested.appearance.mainColor,
+                        gradient: requested.appearance.gradient,
+                        secondaryColor: requested.appearance.secondaryColor,
+                        outerGlow: requested.appearance.outerGlow,
+                        innerGlow: requested.appearance.innerGlow))
+                }
+            }
+            var snapshots: [(RingID, RingSnapshot)] = []
+            for try await snapshot in group { snapshots.append(snapshot) }
+            try Task.checkCancellation()
+            return RingWrapper(snapshots.sorted { $0.0.rawValue < $1.0.rawValue }.map(\.1))
         }
     }
 }

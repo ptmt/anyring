@@ -1,8 +1,7 @@
 import Foundation
 import HealthKit
-import Combine
 
-/// Immutable bridge for Combine promises and Objective-C completion handlers.
+/// Immutable bridge for legacy WidgetKit and WatchConnectivity completion handlers.
 /// These APIs deliver on arbitrary queues; the closure must arrange any actor-bound work itself.
 final class SendableCallback<Value>: @unchecked Sendable {
     private let callback: (Value) -> Void
@@ -20,16 +19,18 @@ final class DeviceHealthKitDataSource: HealthKitDataSource {
 
     func isAvailable() -> Bool { HKHealthStore.isHealthDataAvailable() }
 
-    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
-        // Read authorization is intentionally private; authorizationStatus is for writing only.
-        Future { promise in
-            guard Bundle.main.bundleURL.pathExtension != "appex" else { promise(.success(true)); return }
-            let callback = SendableCallback(promise)
-            self.healthStore.requestAuthorization(toShare: [], read: permissions) { success, error in
-                if let error { callback.call(.failure(error)) }
-                else { callback.call(.success(success)) }
+    func requestPermissions(permissions: Set<HKObjectType>) async throws -> Bool {
+        try Task.checkCancellation()
+        guard Bundle.main.bundleURL.pathExtension != "appex" else { return true }
+        // Preserve the completion's Bool: it is not permission to read private Health data.
+        let success: Bool = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
+            healthStore.requestAuthorization(toShare: [], read: permissions) { success, error in
+                if let error { continuation.resume(throwing: error) }
+                else { continuation.resume(returning: success) }
             }
         }
+        try Task.checkCancellation()
+        return success
     }
 
     nonisolated static func statisticsOption(for aggregation: Aggregation) -> HKStatisticsOptions {
@@ -42,33 +43,26 @@ final class DeviceHealthKitDataSource: HealthKitDataSource {
     }
 
     func fetchStatistics(withStart startDate: Date, to endDate: Date, ofType sampleType: HKSampleType,
-                         unit: HKUnit, aggregation: Aggregation) -> Future<Double, Error> {
-        Future { promise in
-            guard let quantityType = sampleType as? HKQuantityType else {
-                promise(.failure(HealthDataError.unsupportedType)); return
-            }
-            let cumulative = quantityType.aggregationStyle == .cumulative
-            guard cumulative == (aggregation == .sum) else {
-                promise(.failure(HealthDataError.unsupportedAggregation)); return
-            }
-            let callback = SendableCallback(promise)
-            let requireSamples = self.requireSamples
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
-            let query = HKStatisticsQuery(quantityType: quantityType, quantitySamplePredicate: predicate,
-                                          options: Self.statisticsOption(for: aggregation)) { _, result, error in
-                if let error { callback.call(.failure(error)); return }
-                let quantity: HKQuantity?
-                switch aggregation {
-                case .sum: quantity = result?.sumQuantity()
-                case .avg: quantity = result?.averageQuantity()
-                case .min: quantity = result?.minimumQuantity()
-                case .max: quantity = result?.maximumQuantity()
-                }
-                do { callback.call(.success(try Self.quantityValue(quantity, unit: unit, requireSamples: requireSamples))) }
-                catch { callback.call(.failure(error)) }
-            }
-            self.healthStore.execute(query)
+                         unit: HKUnit, aggregation: Aggregation) async throws -> Double {
+        try Task.checkCancellation()
+        guard let quantityType = sampleType as? HKQuantityType else { throw HealthDataError.unsupportedType }
+        guard (quantityType.aggregationStyle == .cumulative) == (aggregation == .sum) else {
+            throw HealthDataError.unsupportedAggregation
         }
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        // The native one-shot query owns execution and cancellation; no retained callback/query pair.
+        let query = HKStatisticsQueryDescriptor(predicate: .quantitySample(type: quantityType, predicate: predicate),
+                                               options: Self.statisticsOption(for: aggregation))
+        let result = try await query.result(for: healthStore)
+        try Task.checkCancellation()
+        let quantity: HKQuantity?
+        switch aggregation {
+        case .sum: quantity = result?.sumQuantity()
+        case .avg: quantity = result?.averageQuantity()
+        case .min: quantity = result?.minimumQuantity()
+        case .max: quantity = result?.maximumQuantity()
+        }
+        return try Self.quantityValue(quantity, unit: unit, requireSamples: requireSamples)
     }
 
     nonisolated static func quantityValue(_ quantity: HKQuantity?, unit: HKUnit, requireSamples: Bool = false) throws -> Double {

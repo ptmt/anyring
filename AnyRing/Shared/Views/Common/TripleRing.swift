@@ -57,10 +57,12 @@ struct RingContour: Sendable {
 
     init(shape: RingShape, rect: CGRect) {
         center = CGPoint(x: rect.midX, y: rect.midY)
-        let unit = Self.unitPoints(for: shape).reduce(into: [CGPoint]()) { unique, point in
+        var unit = Self.unitPoints(for: shape).reduce(into: [CGPoint]()) { unique, point in
             if let last = unique.last, hypot(point.x - last.x, point.y - last.y) < 0.000001 { return }
             unique.append(point)
         }
+        // Deduplication can retain a rounded endpoint instead of the exact closing point.
+        unit[unit.count - 1] = unit[0]
         points = unit.map { CGPoint(x: rect.minX + $0.x * rect.width, y: rect.minY + $0.y * rect.height) }
         var accumulated = [0.0]
         for index in 1..<points.count {

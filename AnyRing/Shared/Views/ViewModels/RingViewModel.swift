@@ -29,7 +29,7 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
     var fullName: String { "\(type(of: provider).name) / \(name)" }
     var providerDescription: String { type(of: provider).description }
     private let provider: any RingProvider
-    private var refreshTask: AnyCancellable?
+    private var refreshTask: Task<Void, Never>?
     private var refreshGeneration = 0
 
     init(provider: any RingProvider, globalConfig: GlobalConfiguration) {
@@ -47,17 +47,24 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
         isRefreshing = true
         error = nil
         units = configuration.units
-        refreshTask = provider.calculateProgress(providerConfig: configuration, globalConfig: globalConfig)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                guard let self, self.refreshGeneration == generation else { return }
-                self.isRefreshing = false
-                if case .failure(let error) = completion { self.error = error }
-            } receiveValue: { [weak self] value in
-                guard let self, self.refreshGeneration == generation else { return }
+        let provider = provider
+        let requested = configuration
+        let global = globalConfig
+        refreshTask = Task { [weak self] in
+            do {
+                let value = try await provider.calculateProgress(providerConfig: requested, globalConfig: global)
+                guard !Task.isCancelled, let self, self.refreshGeneration == generation else { return }
                 self.progress = value
+                self.isRefreshing = false
+            } catch {
+                guard !Task.isCancelled, let self, self.refreshGeneration == generation else { return }
+                self.error = error
+                self.isRefreshing = false
             }
+        }
     }
+
+    deinit { refreshTask?.cancel() }
 
     func update(config: any ProviderConfiguration) {
         guard config.minValue.isFinite, config.maxValue.isFinite else { return }
