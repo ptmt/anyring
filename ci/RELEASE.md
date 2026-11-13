@@ -51,6 +51,24 @@ passed all tests and delivered build 10.2. No checks or Watch capabilities were 
 Upload is verified; Apple processing completion, compliance, tester assignment,
 and availability on a physical device are **not** yet verified.
 
+## HealthKit crash hotfix — 2.0 (12.2)
+
+The subsequent on-device 10.2 crash report matched an independently reproduced
+Release simulator executor assertion in the HealthKit progress transform. The fix,
+RED/GREEN evidence and physical-report correlation are in `docs/HEALTHKIT-CRASH.md`.
+
+- Source: `5d9b0dd19d79b68959ad05d7d199752545c60418`.
+- [Run 43461305997, attempt 2](https://github.com/ptmt/anyring/actions/runs/43461305997): validation `132019554019`, upload `132028928533`, both success.
+- Signed archive and explicit Apple **Upload succeeded** verified; build **12.2**,
+  marketing version **2.0**. Apple reported processing at `2026-11-13T16:55:44Z`.
+- All four shipping targets/capabilities preserved; cleanup success, zero artifacts.
+- Full Debug and Release tests passed locally; hosted validation includes the full
+  Debug suite plus the new Release background-callback regression. Independent
+  code review passed. Attempt 1 had a hosted UI launch timeout; unchanged retry passed.
+- Processing completion, tester availability and fixed-build physical acceptance
+  remain unverified. Do not ask for another crash report to identify the original
+  failure: the supplied report has already been correlated.
+
 ## Device acceptance still required
 
 After Apple processing and tester assignment, verify actual iPhone Lock Screen
