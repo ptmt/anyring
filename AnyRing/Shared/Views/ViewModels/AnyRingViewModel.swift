@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import SwiftUI
 import HealthKit
+import WidgetKit
 
 @MainActor
 protocol ConfigurationProvider {
@@ -29,6 +30,7 @@ final class AnyRingViewModel: ObservableObject {
     private var permissionTask: AnyCancellable?
     private var providers: [any RingProvider] = []
     private var generation = 0
+    private var widgetGeneration = 0
     private let requestAuthorization: Bool
 
     init(_ configurationProvider: (any ConfigurationProvider)? = nil,
@@ -38,9 +40,10 @@ final class AnyRingViewModel: ObservableObject {
         self.persistence = persistence
         self.requestAuthorization = requestAuthorization
         #if targetEnvironment(simulator)
-        self.dataSource = dataSource ?? MockHealthKitDataSource()
+        self.dataSource = dataSource ?? (ProcessInfo.processInfo.arguments.contains("--ui-testing")
+                                         ? MockHealthKitDataSource() : DeviceHealthKitDataSource(requireSamples: true))
         #else
-        self.dataSource = dataSource ?? DeviceHealthKitDataSource()
+        self.dataSource = dataSource ?? DeviceHealthKitDataSource(requireSamples: true)
         #endif
         let restored = configurationProvider?.config() ?? persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
         config = restored
@@ -91,6 +94,23 @@ final class AnyRingViewModel: ObservableObject {
 
     func refresh() {
         rings?.forEach { $0.refresh() }
+        if requestAuthorization { refreshWidgetSnapshot() }
+    }
+
+    /// Publish only a completed reading for the configuration that is still saved.
+    func refreshWidgetSnapshot() {
+        guard Bundle.main.bundleURL.pathExtension != "appex" else { return }
+        widgetGeneration += 1
+        let generation = widgetGeneration
+        let requestedConfig = config
+        getSnapshots { [weak self] snapshots, _ in
+            guard let self, self.widgetGeneration == generation,
+                  self.config == requestedConfig,
+                  self.persistence.restore() == requestedConfig,
+                  let snapshots else { return }
+            self.persistence.widgetCache.store(lastSnapshot: snapshots, config: requestedConfig)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     func updatePeriod(days: Int) {
@@ -101,6 +121,7 @@ final class AnyRingViewModel: ObservableObject {
         globalConfig = updated.global
         persistence.persist(config: updated)
         rings?.forEach { $0.globalConfig = updated.global; $0.refresh() }
+        if requestAuthorization { refreshWidgetSnapshot() }
         onConfigurationChanged?(updated)
     }
 
@@ -113,6 +134,7 @@ final class AnyRingViewModel: ObservableObject {
         config = updated
         persistence.persist(config: updated)
         if previousType != currentType { observeHealthChanges() }
+        if requestAuthorization { refreshWidgetSnapshot() }
         onConfigurationChanged?(updated)
     }
 
@@ -122,6 +144,7 @@ final class AnyRingViewModel: ObservableObject {
         guard snapshot.config != config else { refresh(); return }
         config = snapshot.config
         installProviders()
+        if requestAuthorization { refreshWidgetSnapshot() }
     }
 
     func updateProviders() {

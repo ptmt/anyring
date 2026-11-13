@@ -19,6 +19,14 @@ struct RingSnapshot: Codable, Sendable {
     var secondaryColor: CodableColor? = nil
     var outerGlow: Bool = true
     var innerGlow: Bool = false
+
+    /// Preserve over-goal progress without converting NaN/Infinity to Int or overflowing.
+    var percentageText: String {
+        guard progress.isFinite else { return "—" }
+        let percentage = max(0, progress) * 100
+        guard percentage.isFinite else { return "—" }
+        return percentage.formatted(.number.precision(.fractionLength(0)).rounded(rule: .towardZero)) + "%"
+    }
 }
 
 struct TripleRingView: View {

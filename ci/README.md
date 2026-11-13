@@ -7,13 +7,14 @@ It uses native `xcodebuild` signing and upload; Fastlane is not required.
 | Trigger | Result |
 | --- | --- |
 | Pull request or push to `main` | Check the signing configuration logic, build for the simulator, and archive Release without signing |
-| Push a `vMAJOR.MINOR[.PATCH]` tag | Run the build checks, sign a Release archive, and upload it to App Store Connect for TestFlight. The tag sets the app version |
-| Actions → iOS → Run workflow | Run the build checks; select `publish` to also upload with the version from the Xcode project |
+| Actions → iOS → Run workflow on `main` | Run the build checks and tests; select `publish` to sign all four bundles and upload with the version from the Xcode project |
 
 The build number is `<run number>.<run attempt>`. Uploads are serialized and are
 never cancelled by a newer upload. The upload job uses the `testflight` GitHub
-environment; pull requests never receive signing credentials. Debug symbols are
-kept as workflow artifacts for 30 days.
+environment, restricted to `main`; pull requests never receive signing credentials.
+No signing files, archives, or debug symbols are uploaded as workflow artifacts.
+Build numbers fail closed above 9999 runs or 99 attempts. Marketing version is
+changed intentionally in the project, not inferred from tags.
 
 ## Signing
 
@@ -29,8 +30,15 @@ Connect distribution** provisioning profile with HealthKit and the app group
 | `com.potomushto.AnyRing.watchkitapp.RingWidget` | Watch widget | `APPLE_PROFILE_WATCH_WIDGET_BASE64` |
 
 `ci/signing_metadata.py` checks every profile's team, app ID, type, capabilities,
-and expiry, and matches profiles to targets by their app ID. The profiles expire
-with the distribution certificate; replace the secrets when you renew it.
+validity dates, and membership of the exact imported distribution certificate.
+It matches profiles to targets by their app ID and rejects non-original teams.
+The certificate must have the original team OU and a valid private-key identity.
+Each of the four app/extension targets resolves its own profile UUID through
+target-scoped CI settings; local signing remains Automatic. Profiles are installed
+as private regular files in both Xcode discovery directories with exclusive
+creation and durable ownership journals. Cleanup restores the original keychain
+list and removes only owned profiles; a trap and `always()` step retry failures.
+Replace profiles and certificate secrets together when renewing signing assets.
 
 ## GitHub configuration
 
@@ -46,9 +54,27 @@ All values live in the `testflight` environment (Settings → Environments).
 | `APP_STORE_CONNECT_ISSUER_ID` | Secret | App Store Connect API issuer ID |
 | `APP_STORE_CONNECT_PRIVATE_KEY` | Secret | Entire raw `.p8` file, including BEGIN/END lines; do not base64 this value |
 
-## Dry run
+## Release verification
 
-To sign and package on a Mac without uploading, export the same variables,
-set `RUNNER_TEMP`, `GITHUB_RUN_NUMBER`, and `GITHUB_RUN_ATTEMPT`, and run
-`TESTFLIGHT_DESTINATION=export bash ci/testflight.sh`. The `.ipa` is written to
-`$RUNNER_TEMP/anyring-export`.
+```sh
+python3 -m unittest discover -s ci/tests -v
+shellcheck ci/*.sh
+actionlint -ignore 'label "xcode-27" is unknown' .github/workflows/testflight.yml
+gh workflow run testflight.yml -R ptmt/anyring --ref main -f publish=true
+```
+
+The narrow actionlint exception accommodates its older runner catalog; actual
+GitHub run 43425923970 verified the `xcode-27-arm64` image and Xcode 27.2/27B52.
+CI runs the simulator build, unsigned Release archive, and full app/widget/UI
+tests before entering the signing environment. `xcodebuild -exportArchive` uses
+`destination=upload` and the existing App Store Connect API key. Its real Apple
+upload output, not the unsigned validation job or summary text, establishes delivery.
+Record run URL, full head SHA, both job IDs, archived version/build, and explicit
+upload success. Processing, compliance, tester assignment, and physical Lock
+Screen/Watch behavior must be checked separately.
+
+Pre-release discovery found all nine expected environment secret names and
+`APPLE_TEAM_ID=49PJNAT2WC`. GitHub does not reveal their values. Local Keychain
+only has an Apple Development identity, and the only installed profile belongs
+to another app; it is not reused. CI validates the AnyRing secrets in place.
+See [release evidence](RELEASE.md) for publication results.

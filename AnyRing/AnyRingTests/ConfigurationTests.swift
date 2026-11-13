@@ -1,8 +1,54 @@
 import Testing
+import SwiftUI
+import WidgetKit
+import XCTest
 import Foundation
 import HealthKit
 import UIKit
 @testable import AnyProgress
+
+/// Render the production widget view, not a reimplementation, at accessory sizes.
+final class WidgetRenderingTests: XCTestCase {
+    @MainActor
+    func testPrivacyDoesNotRevealRingShapesOrProgress() throws {
+        func render(_ values: [Double]) throws -> Data {
+            let entry = SimpleEntry(date: Date(), rings: RingWrapper(values.map {
+                RingSnapshot(progress: $0, mainColor: CodableColor(.green))
+            }), names: ["Private", "Steps", "Energy"], readingDate: nil)
+            let renderer = ImageRenderer(content: RingWidgetEntryView(entry: entry, familyOverride: .accessoryCircular)
+                .redacted(reason: .privacy).frame(width: 76, height: 76))
+            return try XCTUnwrap(renderer.uiImage?.pngData())
+        }
+        XCTAssertEqual(try render([0, 0, 0]), try render([0.25, 0.5, 1.5]))
+    }
+
+    @MainActor
+    func testAccessoryFamiliesRenderDataEmptyAndPrivacyStates() throws {
+        let rings = RingWrapper([0.0, 0.5, 1.5].map { RingSnapshot(progress: $0, mainColor: CodableColor(.green)) })
+        let populated = SimpleEntry(date: Date(), rings: rings,
+                                    names: ["Recovery", "Steps", "Energy"], readingDate: Date())
+        let empty = SimpleEntry(date: Date(), rings: nil, names: [], readingDate: nil)
+        for (family, size) in [(WidgetFamily.accessoryCircular, CGSize(width: 76, height: 76)),
+                               (.accessoryRectangular, CGSize(width: 170, height: 76)),
+                               (.accessoryInline, CGSize(width: 250, height: 26))] {
+            for (state, entry) in [("progress", populated), ("empty", empty), ("private", populated)] {
+                let view = RingWidgetEntryView(entry: entry, familyOverride: family)
+                    .environment(\.colorScheme, .dark)
+                    .redacted(reason: state == "private" ? .privacy : [])
+                    .frame(width: size.width, height: size.height)
+                    .background(.black)
+                let renderer = ImageRenderer(content: view)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                XCTAssertEqual(image.size, size)
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "\(family)-\(state)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+    }
+}
 
 @Suite @MainActor
 struct ConfigurationTests {
@@ -96,6 +142,67 @@ struct ConfigurationTests {
 
     @Test func maximumStatisticsUsesMaximumOption() {
         #expect(DeviceHealthKitDataSource.statisticsOption(for: .max) == .discreteMax)
+    }
+
+    @Test func widgetLinksRejectUnknownRingsAndUnrelatedURLs() {
+        #expect(WidgetDestination(url: URL(string: "anyprogress://rings")!) == .overview)
+        #expect(WidgetDestination(url: URL(string: "anyprogress://ring/0")!) == .ring(.first))
+        #expect(WidgetDestination(url: URL(string: "anyprogress://ring/2")!) == .ring(.third))
+        for value in ["https://ring/0", "anyprogress://ring/3", "anyprogress://ring/nope", "anyprogress://other", "anyprogress://rings/0"] {
+            #expect(WidgetDestination(url: URL(string: value)!) == nil)
+        }
+        #expect(WidgetDestination(url: WidgetDestination.ring(.second).url) == .ring(.second))
+    }
+
+    @Test func widgetReadingUsesConfiguredOrderGoalsAndPeriod() async throws {
+        let persistence = store()
+        var config = UserDefaultsConfigurationPersistence.defaultConfig
+        config.global.days = 1
+        config.configs[0].name = "My recovery"
+        config.configs[0].maxValue = 220
+        config.configs[1].maxValue = 10000
+        config.configs[2].maxValue = 500
+        persistence.persist(config: config)
+        let model = AnyRingViewModel(persistence: persistence, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        let rings: RingWrapper<RingSnapshot>? = await withCheckedContinuation { continuation in
+            model.getSnapshots { rings, _ in continuation.resume(returning: rings) }
+        }
+        #expect(model.config.configs.first?.name == "My recovery")
+        #expect(rings?.first.progress == 0.5)
+        #expect(rings?.second.progress == 0.51)
+        #expect(rings?.third.progress == 2.2)
+        model.refreshWidgetSnapshot()
+        // A changed goal must not accept an asynchronous reading of the previous configuration.
+        config.configs[0].maxValue = 440
+        persistence.persist(config: config)
+        await Task.yield()
+        #expect(persistence.widgetCache.restoreReading(config: config) == nil)
+    }
+
+    @Test func widgetCacheRequiresMatchingSavedConfigurationAndRetainsReadingDate() {
+        let defaults = UserDefaults(suiteName: "WidgetCacheTests.\(UUID().uuidString)")!
+        let cache = SimpleCache(storage: defaults)
+        let config = UserDefaultsConfigurationPersistence.defaultConfig
+        let rings = RingWrapper([0.0, 0.5, 1.5].map { RingSnapshot(progress: $0, mainColor: CodableColor(.green)) })
+        let readAt = Date(timeIntervalSince1970: 1234)
+        #expect(cache.restoreLastSnapshot(config: config) == nil)
+        cache.store(lastSnapshot: rings, config: config, date: readAt)
+        #expect(cache.restoreReading(config: config)?.date == readAt)
+        #expect(cache.restoreLastSnapshot(config: config)?.third.progress == 1.5)
+        var changed = config
+        changed.configs[0].maxValue += 1
+        #expect(cache.restoreLastSnapshot(config: changed) == nil)
+        #expect(cache.restoreLastSnapshot(config: nil) == nil)
+        cache.store(lastSnapshot: nil, config: config)
+        #expect(cache.restoreReading(config: config)?.date == readAt)
+    }
+
+    @Test func invalidSnapshotProgressCannotBeShownAsARealPercentage() {
+        #expect(RingSnapshot(progress: .nan, mainColor: CodableColor(.green)).percentageText == "—")
+        #expect(RingSnapshot(progress: .infinity, mainColor: CodableColor(.green)).percentageText == "—")
+        #expect(RingSnapshot(progress: -0.5, mainColor: CodableColor(.green)).percentageText == "0%")
+        #expect(RingSnapshot(progress: 1.5, mainColor: CodableColor(.green)).percentageText == "150%")
+        #expect(RingSnapshot(progress: 0, mainColor: CodableColor(.green)).percentageText == "0%")
     }
 
     @Test func progressUsesLowerBoundAndHandlesInvalidRanges() {
@@ -245,6 +352,14 @@ struct WatchSyncTests {
 
 @Suite @MainActor
 struct HealthDataRegressionTests {
+    @Test func widgetMissingHealthSamplesAreUnavailableRatherThanZero() {
+        #expect(throws: HealthDataError.self) {
+            try DeviceHealthKitDataSource.quantityValue(nil, unit: .count(), requireSamples: true)
+        }
+        #expect((try? DeviceHealthKitDataSource.quantityValue(HKQuantity(unit: .count(), doubleValue: 0),
+                                                           unit: .count(), requireSamples: true)) == 0)
+    }
+
     @Test func incompatibleUnitsReturnAnErrorInsteadOfAnObjectiveCException() {
         let quantity = HKQuantity(unit: .kilocalorie(), doubleValue: 200)
         #expect(throws: HealthDataError.self) { try DeviceHealthKitDataSource.quantityValue(quantity, unit: .gram()) }

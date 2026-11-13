@@ -2,12 +2,13 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewModel: AnyRingViewModel
+    @State private var path: [RingID] = []
     #if os(iOS)
     @EnvironmentObject private var connectivity: WatchConnectivityCoordinator
     #endif
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Group {
                 if !viewModel.dataSource.isAvailable() {
                     ContentUnavailableView("Health Data Unavailable", systemImage: "heart.slash",
@@ -29,6 +30,19 @@ struct ContentView: View {
                         .refreshable { viewModel.refresh() }
                 } else {
                     ProgressView("Loading your rings")
+                }
+            }
+            .navigationDestination(for: RingID.self) { id in
+                if let ring = viewModel.rings?.list.first(where: { $0.configuration.ring == id }) {
+                    Form { RingConfigurationView(ring: ring).environmentObject(viewModel) }
+                        .navigationTitle("Ring \(id.rawValue + 1)")
+                }
+            }
+            .onOpenURL { url in
+                guard let destination = WidgetDestination(url: url) else { return }
+                switch destination {
+                case .overview: path = []
+                case .ring(let id): path = [id]
                 }
             }
             .navigationTitle("AnyProgress")

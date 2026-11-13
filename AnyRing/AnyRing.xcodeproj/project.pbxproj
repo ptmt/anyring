@@ -152,6 +152,7 @@
 		7BFA41606356230693739123 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 243083C025A8D5E900B0035B /* Color.swift */; };
 		7D0EF502E85DF86F4091C447 /* HealthKitProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA55122590D74A002CD4A6 /* HealthKitProvider.swift */; };
 		8040CCA50991AB800A455B1E /* DemoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA54F7258FA576002CD4A6 /* DemoProvider.swift */; };
+		A11223344556677889900001 /* RingWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24AA554B2590F87A002CD4A6 /* RingWidget.swift */; };
 		816FF95472939B27EA7B9E96 /* ConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A090FE9E3E453457B35735 /* ConfigurationTests.swift */; };
 		861EA076D0D82EC09CBABF9E /* RingAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24786296259C885000E4F1C2 /* RingAppearance.swift */; };
 		8A5C2564BCD7FF9E0005114B /* HalfCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2478619E2598906F00E4F1C2 /* HalfCircle.swift */; };
@@ -1165,6 +1166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				816FF95472939B27EA7B9E96 /* ConfigurationTests.swift in Sources */,
+				A11223344556677889900001 /* RingWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1324,7 +1326,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRing.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				ENABLE_PREVIEWS = YES;
@@ -1351,7 +1358,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRing.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				ENABLE_PREVIEWS = YES;
@@ -1526,8 +1538,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRingWatch/AnyRingWatch.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = AnyRingWatch/Info.plist;
@@ -1551,8 +1567,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = AnyRingWatch/AnyRingWatch.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = AnyRingWatch/Info.plist;
@@ -1576,7 +1596,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing_RingWidget)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing_RingWidget)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;
@@ -1603,7 +1628,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing_RingWidget)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing_RingWidget)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;
@@ -1629,6 +1659,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) WIDGET_TESTING";
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1646,6 +1677,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) WIDGET_TESTING";
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1665,7 +1697,12 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp_RingWidget)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp_RingWidget)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;
@@ -1687,7 +1724,12 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = RingWidgetExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				ANYRING_CI_SIGN_STYLE = Automatic;
+				ANYRING_CI_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = "$(ANYRING_CI_SIGN_STYLE)";
+				CODE_SIGN_IDENTITY = "$(ANYRING_CI_IDENTITY)";
+				PROVISIONING_PROFILE = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp_RingWidget)";
+				PROVISIONING_PROFILE_SPECIFIER = "$(ANYRING_PROFILE_com_potomushto_AnyRing_watchkitapp_RingWidget)";
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 49PJNAT2WC;
 				INFOPLIST_FILE = RingWidget/Info.plist;

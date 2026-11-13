@@ -11,14 +11,16 @@ final class AppController: ObservableObject {
 
     init() {
         #if targetEnvironment(simulator)
-        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing") &&
+            !ProcessInfo.processInfo.arguments.contains("--preserve-test-settings") {
             let defaults = UserDefaults(suiteName: UserDefaultsConfigurationPersistence.suiteName) ?? .standard
             [UserDefaultsConfigurationPersistence.key, UserDefaultsConfigurationPersistence.snapshotKey,
-             SimpleCache.key, SimpleCache.configurationKey].forEach { defaults.removeObject(forKey: $0) }
+             SimpleCache.key, SimpleCache.configurationKey, SimpleCache.readingKey].forEach { defaults.removeObject(forKey: $0) }
         }
         #endif
         let persistence = UserDefaultsConfigurationPersistence()
         let model = AnyRingViewModel(persistence: persistence)
+        if persistence.restore() == nil { persistence.persist(config: model.config) }
         viewModel = model
         #if os(iOS) || os(watchOS)
         connectivity = WatchConnectivityCoordinator(persistence: persistence) { [weak model] snapshot in

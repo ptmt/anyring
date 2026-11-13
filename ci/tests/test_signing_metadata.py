@@ -14,7 +14,10 @@ def profile(bundle_id, index=0, **overrides):
         "TeamIdentifier": [TEAM],
         "UUID": f"00000000-0000-0000-0000-{index:012d}",
         "ExpirationDate": datetime.datetime.now() + datetime.timedelta(days=30),
+        "CreationDate": datetime.datetime.now() - datetime.timedelta(days=1),
         "Entitlements": {
+            "get-task-allow": False,
+            "beta-reports-active": True,
             "application-identifier": f"{TEAM}.{bundle_id}",
             "com.apple.developer.healthkit": True,
             "com.apple.security.application-groups": [sm.APP_GROUP],
@@ -36,6 +39,23 @@ class SigningMetadataTests(unittest.TestCase):
                          "00000000-0000-0000-0000-000000000002")
         self.assertEqual(options["destination"], "upload")
         self.assertEqual(options["signingStyle"], "manual")
+
+    def test_certificate_must_belong_to_every_profile(self):
+        profiles = all_profiles()
+        for p in profiles:
+            p["DeveloperCertificates"] = [b"synthetic-public-certificate"]
+        sm.validate_certificate_membership(profiles, b"synthetic-public-certificate")
+        profiles[3]["DeveloperCertificates"] = [b"other-public-certificate"]
+        with self.assertRaisesRegex(ValueError, "certificate"):
+            sm.validate_certificate_membership(profiles, b"synthetic-public-certificate")
+
+    def test_requires_original_team_and_explicit_app_store_type(self):
+        p = profile(sm.BUNDLE_IDS[0])
+        p["Entitlements"]["beta-reports-active"] = False
+        self.assert_rejected([p], "App Store")
+        p = profile(sm.BUNDLE_IDS[0])
+        p["CreationDate"] = datetime.datetime.now() + datetime.timedelta(days=1)
+        self.assert_rejected([p], "not yet valid")
 
     def test_bundle_ids_match_the_xcode_project(self):
         project = (Path(__file__).resolve().parents[2] / "AnyRing/AnyRing.xcodeproj/project.pbxproj").read_text()

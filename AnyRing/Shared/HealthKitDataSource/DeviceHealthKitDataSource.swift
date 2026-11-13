@@ -13,6 +13,9 @@ final class SendableCallback<Value>: @unchecked Sendable {
 @MainActor
 final class DeviceHealthKitDataSource: HealthKitDataSource {
     let healthStore = HKHealthStore()
+    private let requireSamples: Bool
+
+    init(requireSamples: Bool = false) { self.requireSamples = requireSamples }
     private var observerQueries: [HKObserverQuery] = []
 
     func isAvailable() -> Bool { HKHealthStore.isHealthDataAvailable() }
@@ -49,6 +52,7 @@ final class DeviceHealthKitDataSource: HealthKitDataSource {
                 promise(.failure(HealthDataError.unsupportedAggregation)); return
             }
             let callback = SendableCallback(promise)
+            let requireSamples = self.requireSamples
             let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
             let query = HKStatisticsQuery(quantityType: quantityType, quantitySamplePredicate: predicate,
                                           options: Self.statisticsOption(for: aggregation)) { _, result, error in
@@ -60,15 +64,18 @@ final class DeviceHealthKitDataSource: HealthKitDataSource {
                 case .min: quantity = result?.minimumQuantity()
                 case .max: quantity = result?.maximumQuantity()
                 }
-                do { callback.call(.success(try Self.quantityValue(quantity, unit: unit))) }
+                do { callback.call(.success(try Self.quantityValue(quantity, unit: unit, requireSamples: requireSamples))) }
                 catch { callback.call(.failure(error)) }
             }
             self.healthStore.execute(query)
         }
     }
 
-    nonisolated static func quantityValue(_ quantity: HKQuantity?, unit: HKUnit) throws -> Double {
-        guard let quantity else { return 0 }
+    nonisolated static func quantityValue(_ quantity: HKQuantity?, unit: HKUnit, requireSamples: Bool = false) throws -> Double {
+        guard let quantity else {
+            if requireSamples { throw HealthDataError.noSamples }
+            return 0
+        }
         guard quantity.is(compatibleWith: unit) else { throw HealthDataError.incompatibleUnit }
         return quantity.doubleValue(for: unit)
     }
@@ -86,9 +93,10 @@ final class DeviceHealthKitDataSource: HealthKitDataSource {
 }
 
 enum HealthDataError: LocalizedError {
-    case unsupportedType, unsupportedAggregation, incompatibleUnit
+    case unsupportedType, unsupportedAggregation, incompatibleUnit, noSamples
     var errorDescription: String? {
         switch self {
+        case .noSamples: "No readable health samples. Open AnyProgress to check Health access."
         case .incompatibleUnit: "The unit does not match the selected health metric."
         case .unsupportedType: "This health data type does not support statistics."
         case .unsupportedAggregation: "This aggregation is unavailable for the selected health data. Choose Sum for cumulative data, or Average, Minimum, or Maximum for discrete data."

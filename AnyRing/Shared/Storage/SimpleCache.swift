@@ -1,30 +1,40 @@
 import Foundation
 
+struct CachedRingReading: Codable, Sendable {
+    let rings: [RingSnapshot]
+    let configuration: AnyRingConfig
+    let date: Date
+}
+
 @MainActor
 final class SimpleCache {
     static let key = "cache"
     static let configurationKey = "cache.configuration"
+    static let readingKey = "cache.reading.v1"
     private let storage: UserDefaults
 
     init(storage: UserDefaults = UserDefaults(suiteName: UserDefaultsConfigurationPersistence.suiteName) ?? .standard) {
         self.storage = storage
     }
 
-    func restoreLastSnapshot(config: AnyRingConfig? = nil) -> RingWrapper<RingSnapshot>? {
-        if let config {
-            let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
-            guard storage.data(forKey: Self.configurationKey) == (try? encoder.encode(config)) else { return nil }
-        }
-        guard let json = storage.data(forKey: Self.key),
-              let decoded = try? JSONDecoder().decode([RingSnapshot].self, from: json), decoded.count == 3 else { return nil }
-        return RingWrapper(decoded)
+    func restoreReading(config: AnyRingConfig?) -> CachedRingReading? {
+        guard let config, let data = storage.data(forKey: Self.readingKey),
+              let reading = try? JSONDecoder().decode(CachedRingReading.self, from: data),
+              reading.configuration == config, reading.rings.count == 3,
+              reading.rings.allSatisfy({ $0.progress.isFinite }),
+              reading.date <= Date() else { return nil }
+        return reading
     }
 
-    func store(lastSnapshot: RingWrapper<RingSnapshot>?, config: AnyRingConfig) {
-        guard let list = lastSnapshot?.list else { return }
-        let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
-        guard let data = try? encoder.encode(list), let configuration = try? encoder.encode(config) else { return }
-        storage.set(data, forKey: Self.key)
-        storage.set(configuration, forKey: Self.configurationKey)
+    func restoreLastSnapshot(config: AnyRingConfig? = nil) -> RingWrapper<RingSnapshot>? {
+        restoreReading(config: config).map { RingWrapper($0.rings) }
+    }
+
+    func store(lastSnapshot: RingWrapper<RingSnapshot>?, config: AnyRingConfig, date: Date = Date()) {
+        guard let list = lastSnapshot?.list, list.allSatisfy({ $0.progress.isFinite }) else { return }
+        let reading = CachedRingReading(rings: list, configuration: config, date: date)
+        guard let data = try? JSONEncoder().encode(reading) else { return }
+        // One value keeps the reading, its configuration and its real acquisition time together.
+        storage.set(data, forKey: Self.readingKey)
     }
 }

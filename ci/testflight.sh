@@ -1,5 +1,10 @@
 #!/bin/bash
 set -euo pipefail
+set +x
+if [[ "${GITHUB_ACTIONS:-}" != true || "${GITHUB_REF:-}" != refs/heads/main ]]; then
+  echo '::error::Publication is restricted to GitHub Actions on main.'
+  exit 1
+fi
 
 # Signs a Release archive of the iPhone app (with its widget, Watch app, and Watch
 # widget) and uploads it to App Store Connect for TestFlight.
@@ -25,35 +30,27 @@ done
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 build_number="$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
-version_setting=()
-if [[ "${GITHUB_REF:-}" == refs/tags/v* ]]; then
-  version="${GITHUB_REF#refs/tags/v}"
-  if [[ ! "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-    echo '::error::Release tags must use vMAJOR.MINOR or vMAJOR.MINOR.PATCH (for example v2.0.1).'
-    exit 1
-  fi
-  version_setting=("MARKETING_VERSION=$version")
+if [[ ! "$build_number" =~ ^[1-9][0-9]{0,3}\.[1-9][0-9]?$ ]]; then
+  echo '::error::Build number exceeds Apple component limits.'
+  exit 1
 fi
+printf 'Release build number: %s\n' "$build_number"
+
 
 umask 077
 signing_dir="$(mktemp -d "$RUNNER_TEMP/anyring-signing.XXXXXX")"
+touch "$signing_dir/owned-by-testflight"
+printf 'ANYRING_SIGNING_DIR=%s\n' "$signing_dir" >> "$GITHUB_ENV"
 keychain="$signing_dir/signing.keychain-db"
-installed_profiles=()
 original_keychains=()
 while IFS= read -r line; do
   line="${line#"${line%%[![:space:]]*}"}"
   line="${line#\"}"
   [[ -n "$line" ]] && original_keychains+=("${line%\"}")
 done < <(security list-keychains -d user)
+printf '%s\n' "${original_keychains[@]}" > "$signing_dir/keychains-before"
 cleanup() {
-  if ((${#original_keychains[@]})); then
-    security list-keychains -d user -s "${original_keychains[@]}" >/dev/null 2>&1 || true
-  fi
-  security delete-keychain "$keychain" >/dev/null 2>&1 || true
-  if ((${#installed_profiles[@]})); then
-    rm -f "${installed_profiles[@]}"
-  fi
-  rm -rf "$signing_dir"
+  bash "$repo_root/ci/cleanup.sh" "$signing_dir"
 }
 trap cleanup EXIT
 trap 'exit 130' INT
@@ -68,10 +65,8 @@ for name in "${profile_vars[@]}"; do
   security cms -D -i "$signing_dir/$name.mobileprovision" > "$signing_dir/$name.plist"
   profile_plists+=("$signing_dir/$name.plist")
 done
-# One "BUNDLE_ID UUID" line per profile; the secrets may be supplied in any order.
-profile_map="$(python3 ci/signing_metadata.py "$APPLE_TEAM_ID" "$signing_dir/ExportOptions.plist" "${profile_plists[@]}")"
-
 keychain_password="$(openssl rand -hex 32)"
+printf '::add-mask::%s\n' "$keychain_password"
 security create-keychain -p "$keychain_password" "$keychain"
 security set-keychain-settings -lut 21600 "$keychain"
 security unlock-keychain -p "$keychain_password" "$keychain"
@@ -83,6 +78,20 @@ if ! security find-identity -v -p codesigning "$keychain" | grep -q 'Apple Distr
   echo '::error::The P12 must contain a valid Apple Distribution certificate and its private key.'
   exit 1
 fi
+security find-certificate -c 'Apple Distribution' -p "$keychain" > "$signing_dir/certificate.pem"
+openssl x509 -in "$signing_dir/certificate.pem" -checkend 0 -noout >/dev/null
+openssl x509 -in "$signing_dir/certificate.pem" -outform DER -out "$signing_dir/certificate.der"
+export SIGNING_CERTIFICATE_DER="$signing_dir/certificate.der"
+SIGNING_CERTIFICATE_SUBJECT="$(openssl x509 -in "$signing_dir/certificate.pem" -noout -subject -nameopt RFC2253)"
+export SIGNING_CERTIFICATE_SUBJECT
+# Validate capabilities, dates, exact IDs, and imported certificate membership.
+profile_map="$(python3 ci/signing_metadata.py "$APPLE_TEAM_ID" "$signing_dir/ExportOptions.plist" "${profile_plists[@]}")"
+certificate_sha="$(python3 -c 'import plistlib,sys; print(plistlib.load(open(sys.argv[1], "rb"))["signingCertificate"])' "$signing_dir/ExportOptions.plist")"
+if ! security find-identity -v -p codesigning "$keychain" | grep -q "$certificate_sha"; then
+  echo '::error::Validated certificate has no valid signing private key.'
+  exit 1
+fi
+printf 'Validated all four profiles: original team/bundles, HealthKit, App Group, dates, and certificate membership.\n'
 
 # Each target picks its own profile: the specifier resolves through a setting
 # named after the target's bundle ID, e.g. ANYRING_PROFILE_com_potomushto_AnyRing.
@@ -91,31 +100,26 @@ while read -r bundle_id uuid; do
   profile_settings+=("ANYRING_PROFILE_${bundle_id//[^A-Za-z0-9]/_}=$uuid")
   for name in "${profile_vars[@]}"; do
     if grep -q "$uuid" "$signing_dir/$name.plist"; then
-      # Support both provisioning-profile locations used by Xcode versions.
-      for profile_dir in \
-        "$HOME/Library/MobileDevice/Provisioning Profiles" \
-        "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
-        mkdir -p "$profile_dir"
-        cp "$signing_dir/$name.mobileprovision" "$profile_dir/$uuid.mobileprovision"
-        installed_profiles+=("$profile_dir/$uuid.mobileprovision")
-      done
+      profile_root="$signing_dir/profile-$uuid"
+      mkdir "$profile_root"
+      printf '%s' "$uuid" > "$profile_root/profile-uuid"
+      cp "$signing_dir/$name.mobileprovision" "$profile_root/profile.mobileprovision"
+      python3 ci/profile_install.py install "$profile_root"
     fi
   done
 done <<< "$profile_map"
 
-archive_path="$RUNNER_TEMP/AnyRing.xcarchive"
+archive_path="$signing_dir/AnyRing.xcarchive"
 xcodebuild -project AnyRing/AnyRing.xcodeproj -scheme 'AnyRing (iOS)' \
   -configuration Release -destination 'generic/platform=iOS' \
   -archivePath "$archive_path" \
-  DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Manual \
-  CODE_SIGN_IDENTITY='Apple Distribution' \
-  'PROVISIONING_PROFILE_SPECIFIER=$(ANYRING_PROFILE_$(PRODUCT_BUNDLE_IDENTIFIER:identifier))' \
+  ANYRING_CI_SIGN_STYLE=Manual ANYRING_CI_IDENTITY="$certificate_sha" \
   "${profile_settings[@]}" \
-  CURRENT_PROJECT_VERSION="$build_number" ${version_setting[@]+"${version_setting[@]}"} archive
+  CURRENT_PROJECT_VERSION="$build_number" archive
 
 xcodebuild -exportArchive -archivePath "$archive_path" \
   -exportOptionsPlist "$signing_dir/ExportOptions.plist" \
-  -exportPath "$RUNNER_TEMP/anyring-export" \
+  -exportPath "$signing_dir/export" \
   -authenticationKeyPath "$signing_dir/AuthKey.p8" \
   -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
   -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"

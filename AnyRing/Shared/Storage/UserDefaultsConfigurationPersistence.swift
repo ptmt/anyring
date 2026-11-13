@@ -12,6 +12,8 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         HealthKitProvider.Configuration(ring: .third, healthKitParams: activeEnergyBurned, appearance: RingAppearance(mainColor: CodableColor(.yellow)))
     ], .Default)
 
+    var widgetCache: SimpleCache { SimpleCache(storage: userDefaults) }
+
     private let userDefaults: UserDefaults
     private let logger = Logger(subsystem: "com.potomushto.AnyRing", category: "Configuration")
 
@@ -40,11 +42,11 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     }
 
     func persist(snapshot: ConfigurationSnapshot) {
+        let previousConfig = restore()
         do {
             let encoder = JSONEncoder()
             encoder.outputFormatting = .sortedKeys
             let data = try encoder.encode(snapshot)
-            let canonical = try encoder.encode(snapshot.config)
             let legacyEncoder = JSONEncoder()
             legacyEncoder.outputFormatting = .sortedKeys
             legacyEncoder.userInfo[.legacyColorArchive] = true
@@ -52,8 +54,10 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
             // Store configuration and revision together so interrupted writes cannot mix generations.
             userDefaults.set(data, forKey: Self.snapshotKey)
             userDefaults.set(legacy, forKey: Self.key)
-            if let cached = userDefaults.data(forKey: SimpleCache.configurationKey), cached != canonical {
+            if previousConfig != snapshot.config {
                 userDefaults.removeObject(forKey: SimpleCache.key)
+                userDefaults.removeObject(forKey: SimpleCache.configurationKey)
+                userDefaults.removeObject(forKey: SimpleCache.readingKey)
             }
         } catch { logger.error("Cannot save configuration: \(error.localizedDescription)") }
     }
