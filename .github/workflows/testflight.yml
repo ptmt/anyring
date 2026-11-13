@@ -34,12 +34,13 @@ jobs:
           xcodebuild -version
           python3 -m unittest discover -s ci/tests -v
           bash -n ci/testflight.sh
+      # arm64 only: Swift 6.3.3 in Xcode 26.6 crashes in IRGen on the x86_64 simulator slice.
       - name: Build for simulator
         run: |
           xcodebuild -project AnyRing/AnyRing.xcodeproj -scheme 'AnyRing (iOS)' \
             -configuration Debug -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath "$RUNNER_TEMP/ios-simulator" \
-            CODE_SIGNING_ALLOWED=NO build
+            ARCHS=arm64 CODE_SIGNING_ALLOWED=NO build
       - name: Check Release archive
         run: |
           xcodebuild -project AnyRing/AnyRing.xcodeproj -scheme 'AnyRing (iOS)' \
