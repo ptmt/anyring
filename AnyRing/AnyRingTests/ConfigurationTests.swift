@@ -214,6 +214,124 @@ struct ConfigurationTests {
     }
 }
 
+import Combine
+
+/// HealthKit delivers authorization and query results on arbitrary background queues.
+/// Synthetic values only: never reads or writes the user's Health database.
+@MainActor
+final class BackgroundHealthDataSource: HealthKitDataSource {
+    enum Delivery: Sendable { case main, background }
+    enum Reading: Sendable { case populated, empty, denied }
+    let delivery: Delivery
+    let reading: Reading
+    let authorization: Result<Bool, Error>
+    private(set) var authorized = false
+    private(set) var readCount = 0
+
+    init(delivery: Delivery = .background, reading: Reading = .populated,
+         authorization: Result<Bool, Error> = .success(true)) {
+        self.delivery = delivery
+        self.reading = reading
+        self.authorization = authorization
+    }
+
+    func isAvailable() -> Bool { true }
+    func requestPermissions(permissions: Set<HKObjectType>) -> Future<Bool, Error> {
+        Future { promise in
+            let callback = SendableCallback(promise)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                self.authorized = (try? self.authorization.get()) == true
+                let result = self.authorization
+                self.deliver { callback.call(result) }
+            }
+        }
+    }
+    private func deliver(_ body: @escaping @Sendable () -> Void) {
+        let queue = delivery == .main ? DispatchQueue.main : DispatchQueue.global()
+        queue.asyncAfter(deadline: .now() + 0.02, execute: body)
+    }
+    func fetchStatistics(withStart: Date, to: Date, ofType: HKSampleType,
+                         unit: HKUnit, aggregation: Aggregation) -> Future<Double, Error> {
+        readCount += 1
+        let result: Result<Double, Error>
+        if !authorized || reading == .empty { result = .failure(HealthDataError.noSamples) }
+        else if reading == .denied { result = .failure(HKError(.errorAuthorizationDenied)) }
+        else { result = .success(42) }
+        return Future { promise in
+            let callback = SendableCallback(promise)
+            self.deliver { callback.call(result) }
+        }
+    }
+}
+
+@Suite @MainActor
+struct BackgroundHealthDeliveryTests {
+    @Test(arguments: [BackgroundHealthDataSource.Delivery.main, .background],
+          [BackgroundHealthDataSource.Reading.populated, .empty, .denied])
+    func authorizationThenReadHandlesNewAndLegacyConfiguration(
+        delivery: BackgroundHealthDataSource.Delivery, reading: BackgroundHealthDataSource.Reading
+    ) async throws {
+        for legacy in [false, true] {
+            let suite = "BackgroundHealthTests.\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suite)!
+            defer { defaults.removePersistentDomain(forName: suite) }
+            let persistence = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+            var expected = UserDefaultsConfigurationPersistence.defaultConfig
+            if legacy {
+                var ring = expected.configs[0] as! HealthKitProvider.Configuration
+                ring.healthKitParams = vo2Max
+                ring.healthKitParams.units = .count
+                ring.healthKitParams.aggregation = .sum
+                expected.configs[0] = ring
+                let encoder = JSONEncoder(); encoder.userInfo[.legacyColorArchive] = true
+                defaults.set(try encoder.encode(expected), forKey: UserDefaultsConfigurationPersistence.key)
+                expected = persistence.restore()!
+            }
+            let source = BackgroundHealthDataSource(delivery: delivery, reading: reading)
+            let model = AnyRingViewModel(persistence: persistence, dataSource: source)
+            // Match AppController's first-run persistence, after model creation.
+            persistence.persist(config: model.config)
+            for _ in 0..<100 {
+                if source.readCount >= 9 && model.rings?.list.allSatisfy({ !$0.isRefreshing }) == true { break }
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            #expect(source.authorized)
+            #expect(source.readCount >= 9)
+            #expect(model.config == expected)
+            #expect(!model.showingAlert)
+            if reading == .populated {
+                for _ in 0..<100 {
+                    if persistence.widgetCache.restoreReading(config: model.config) != nil { break }
+                    try await Task.sleep(for: .milliseconds(20))
+                }
+                #expect(model.rings?.list.allSatisfy({ $0.progress.absolute == 42 && $0.error == nil }) == true)
+                #expect(persistence.widgetCache.restoreReading(config: model.config) != nil)
+            } else {
+                #expect(model.rings?.list.allSatisfy({ $0.error != nil }) == true)
+                #expect(persistence.widgetCache.restoreReading(config: model.config) == nil)
+            }
+        }
+    }
+
+    @Test(arguments: [BackgroundHealthDataSource.Delivery.main, .background], [false, true])
+    func unsuccessfulAuthorizationDoesNotRefresh(delivery: BackgroundHealthDataSource.Delivery,
+                                                 throwsError: Bool) async throws {
+        let suite = "BackgroundHealthTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let source = BackgroundHealthDataSource(delivery: delivery,
+            authorization: throwsError ? .failure(HKError(.errorAuthorizationDenied)) : .success(false))
+        let model = AnyRingViewModel(persistence: UserDefaultsConfigurationPersistence(userDefaults: defaults), dataSource: source)
+        for _ in 0..<100 {
+            if model.showingAlert { break }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        #expect(model.showingAlert)
+        #expect((model.authorizationError != nil) == throwsError)
+        #expect(source.readCount == 3) // Only initial reads, not an authorization-triggered refresh.
+    }
+}
+
 import WatchConnectivity
 
 @MainActor
