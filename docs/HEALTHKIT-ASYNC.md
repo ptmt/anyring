@@ -1,10 +1,10 @@
-# HealthKit one-shot async simplification (local review branch)
+# HealthKit one-shot async simplification
 
 ## Scope and status
 
-The user confirmed that TestFlight **2.0 (12.2) no longer crashes on their iPhone**, then requested a simpler implementation. This follow-up changes the one-shot HealthKit → progress/refresh pipeline and its immediate widget/UI consumers. It is integrated with the laptop features, independently reviewed, and locally verified; it is **not uploaded or physically accepted as a new release**.
+The user confirmed that TestFlight **2.0 (12.2) no longer crashes on their iPhone**, then requested a simpler implementation. This follow-up changes the one-shot HealthKit → progress/refresh pipeline and its immediate widget/UI consumers. Integrated with the laptop features, independently reviewed, and locally/CI verified, it was signed and uploaded as **2.0 (14.1)** from `47c90baa4f8cdcbf67f5dcd95278a83ae518e7ed`. Apple confirmed upload and processing start; processing completion, tester availability and physical acceptance of this new build are not verified. Exact run/job evidence is in [ci/RELEASE.md](../ci/RELEASE.md).
 
-Original async baseline: `2552ee52e2339f00828e82615aaa63903af4cede`, including the proven `5d9b0dd` scheduler fix. Integration base: `48da9cbdfc6cdd33a6e1b4f8f0e523d6dcfabfc2`. The combined tree lives on local branch `review/laptop-async-integration`, worktree `/Users/tinyserve/Projects/anyring-integration-review`. Original `main`, its dirty files, and remote refs remain unchanged. No pull, reset, discard, stash-drop, push or TestFlight action was performed. Earlier evidence below describes the pre-integration implementation; combined verification is recorded at the end.
+Original async baseline: `2552ee52e2339f00828e82615aaa63903af4cede`, including the proven `5d9b0dd` scheduler fix. Integration base: `48da9cbdfc6cdd33a6e1b4f8f0e523d6dcfabfc2`. The combined tree was reviewed on branch `review/laptop-async-integration`, worktree `/Users/tinyserve/Projects/anyring-integration-review`, then fast-forward-pushed to remote `main` after explicit release authorization. Original local `main` and its dirty files remain unchanged and match the backup manifest. Earlier evidence below describes the pre-integration implementation; combined verification is recorded at the end.
 
 ## Changes
 
@@ -44,7 +44,7 @@ Local evidence: `/Users/tinyserve/.hermes/cache/scratch/anyring-health-async/`.
 - `signing-tests.log`: 23 offline signing/configuration tests passed. `git diff --check` passed. Added-line scan found no credential assignments, Health logging, or unsafe isolation additions.
 - Existing original crash RED/GREEN evidence remains under `anyring-health-crash/`; no attempt was made to replace that causal evidence with a synthetic claim of a second device crash.
 
-The SDK's native query owns query execution/cleanup. Automated cancellation tests exercise the production provider/task ownership with a cancelable synthetic data source; they do **not** instrument Apple's internal `HKHealthStore.stop` or establish physical-device HealthKit cancellation timing. No Health samples were logged or accessed. Unsigned simulator hosts still emit the known missing HealthKit entitlement warning. Device acceptance applies to 12.2, not this unuploaded refactor.
+The SDK's native query owns query execution/cleanup. Automated cancellation tests exercise the production provider/task ownership with a cancelable synthetic data source; they do **not** instrument Apple's internal `HKHealthStore.stop` or establish physical-device HealthKit cancellation timing. No Health samples were logged or accessed. Unsigned simulator hosts still emit the known missing HealthKit entitlement warning. Device acceptance applies to 12.2, not the subsequently uploaded 14.1 refactor.
 
 ## Integrated laptop features and verification
 
@@ -66,4 +66,4 @@ Combined evidence: `/Users/tinyserve/.hermes/cache/scratch/anyring-integration/`
 
 Durable private recovery (outside auto-pruned scratch): `/Users/tinyserve/.hermes/backups/anyring-integration-20261113-184157/` contains a complete `all-local-including-untracked.patch`, separate staged/unstaged patches, `local-files.tar`, and SHA-256 manifest for all 13 original changed/untracked files. Original files were compared against the manifest after integration. Nothing was discarded.
 
-**Ready for local merge/release preparation, not publication without authorization.** Physical acceptance still applies only to 12.2; this combined async build still needs real iPhone/paired-Watch/widget acceptance. Native HealthKit cancellation timing is not established by the synthetic tests.
+**Published with authorization as 2.0 (14.1).** Physical acceptance still applies only to 12.2; this combined async build still needs real iPhone/paired-Watch/widget acceptance. Native HealthKit cancellation timing is not established by the synthetic tests.
