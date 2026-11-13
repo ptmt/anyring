@@ -51,4 +51,16 @@ struct AnyRingConfig: Codable, Equatable, Sendable {
 struct GlobalConfiguration: Codable, Equatable, Sendable {
     static let Default = GlobalConfiguration(days: 3)
     var days: Int
+    var shape: RingShape = .roundedSquare
+
+    enum CodingKeys: String, CodingKey { case days, shape }
+    init(days: Int, shape: RingShape = .roundedSquare) {
+        self.days = days
+        self.shape = shape
+    }
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        days = try values.decode(Int.self, forKey: .days)
+        shape = try values.decodeIfPresent(RingShape.self, forKey: .shape) ?? .roundedSquare
+    }
 }

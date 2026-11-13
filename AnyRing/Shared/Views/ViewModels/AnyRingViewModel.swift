@@ -125,6 +125,17 @@ final class AnyRingViewModel: ObservableObject {
         onConfigurationChanged?(updated)
     }
 
+    func updateShape(_ shape: RingShape) {
+        guard shape != globalConfig.shape else { return }
+        var updated = config
+        updated.global.shape = shape
+        config = updated
+        globalConfig = updated.global
+        persistence.persist(config: updated)
+        rings?.forEach { $0.globalConfig = updated.global }
+        onConfigurationChanged?(updated)
+    }
+
     private func updateRing(_ changed: any ProviderConfiguration) {
         guard let index = config.configs.firstIndex(where: { $0.ring == changed.ring }) else { return }
         let previousType = (config.configs[index] as? HealthKitProvider.Configuration)?.healthKitParams.sampleType

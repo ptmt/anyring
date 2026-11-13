@@ -41,7 +41,8 @@ struct Provider: TimelineProvider {
                 cache.store(lastSnapshot: snapshots, config: config)
                 let reading = cache.restoreReading(config: config)
                 callback.call(SimpleEntry(date: Date(), rings: reading.map { RingWrapper($0.rings) },
-                                          names: config.configs.map(\.name), readingDate: reading?.date))
+                                          names: config.configs.map(\.name), readingDate: reading?.date,
+                                          shape: config.global.shape))
             }
         }
     }
@@ -52,6 +53,7 @@ struct SimpleEntry: TimelineEntry, Sendable {
     var rings: RingWrapper<RingSnapshot>?
     let names: [String]
     let readingDate: Date?
+    var shape: RingShape = .roundedSquare
 }
 
 struct RingWidgetEntryView: View {
@@ -79,6 +81,14 @@ struct RingWidgetEntryView: View {
                                     .font(.caption2)
                             }
                         }
+                    }
+                case .accessoryCircular:
+                    GeometryReader { geometry in
+                        let diameter = max(0, min(geometry.size.width, geometry.size.height))
+                        CircularRingGraphic(diameter: diameter, rings: rings, shape: entry.shape)
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .accessibilityLabel("Your three progress rings")
+                            .widgetAccentable()
                     }
                 default:
                     GeometryReader { geometry in
@@ -120,7 +130,8 @@ struct RingWidgetEntryView: View {
 
     private func ringGraphic(_ rings: RingWrapper<RingSnapshot>, size: CGFloat) -> some View {
         TripleRingView(size: size, ring1: rings.first, ring2: rings.second, ring3: rings.third,
-                       simplified: true, shape: family == .accessoryCircular ? .circle : .rectangular)
+                       simplified: true, shape: entry.shape)
+            .accessibilityLabel("Your three progress rings")
             .widgetAccentable()
     }
 }

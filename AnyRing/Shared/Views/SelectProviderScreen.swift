@@ -22,6 +22,7 @@ struct SelectProviderScreen: View {
                         if provider.name == selected { Image(systemName: "checkmark").foregroundStyle(.tint) }
                     }.padding(.vertical, 6)
                 }
+                .buttonStyle(.plain)
                 .accessibilityAddTraits(provider.name == selected ? .isSelected : [])
             }
         }

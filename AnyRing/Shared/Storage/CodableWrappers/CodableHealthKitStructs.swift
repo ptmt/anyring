@@ -158,3 +158,30 @@ enum HKObjectTypeCodable: String, Codable, Sendable {
         }
     }
 }
+
+
+extension HKUnitCodable {
+    func displaySymbol(for sampleType: HKObjectTypeCodable) -> String {
+        switch self {
+        case .minute: "min"
+        case .millisecond: "ms"
+        case .countperminute: "bpm"
+        case .percent: "%"
+        case .mgrams: "mg"
+        case .grams: "g"
+        case .count:
+            switch sampleType {
+            case .stepCount: "steps"
+            case .pushCount: "pushes"
+            case .flightsClimbed: "flights"
+            case .nikeFuel: "points"
+            default: "count"
+            }
+        case .meter: "m"
+        case .kilometer: "km"
+        case .kilocalorie: "kcal"
+        case .milliliter: "mL"
+        case .oxygenUptake: "mL/kg/min"
+        }
+    }
+}

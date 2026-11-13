@@ -37,6 +37,7 @@ final class WatchConnectivityCoordinator: NSObject, ObservableObject, WCSessionD
         self.role = role
         self.onSnapshot = onSnapshot
         state = ConfigurationSyncState(latest: persistence.restoreSnapshot())
+        lastSyncDate = persistence.restoreLastSyncDate()
         super.init()
     }
 
@@ -97,16 +98,19 @@ final class WatchConnectivityCoordinator: NSObject, ObservableObject, WCSessionD
             }
             status = "Ready for Apple Watch"
             if transport.isReachable {
-                transport.sendMessage(current, replyHandler: nil) { [weak self] error in
+                transport.sendMessage(current, replyHandler: { [weak self] reply in
+                    guard let revision = reply["acknowledgedRevision"] as? Double else { return }
+                    Task { @MainActor in self?.recordAcknowledgement(revision: revision) }
+                }, errorHandler: { [weak self] error in
                     Task { @MainActor in self?.report(error) }
-                }
+                })
             }
         } catch { report(error) }
     }
 
     private func receiveCachedContext() {
         let context = transport.receivedApplicationContext
-        accept(snapshotData: context["snapshot"] as? Data, legacyConfig: context["config"] as? Data)
+        accept(snapshotData: context["snapshot"] as? Data, legacyConfig: context["config"] as? Data, isCached: true)
     }
 
     private func requestLatest() {
@@ -133,12 +137,13 @@ final class WatchConnectivityCoordinator: NSObject, ObservableObject, WCSessionD
         })
     }
 
-    func accept(snapshotData: Data?, legacyConfig: Data?) {
+    func accept(snapshotData: Data?, legacyConfig: Data?, isCached: Bool = false, sendAcknowledgement: Bool = true) {
         guard role == .watch else { return }
         do {
             let snapshot: ConfigurationSnapshot
             if let snapshotData {
                 snapshot = try JSONDecoder().decode(ConfigurationSnapshot.self, from: snapshotData)
+                guard state.latest.map({ snapshot.revision >= $0.revision }) ?? true else { return }
                 if state.receive(snapshot) { onSnapshot(snapshot) }
             } else if let legacyConfig, state.latest?.revision ?? 0 == 0 {
                 snapshot = ConfigurationSnapshot(config: try JSONDecoder().decode(AnyRingConfig.self, from: legacyConfig), revision: 0)
@@ -147,9 +152,24 @@ final class WatchConnectivityCoordinator: NSObject, ObservableObject, WCSessionD
                     onSnapshot(snapshot)
                 }
             } else { return }
-            if let latest = state.latest, latest.revision > 0 { lastSyncDate = Date(timeIntervalSince1970: latest.revision) }
+            if !isCached { markSynced() }
             status = "Settings synced"
+            if sendAcknowledgement, transport.activationState == .activated, transport.isReachable, let latest = state.latest {
+                transport.sendMessage(["acknowledgedRevision": latest.revision], replyHandler: nil, errorHandler: nil)
+            }
         } catch { report(error) }
+    }
+
+    func recordAcknowledgement(revision: Double) {
+        guard role == .phone, revision.isFinite, revision == state.latest?.revision else { return }
+        markSynced()
+        status = "Settings synced"
+    }
+
+    private func markSynced() {
+        let date = Date()
+        lastSyncDate = date
+        persistence.persistLastSyncDate(date)
     }
 
     private func report(_ error: Error) {
@@ -180,7 +200,11 @@ final class WatchConnectivityCoordinator: NSObject, ObservableObject, WCSessionD
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         let data = message["snapshot"] as? Data
         let legacy = message["config"] as? Data
-        Task { @MainActor in self.accept(snapshotData: data, legacyConfig: legacy) }
+        let acknowledged = message["acknowledgedRevision"] as? Double
+        Task { @MainActor in
+            if let acknowledged { self.recordAcknowledgement(revision: acknowledged) }
+            else { self.accept(snapshotData: data, legacyConfig: legacy) }
+        }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
@@ -191,20 +215,28 @@ final class WatchConnectivityCoordinator: NSObject, ObservableObject, WCSessionD
 
     nonisolated func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
         let callback = SendableCallback(replyHandler)
+        let data = message["snapshot"] as? Data
+        let legacy = message["config"] as? Data
         Task { @MainActor in
-            guard self.role == .phone else { callback.call([:]); return }
+            if self.role == .watch {
+                self.accept(snapshotData: data, legacyConfig: legacy, sendAcknowledgement: false)
+                callback.call(self.state.latest.map { ["acknowledgedRevision": $0.revision] } ?? [:])
+                return
+            }
             self.state = ConfigurationSyncState(latest: self.persistence.restoreSnapshot())
             callback.call(self.payload())
         }
     }
 
     nonisolated func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
-        guard let error, let data = userInfoTransfer.userInfo["snapshot"] as? Data else { return }
+        guard let data = userInfoTransfer.userInfo["snapshot"] as? Data else { return }
         Task { @MainActor in
             let failed = try? JSONDecoder().decode(ConfigurationSnapshot.self, from: data)
-            guard failed?.revision == self.state.latest?.revision else { return }
-            self.needsBackgroundTransfer = true
-            self.report(error)
+            guard let revision = failed?.revision, revision == self.state.latest?.revision else { return }
+            if let error {
+                self.needsBackgroundTransfer = true
+                self.report(error)
+            } else { self.recordAcknowledgement(revision: revision) }
         }
     }
 

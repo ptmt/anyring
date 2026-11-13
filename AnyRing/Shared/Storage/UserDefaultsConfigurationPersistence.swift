@@ -6,6 +6,7 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     static let suiteName = "group.49PJNAT2WC.com.potomushto.AnyRing"
     static let key = "Config.v3"
     static let snapshotKey = "ConfigurationSnapshot.v1"
+    static let lastSyncKey = "Sync.lastConfirmedDate"
     static let defaultConfig = AnyRingConfig([
         HealthKitProvider.Configuration(ring: .first, healthKitParams: hrvConfiguration, appearance: RingAppearance(mainColor: CodableColor(.green))),
         HealthKitProvider.Configuration(ring: .second, healthKitParams: stepCount, appearance: RingAppearance(mainColor: CodableColor(.pink))),
@@ -20,6 +21,9 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
     init(userDefaults: UserDefaults = UserDefaults(suiteName: suiteName) ?? .standard) {
         self.userDefaults = userDefaults
     }
+
+    func restoreLastSyncDate() -> Date? { userDefaults.object(forKey: Self.lastSyncKey) as? Date }
+    func persistLastSyncDate(_ date: Date) { userDefaults.set(date, forKey: Self.lastSyncKey) }
 
     func restoreSnapshot() -> ConfigurationSnapshot? {
         guard let data = userDefaults.data(forKey: Self.snapshotKey) else { return nil }

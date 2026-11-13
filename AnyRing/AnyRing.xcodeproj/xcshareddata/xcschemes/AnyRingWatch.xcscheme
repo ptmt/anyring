@@ -55,7 +55,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "246396F4258D24CD00866E74"
             BuildableName = "AnyRingWatch.app"
-            BlueprintName = "AnyRingWatch"
             ReferencedContainer = "container:AnyRing.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -72,7 +71,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "246396F4258D24CD00866E74"
             BuildableName = "AnyRingWatch.app"
-            BlueprintName = "AnyRingWatch"
             ReferencedContainer = "container:AnyRing.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

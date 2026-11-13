@@ -15,6 +15,7 @@ final class AppController: ObservableObject {
             !ProcessInfo.processInfo.arguments.contains("--preserve-test-settings") {
             let defaults = UserDefaults(suiteName: UserDefaultsConfigurationPersistence.suiteName) ?? .standard
             [UserDefaultsConfigurationPersistence.key, UserDefaultsConfigurationPersistence.snapshotKey,
+             UserDefaultsConfigurationPersistence.lastSyncKey,
              SimpleCache.key, SimpleCache.configurationKey, SimpleCache.readingKey].forEach { defaults.removeObject(forKey: $0) }
         }
         #endif
@@ -45,3 +46,24 @@ final class AppController: ObservableObject {
         WidgetCenter.shared.reloadAllTimelines()
     }
 }
+
+
+#if os(iOS) || os(watchOS)
+struct SyncStatusHeader: View {
+    @ObservedObject var connectivity: WatchConnectivityCoordinator
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+            if let date = connectivity.lastSyncDate {
+                Text("Last synced \(date, style: .relative) ago")
+            } else {
+                Text("Not synced yet")
+            }
+        }
+        .font(.caption).foregroundStyle(.secondary)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("lastSync")
+    }
+}
+#endif

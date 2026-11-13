@@ -11,6 +11,20 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
     var globalConfig: GlobalConfiguration
     var onConfigurationChanged: ((any ProviderConfiguration) -> Void)?
 
+    var isReversed: Bool { (configuration as? HealthKitProvider.Configuration)?.healthKitParams.reversed ?? false }
+    var direction: String { isReversed ? "Lower is better" : "Higher is better" }
+    var comparison: String { isReversed ? "≤" : "≥" }
+    var valueText: String { isRefreshing && progress.empty ? "—" : format(progress.absolute) }
+    var goalText: String { "\(comparison) \(format(isReversed ? configuration.minValue : configuration.maxValue)) \(units)" }
+    var startingValueText: String? {
+        guard isReversed || configuration.minValue != 0 else { return nil }
+        return "From \(format(isReversed ? configuration.maxValue : configuration.minValue)) \(units)"
+    }
+    private func format(_ value: Double) -> String {
+        guard value.isFinite else { return "—" }
+        return value.formatted(.number.precision(.fractionLength(0...1)))
+    }
+
     var name: String { configuration.name }
     var fullName: String { "\(type(of: provider).name) / \(name)" }
     var providerDescription: String { type(of: provider).description }

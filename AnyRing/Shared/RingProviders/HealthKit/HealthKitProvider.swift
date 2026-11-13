@@ -76,7 +76,7 @@ let pushCount = HealthKitProvider.HealthKitConfiguration(
 
 let stepCount = HealthKitProvider.HealthKitConfiguration(
     name: "Step count",
-    description: "A quantity sample type that measures the amount of time the user has spent standing.",
+    description: "The number of steps recorded in Apple Health.",
     units: HKUnitCodable.count,
     sampleType: HKObjectTypeCodable.stepCount,
     minValue: 0,
@@ -94,7 +94,7 @@ let stepCount = HealthKitProvider.HealthKitConfiguration(
 
 let distanceSwimming = HealthKitProvider.HealthKitConfiguration(
     name: "Swim",
-    description: "A quantity sample type that measures the amount of time the user has spent standing.",
+    description: "The distance you have swum, recorded in Apple Health.",
     units: HKUnitCodable.meter,
     sampleType: HKObjectTypeCodable.distanceSwimming,
     minValue: 0,
@@ -215,8 +215,7 @@ class HealthKitProvider: RingProvider {
         }
         
         var units: String {
-            let string: String = healthKitParams.units.hkunit.unitString
-            return string.replacingOccurrences(of: "count/min", with: "bpm").uppercased()
+            healthKitParams.units.displaySymbol(for: healthKitParams.sampleType)
         }
     }
     

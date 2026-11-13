@@ -10,9 +10,21 @@ struct MainScreen: View {
     var body: some View {
         Form {
             Section {
+                #if os(iOS)
+                SyncStatusHeader(connectivity: connectivity)
+                #endif
                 RingDashboard(size: 210, ring1: rings.first, ring2: rings.second,
-                              ring3: rings.third, days: viewModel.globalConfig.days, shape: .rectangular)
+                              ring3: rings.third, days: viewModel.globalConfig.days, shape: viewModel.globalConfig.shape)
                     .padding(.vertical, 16)
+            }
+            Section("Visualization") {
+                NavigationLink {
+                    ShapeSelectionView(selection: Binding(get: { viewModel.globalConfig.shape }, set: viewModel.updateShape),
+                                       snapshots: RingWrapper(rings.list.map { $0.snapshot() }))
+                } label: {
+                    LabeledContent("Shape", value: viewModel.globalConfig.shape.name)
+                }
+                .accessibilityIdentifier("visualizationShape")
             }
             Section("Tracking Period") {
                 Picker("Days", selection: Binding(get: { viewModel.globalConfig.days }, set: viewModel.updatePeriod)) {
@@ -31,7 +43,7 @@ struct MainScreen: View {
                 ringLink(rings.third, number: 3)
             }
             Section("Color Palettes") {
-                TemplatesView { snapshots in
+                TemplatesView(shape: viewModel.globalConfig.shape) { snapshots in
                     rings.first.updateFromSnapshot(snapshot: snapshots.first)
                     rings.second.updateFromSnapshot(snapshot: snapshots.second)
                     rings.third.updateFromSnapshot(snapshot: snapshots.third)
@@ -69,5 +81,44 @@ struct MainScreen: View {
             .padding(.vertical, 4)
         }
         .accessibilityIdentifier("ring\(number)")
+    }
+}
+
+
+struct ShapeSelectionView: View {
+    @Binding var selection: RingShape
+    let snapshots: RingWrapper<RingSnapshot>
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 130))], spacing: 16) {
+                ForEach(RingShape.allCases) { shape in
+                    Button { selection = shape } label: {
+                        VStack(spacing: 12) {
+                            TripleRingView(size: 86, ring1: preview(snapshots.first, progress: 0.85),
+                                           ring2: preview(snapshots.second, progress: 0.65), ring3: preview(snapshots.third, progress: 0.45),
+                                           simplified: true, shape: shape)
+                            HStack(spacing: 5) {
+                                Text(shape.name).font(.subheadline)
+                                if selection == shape { Image(systemName: "checkmark.circle.fill").foregroundStyle(.tint) }
+                            }
+                            .foregroundStyle(.primary)
+                        }
+                        .frame(maxWidth: .infinity).padding(.vertical, 18)
+                        .background(.quaternary.opacity(selection == shape ? 0.7 : 0.3), in: RoundedRectangle(cornerRadius: 20))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(shape.name)
+                    .accessibilityAddTraits(selection == shape ? .isSelected : [])
+                    .accessibilityIdentifier("shape.\(shape.rawValue)")
+                }
+            }.padding()
+        }
+        .navigationTitle("Ring Shapes")
+    }
+
+    private func preview(_ snapshot: RingSnapshot, progress: Double) -> RingSnapshot {
+        RingSnapshot(progress: progress, mainColor: snapshot.mainColor, gradient: snapshot.gradient,
+                     secondaryColor: snapshot.secondaryColor, outerGlow: false)
     }
 }

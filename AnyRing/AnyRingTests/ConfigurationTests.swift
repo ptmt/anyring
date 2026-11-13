@@ -5,6 +5,7 @@ import XCTest
 import Foundation
 import HealthKit
 import UIKit
+import SwiftUI
 @testable import AnyProgress
 
 /// Render the production widget view, not a reimplementation, at accessory sizes.
@@ -349,6 +350,7 @@ private final class FakeWatchTransport: WatchConnectivityTransport {
     var failsContext = false
     var errorHandler: (@Sendable (Error) -> Void)?
     weak var delegate: (any WCSessionDelegate)?
+    weak var peer: WatchConnectivityCoordinator?
     func configure(delegate: any WCSessionDelegate) { self.delegate = delegate }
     func activate() { activations += 1 }
     func updateApplicationContext(_ context: [String: Any]) throws {
@@ -359,6 +361,10 @@ private final class FakeWatchTransport: WatchConnectivityTransport {
     func sendMessage(_ message: [String: Any], replyHandler: (@Sendable ([String: Any]) -> Void)?, errorHandler: (@Sendable (Error) -> Void)?) {
         messages.append(message)
         self.errorHandler = errorHandler
+        if let peer {
+            if let replyHandler { peer.session(.default, didReceiveMessage: message, replyHandler: replyHandler) }
+            else { peer.session(.default, didReceiveMessage: message) }
+        }
     }
 }
 
@@ -506,5 +512,283 @@ struct HealthDataRegressionTests {
         let appearance = first["appearance"] as! [String: Any]
         #expect(appearance["mainColor"] is String)
         #expect(try JSONDecoder().decode(AnyRingConfig.self, from: data) == config)
+    }
+}
+
+@Suite @MainActor
+struct VisualizationAndSyncReceiptTests {
+    private func store() -> UserDefaultsConfigurationPersistence {
+        UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "VisualizationTests.\(UUID().uuidString)")!)
+    }
+
+    @Test func oldConfigurationsDefaultToRoundedCorners() throws {
+        let data = try JSONEncoder().encode(UserDefaultsConfigurationPersistence.defaultConfig)
+        var object = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        object["global"] = ["days": 5]
+        let decoded = try JSONDecoder().decode(AnyRingConfig.self, from: JSONSerialization.data(withJSONObject: object))
+        #expect(decoded.global.days == 5)
+        #expect(decoded.global.shape == .roundedSquare)
+    }
+
+    @Test func everyContourIsClosedFiniteAndBounded() {
+        let bounds = CGRect(x: 7, y: 11, width: 180, height: 180)
+        for shape in RingShape.allCases {
+            let contour = RingContour(shape: shape, rect: bounds)
+            #expect(contour.length > 0)
+            #expect(contour.points.first == contour.points.last)
+            #expect(contour.points.allSatisfy { point in
+                point.x.isFinite && point.y.isFinite && point.x >= bounds.minX - 0.001 && point.x <= bounds.maxX + 0.001 &&
+                point.y >= bounds.minY - 0.001 && point.y <= bounds.maxY + 0.001
+            })
+            #expect(contour.point(at: .infinity) == contour.points.first)
+            #expect(contour.point(at: -1) == contour.points.first)
+            #expect(contour.point(at: 1) == contour.points.last)
+        }
+    }
+
+    @Test func shapeEditIsPersistedPublishedAndAppliedOnWatch() throws {
+        let model = AnyRingViewModel(persistence: store(), dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        var published: AnyRingConfig?
+        model.onConfigurationChanged = { published = $0 }
+        model.updateShape(.heart)
+        #expect(model.globalConfig.shape == .heart)
+        #expect(model.persistence.restore()?.global.shape == .heart)
+        #expect(published?.global.shape == .heart)
+        let snapshot = model.persistence.restoreSnapshot()!
+        let decoded = try JSONDecoder().decode(ConfigurationSnapshot.self, from: JSONEncoder().encode(snapshot))
+        let watch = AnyRingViewModel(persistence: store(), dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        watch.apply(decoded)
+        #expect(watch.globalConfig.shape == .heart)
+    }
+
+    @Test func allShapeChoicesSurviveConfigurationRoundTrip() throws {
+        for shape in RingShape.allCases {
+            var config = UserDefaultsConfigurationPersistence.defaultConfig
+            config.global.shape = shape
+            #expect(try JSONDecoder().decode(AnyRingConfig.self, from: JSONEncoder().encode(config)).global.shape == shape)
+        }
+    }
+
+    @Test func reversedGoalsAndUnitsUseReadableLabels() {
+        let persistence = store()
+        let source = MockHealthKitDataSource()
+        let reversed = HealthKitProvider.Configuration(ring: .first, healthKitParams: hrConfiguration, appearance: RingAppearance(mainColor: .init(.red)))
+        let ring = HealthKitProvider(dataSource: source, config: reversed, configPersistence: persistence).viewModel(globalConfig: .Default)
+        #expect(ring.direction == "Lower is better")
+        #expect(ring.goalText == "≤ 30 bpm")
+        #expect(ring.startingValueText == "From 200 bpm")
+        #expect(HKUnitCodable.kilocalorie.displaySymbol(for: .activeEnergyBurned) == "kcal")
+        #expect(HKUnitCodable.millisecond.displaySymbol(for: .heartRateVariabilitySDNN) == "ms")
+        #expect(HKUnitCodable.count.displaySymbol(for: .stepCount) == "steps")
+    }
+
+    @Test func offlineCacheDoesNotPretendToBeANewSync() throws {
+        let persistence = store()
+        let previousSync = Date(timeIntervalSince1970: 100)
+        persistence.persistLastSyncDate(previousSync)
+        let transport = FakeWatchTransport(); transport.activationState = .activated
+        let snapshot = ConfigurationSnapshot(config: UserDefaultsConfigurationPersistence.defaultConfig, revision: 500)
+        transport.receivedApplicationContext = ["snapshot": try JSONEncoder().encode(snapshot)]
+        let sync = WatchConnectivityCoordinator(persistence: persistence, transport: transport, role: .watch) { persistence.persist(snapshot: $0) }
+        sync.start()
+        #expect(sync.lastSyncDate == previousSync)
+        let beforeDelivery = Date()
+        sync.accept(snapshotData: try JSONEncoder().encode(snapshot), legacyConfig: nil)
+        #expect(sync.lastSyncDate! >= beforeDelivery)
+        #expect(sync.lastSyncDate == persistence.restoreLastSyncDate())
+    }
+
+    @Test func phoneOnlyRecordsAcknowledgementForItsCurrentSettings() {
+        let persistence = store()
+        let transport = FakeWatchTransport(); transport.activationState = .activated
+        let sync = WatchConnectivityCoordinator(persistence: persistence, transport: transport, role: .phone) { _ in }
+        sync.start()
+        #expect(sync.lastSyncDate == nil)
+        let current = persistence.restoreSnapshot()!.revision
+        sync.recordAcknowledgement(revision: current - 1)
+        #expect(sync.lastSyncDate == nil)
+        sync.recordAcknowledgement(revision: current)
+        let date = sync.lastSyncDate
+        #expect(date != nil)
+        #expect(persistence.restoreLastSyncDate() == date)
+        let relaunched = WatchConnectivityCoordinator(persistence: persistence, transport: transport, role: .phone) { _ in }
+        #expect(relaunched.lastSyncDate == date)
+        var changed = UserDefaultsConfigurationPersistence.defaultConfig; changed.global.shape = .circle
+        sync.publish(changed)
+        sync.recordAcknowledgement(revision: current)
+        #expect(sync.lastSyncDate == date)
+    }
+}
+
+
+@Suite @MainActor
+struct LiveSyncReceiptTests {
+    @Test func liveDeliveryAppliesSettingsAndConfirmsBothHeaders() async throws {
+        let phoneStore = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "Receipt.phone.\(UUID().uuidString)")!)
+        let watchStore = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "Receipt.watch.\(UUID().uuidString)")!)
+        let phoneTransport = FakeWatchTransport(), watchTransport = FakeWatchTransport()
+        phoneTransport.activationState = .activated; watchTransport.activationState = .activated
+        phoneTransport.isReachable = true; watchTransport.isReachable = true
+        let model = AnyRingViewModel(persistence: watchStore, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        let phone = WatchConnectivityCoordinator(persistence: phoneStore, transport: phoneTransport, role: .phone) { _ in }
+        let watch = WatchConnectivityCoordinator(persistence: watchStore, transport: watchTransport, role: .watch) { model.apply($0) }
+        phoneTransport.peer = watch; watchTransport.peer = phone
+        phone.start(); watch.start()
+        for _ in 0..<100 {
+            if phone.lastSyncDate != nil && watch.lastSyncDate != nil { break }
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        #expect(phone.lastSyncDate != nil)
+        #expect(watch.lastSyncDate != nil)
+        var latest = phoneStore.restore()!
+        latest.global.shape = .star
+        phone.publish(latest)
+        for _ in 0..<100 {
+            if model.globalConfig.shape == .star { break }
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        #expect(model.globalConfig.shape == .star)
+        #expect(watchStore.restore()?.global.shape == .star)
+    }
+}
+
+@Suite @MainActor
+struct RingRenderingTests {
+    @Test func circularComplicationsKeepEveryShapeInsideTheWatchFaceMask() throws {
+        let rings = RingWrapper([
+            RingSnapshot(progress: 1, mainColor: CodableColor(.green)),
+            RingSnapshot(progress: 1, mainColor: CodableColor(.pink)),
+            RingSnapshot(progress: 1, mainColor: CodableColor(.yellow))
+        ])
+        for diameter in [CGFloat(32), 44] {
+            for shape in RingShape.allCases {
+                let graphic = CircularRingGraphic(diameter: diameter, rings: rings, shape: shape)
+                func pixels(clipped: Bool) throws -> [UInt8] {
+                    let content = Group {
+                        if clipped { graphic.clipShape(Circle()) }
+                        else { graphic }
+                    }.padding(10).background(.black)
+                    let renderer = ImageRenderer(content: content)
+                    renderer.scale = 2
+                    let image = try #require(renderer.cgImage)
+                    var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+                    try bytes.withUnsafeMutableBytes { buffer in
+                        let context = try #require(CGContext(data: buffer.baseAddress, width: image.width, height: image.height,
+                            bitsPerComponent: 8, bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+                    }
+                    return bytes
+                }
+                let original = try pixels(clipped: false), masked = try pixels(clipped: true)
+                #expect(original.count == masked.count)
+                let imageWidth = Int((diameter + 20) * 2)
+                var outsideLoss = 0
+                var brightestMaskedPixel: UInt8 = 0
+                for offset in stride(from: 0, to: original.count, by: 4) {
+                    let x = Double((offset / 4) % imageWidth) + 0.5 - Double(imageWidth) / 2
+                    let y = Double((offset / 4) / imageWidth) + 0.5 - Double(imageWidth) / 2
+                    // At 2× scale, the radius in pixels equals the diameter in points.
+                    let outsideCircle = hypot(x, y) >= Double(diameter)
+                    for channel in 0..<3 {
+                        brightestMaskedPixel = max(brightestMaskedPixel, masked[offset + channel])
+                        if outsideCircle {
+                            outsideLoss = max(outsideLoss, Int(original[offset + channel]) - Int(masked[offset + channel]))
+                        }
+                    }
+                }
+                #expect(outsideLoss <= 8, "The circular mask must not cut off \(shape) rings or their halo at \(diameter) points; lost \(outsideLoss)")
+                #expect(brightestMaskedPixel > 200, "The complication still draws its rings")
+            }
+        }
+        let preview = HStack(spacing: 20) {
+            VStack(spacing: 12) {
+                Text("Before").font(.caption)
+                TripleRingView(size: 44, ring1: rings.first, ring2: rings.second, ring3: rings.third, simplified: true)
+                    .clipShape(Circle())
+            }
+            VStack(spacing: 12) {
+                Text("Fixed").font(.caption)
+                CircularRingGraphic(diameter: 44, rings: rings).clipShape(Circle())
+            }
+        }.foregroundStyle(.white).padding(20).background(.black)
+        let renderer = ImageRenderer(content: preview)
+        renderer.scale = 4
+        Attachment.record(UIImage(cgImage: try #require(renderer.cgImage)), named: "Circular complication comparison", as: .png)
+    }
+
+    @Test func motionDrawsIntermediateValuesAndRetargetsWithoutJumping() {
+        let start = Date(timeIntervalSince1970: 1_000)
+        let sweep = RingMotion(from: 0, to: 1.2, start: start, duration: 1)
+        #expect(sweep.value(at: start.addingTimeInterval(-1)) == 0)
+        #expect(sweep.value(at: start.addingTimeInterval(0.5)) == 0.6)
+        #expect(sweep.value(at: start.addingTimeInterval(1)) == 1.2)
+        let halfway = start.addingTimeInterval(0.5)
+        let updated = RingMotion(from: sweep.value(at: halfway), to: 0.3, start: halfway, duration: 0.65)
+        #expect(updated.value(at: halfway) == sweep.value(at: halfway))
+        #expect(updated.value(at: halfway.addingTimeInterval(0.3)) < 0.6)
+        #expect(updated.value(at: halfway.addingTimeInterval(1)) == 0.3)
+    }
+
+    @Test func progressBeyondTheGoalKeepsTheRingFilledAndWrapsTheTip() {
+        let progress = RingProgress(1.25)
+        #expect(progress.coverage == 1)
+        #expect(progress.head == 0.25)
+        #expect(progress.overflow == 0.25)
+        #expect(RingProgress(2).head == 0)
+        #expect(RingProgress(2).coverage == 1)
+        #expect(RingProgress(Double.greatestFiniteMagnitude).head.isFinite)
+        for invalid in [Double.nan, .infinity, -.infinity, -1] {
+            #expect(RingProgress(invalid).coverage == 0)
+        }
+    }
+
+    @Test func gradientEndsAtTheTipAndRemainsContinuousAcrossLaps() {
+        let partial = RingProgress(0.6)
+        #expect(partial.gradientLocation(at: 0) == 0)
+        #expect(partial.gradientLocation(at: 0.3) == 0.5)
+        #expect(partial.gradientLocation(at: 0.6) == 1)
+        let extraLap = RingProgress(1.25)
+        #expect(extraLap.gradientLocation(at: extraLap.head) == 1)
+        #expect(extraLap.gradientLocation(at: 0.75) == 0.5)
+        #expect(abs(RingProgress(1.999).gradientLocation(at: 0.5) - RingProgress(2).gradientLocation(at: 0.5)) < 0.002)
+    }
+
+    @Test func gradientRingsKeepTheirCenterClearAndTheirTipInThePrimaryColor() throws {
+        let primary = CodableColor(Color(.sRGB, red: 0, green: 0.8, blue: 1))
+        let secondary = CodableColor(Color(.sRGB, red: 0.8, green: 0, blue: 0.5))
+        let snapshot = RingSnapshot(progress: 0.63, mainColor: primary, gradient: true,
+                                    secondaryColor: secondary, outerGlow: true, innerGlow: true)
+        for shape in RingShape.allCases {
+            let renderer = ImageRenderer(content:
+                RingDrawing(snapshot: snapshot, kind: shape, lineWidth: 12, progress: snapshot.progress)
+                    .frame(width: 128, height: 128).padding(20).background(.white))
+            renderer.scale = 1
+            let image = try #require(renderer.cgImage)
+            var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+            try bytes.withUnsafeMutableBytes { buffer in
+                let context = try #require(CGContext(data: buffer.baseAddress, width: image.width, height: image.height,
+                    bitsPerComponent: 8, bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            }
+            func pixel(_ point: CGPoint) -> [UInt8] {
+                let offset = (Int(point.y.rounded()) * image.width + Int(point.x.rounded())) * 4
+                return Array(bytes[offset..<(offset + 3)])
+            }
+            #expect(pixel(CGPoint(x: 84, y: 84)).allSatisfy { $0 > 245 }, "Empty center: \(shape)")
+            let contour = RingContour(shape: shape, rect: CGRect(x: 26.5, y: 26.5, width: 115, height: 115))
+            let tip = pixel(contour.point(at: snapshot.progress))
+            #expect(tip[0] < 70 && tip[1] > 160 && tip[2] > 200, "Primary-colored tip: \(shape), \(tip)")
+            let midpoint = pixel(contour.point(at: snapshot.progress / 2))
+            #expect(midpoint[0] > 50 && midpoint[1] > 50 && midpoint[2] > 150,
+                    "Gradient mixes both colors along the outline: \(shape), \(midpoint)")
+            if shape != .rectangular {
+                let start = contour.point(at: 0), tangent = contour.tangent(at: 0)
+                let cap = pixel(CGPoint(x: start.x - tangent.x * 3, y: start.y - tangent.y * 3))
+                #expect(cap[0] > 150 && cap[1] < 80 && cap[2] < 200,
+                        "Starting cap stays in the secondary color: \(shape), \(cap)")
+            }
+        }
     }
 }
