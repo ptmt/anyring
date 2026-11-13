@@ -27,9 +27,29 @@ Verification on Xcode 27.2:
 
 ## Delivery
 
-Awaiting the authorized GitHub Actions publication. Local tests and an unsigned
-archive are not evidence of signing or Apple upload. Publication evidence will
-record the exact head SHA, run/jobs, build, and Apple result here.
+Apple upload **succeeded** in [run 43433248233, attempt 2](https://github.com/ptmt/anyring/actions/runs/43433248233).
+
+- Release head: `6c6387a306c52f0f34de036116911d8f4d6f9722` (includes widget commit `c02d6f98b79d43dd185176c2abc0f9d6f4ab0d27`).
+- Marketing version: `2.0`; archived/uploaded build: **10.2**.
+- Validation job: **131918537263**; upload job: **131922384997**.
+- Hosted validation: **23** Python tests and **31** Swift/widget/UI tests passed;
+  simulator build and unsigned Release archive also passed.
+- Hosted signing validated all four profiles' original team/bundle IDs, HealthKit,
+  App Group, validity dates, and exact distribution-certificate membership.
+  The signed archive succeeded with both Watch targets retained.
+- Apple's output at `2026-11-13T13:49:53Z`: **“Progress 100%: Upload succeeded.”**,
+  **“Uploaded package is processing.”**, followed by **`** EXPORT SUCCEEDED **`**.
+- Cleanup step succeeded; GitHub reports **zero artifacts** for this run.
+
+The first publication (run 43430329177, build 8.1) passed signing but Apple rejected
+it because the Watch app lacked `NSHealthUpdateUsageDescription`. Added the truthful
+read-only purpose string and a RED→GREEN regression covering every HealthKit plist.
+Attempt 1 of the final run hit a hosted simulator launch timeout before assertions;
+its sibling push run passed. Rerunning the failed jobs on the same unchanged SHA
+passed all tests and delivered build 10.2. No checks or Watch capabilities were dropped.
+
+Upload is verified; Apple processing completion, compliance, tester assignment,
+and availability on a physical device are **not** yet verified.
 
 ## Device acceptance still required
 
