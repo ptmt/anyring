@@ -31,6 +31,8 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>AnyProgress reads your selected health metrics to calculate your progress rings.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>AnyProgress uses HealthKit only to read your selected metrics for progress rings and does not save health data.</string>
 	<key>CLKComplicationPrincipalClass</key>
 	<string>$(PRODUCT_MODULE_NAME).ComplicationController</string>
 </dict>

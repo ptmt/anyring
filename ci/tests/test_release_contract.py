@@ -17,6 +17,13 @@ class ReleaseContractTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 sm.validate_certificate_subject(subject)
 
+    def test_all_healthkit_bundles_have_both_purpose_strings(self):
+        for relative in ['iOS/Info.plist', 'AnyRingWatch/Info.plist', 'RingWidget/Info.plist']:
+            with self.subTest(plist=relative):
+                info = plistlib.loads((ROOT / 'AnyRing' / relative).read_bytes())
+                for key in ['NSHealthShareUsageDescription', 'NSHealthUpdateUsageDescription']:
+                    self.assertTrue(info.get(key), f'{relative} requires {key}')
+
     def test_ipad_orientation_and_encryption_metadata(self):
         info = plistlib.loads((ROOT / 'AnyRing/iOS/Info.plist').read_bytes())
         self.assertEqual(set(info['UISupportedInterfaceOrientations~ipad']), {
