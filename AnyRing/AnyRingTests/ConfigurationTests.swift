@@ -938,6 +938,133 @@ struct RingRenderingTests {
         Attachment.record(UIImage(cgImage: try #require(renderer.cgImage)), named: "Circular complication comparison", as: .png)
     }
 
+    @Test func endpointShadingJoinsTheBodyWithoutAnInternalDiscRim() throws {
+        // A constant-color tube isolates cap lighting/compositing from the palette gradient.
+        let snapshot = RingSnapshot(progress: 0.5, mainColor: CodableColor(Color(red: 0.8, green: 0.4, blue: 0.2)), outerGlow: false)
+        let renderer = ImageRenderer(content: RingDrawing(snapshot: snapshot, kind: .roundedSquare, lineWidth: 24, progress: 0.5)
+            .frame(width: 200, height: 200).padding(30).background(.white))
+        renderer.scale = 4
+        let image = try #require(renderer.cgImage)
+        var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+        try bytes.withUnsafeMutableBytes { buffer in
+            let context = try #require(CGContext(data: buffer.baseAddress, width: image.width, height: image.height,
+                bitsPerComponent: 8, bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        }
+        // Head is (130,217.5); completed body is to its right. Scan well inside the tube,
+        // including the old disc's trailing rim, not the intended leading edge or track.
+        var worst = 0
+        for y in 858...882 {
+            for x in 528...600 {
+                for channel in 0..<3 {
+                    let offset = (y * image.width + x) * 4 + channel
+                    worst = max(worst, abs(Int(bytes[offset]) - Int(bytes[offset + 4])))
+                }
+            }
+        }
+        #expect(worst <= 4, "No detached cap rim inside the filled tube; adjacent-pixel jump: \(worst)")
+        Attachment.record(UIImage(cgImage: image), named: "Synthetic endpoint continuity", as: .png)
+    }
+
+    @Test func gradientEndpointHasNoStraightColorResetInsideTheBody() throws {
+        for progress in [0.5, 1.5, 2.5] {
+        let snapshot = RingSnapshot(progress: progress, mainColor: CodableColor(.orange), gradient: true,
+            secondaryColor: CodableColor(Color(red: 0.65, green: 0.29, blue: 0)), outerGlow: false)
+        let renderer = ImageRenderer(content: RingDrawing(snapshot: snapshot, kind: .roundedSquare, lineWidth: 24, progress: progress)
+            .frame(width: 200, height: 200).padding(30).background(.white))
+        renderer.scale = 4
+        let image = try #require(renderer.cgImage)
+        var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+        try bytes.withUnsafeMutableBytes { buffer in
+            let context = try #require(CGContext(data: buffer.baseAddress, width: image.width, height: image.height,
+                bitsPerComponent: 8, bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        }
+        var worst = 0
+        for y in 858...882 {
+            for x in 518...600 {
+                for channel in 0..<3 {
+                    let offset = (y * image.width + x) * 4 + channel
+                    worst = max(worst, abs(Int(bytes[offset]) - Int(bytes[offset + 4])))
+                }
+            }
+        }
+        #expect(worst <= 4, "Gradient must not reset to secondary color underneath the tip: \(worst)")
+        Attachment.record(UIImage(cgImage: image), named: "Synthetic gradient endpoint continuity \(progress)", as: .png)
+        }
+    }
+
+    @Test func contourEndpointAndTangentStayOnEveryShapeAcrossLaps() {
+        for shape in RingShape.allCases {
+            let contour = RingContour(shape: shape, rect: CGRect(x: 10, y: 10, width: 160, height: 160))
+            for value in [0.0001, 0.01, 0.25, 0.49, 0.5, 0.51, 0.97, 0.999, 1.0, 1.001, 1.5, 2.5] {
+                let state = RingProgress(value)
+                let endpoint = contour.point(at: state.head)
+                let pathEnd = contour.path(to: state.head).currentPoint!
+                #expect(hypot(endpoint.x - pathEnd.x, endpoint.y - pathEnd.y) < 0.00001)
+                let tangent = contour.tangent(at: state.head)
+                #expect(abs(hypot(tangent.x, tangent.y) - 1) < 0.00001)
+                let coverageEnd = contour.path(to: state.coverage).currentPoint!
+                let expectedEnd = value < 1 ? endpoint : contour.points[0]
+                // CoreGraphics paths store Float coordinates even when CGPoint is Double.
+                #expect(hypot(coverageEnd.x - expectedEnd.x, coverageEnd.y - expectedEnd.y) < 0.00002)
+            }
+        }
+    }
+
+    @Test func allShapesRenderEndpointBoundariesAtPhoneWatchAndWidgetScales() throws {
+        let start = Date(timeIntervalSince1970: 1000)
+        let motion = RingMotion(from: 0, to: 1.25, start: start, duration: 1)
+        let frames = (0...8).map { motion.value(at: start.addingTimeInterval(Double($0) / 8)) }
+        let values = [0.0, 0.0001, 0.01, 0.49, 0.50, 0.51, 0.97, 0.999, 1, 1.001, 1.25, 2.5] + frames
+        for shape in RingShape.allCases {
+            for size in [CGFloat(44), 140, 300] {
+                var previous: Data?
+                for (index, progress) in values.enumerated() {
+                    let snapshot = RingSnapshot(progress: progress, mainColor: CodableColor(.orange), gradient: true,
+                        secondaryColor: CodableColor(.purple), outerGlow: true, innerGlow: true)
+                    let content = RingDrawing(snapshot: snapshot, kind: shape, lineWidth: size / (shape.isPointed ? 20 : 12),
+                        progress: progress, simplified: size == 44).frame(width: size, height: size).padding(12).background(.white)
+                    let renderer = ImageRenderer(content: content)
+                    renderer.scale = 2
+                    let image = try #require(renderer.uiImage)
+                    let pixels = try #require(image.pngData())
+                    #expect(image.size.width == size + 24)
+                    if index > 12, let previous { #expect(pixels != previous, "Animation actually redraws \(shape) at \(size)pt") }
+                    previous = pixels
+                }
+                let sheet = HStack(spacing: 8) {
+                    ForEach([0.0, 0.001, 0.5, 0.97, 1.0, 1.25], id: \.self) { progress in
+                        let snapshot = RingSnapshot(progress: progress, mainColor: CodableColor(.orange), gradient: true,
+                            secondaryColor: CodableColor(.purple), outerGlow: true, innerGlow: true)
+                        RingDrawing(snapshot: snapshot, kind: shape, lineWidth: size / (shape.isPointed ? 20 : 12),
+                            progress: progress, simplified: size == 44).frame(width: size, height: size).padding(12)
+                    }
+                }.background(.white)
+                let renderer = ImageRenderer(content: sheet)
+                renderer.scale = 2
+                Attachment.record(try #require(renderer.uiImage), named: "Synthetic \(shape.rawValue) \(Int(size))pt 0 near0 half near1 1 over1", as: .png)
+            }
+        }
+    }
+
+    @Test func syntheticEndpointBaseline() throws {
+        let colors: [Color] = [.pink, .orange, .yellow]
+        let values = [0.48, 0.50, 0.97]
+        let fixture = ZStack {
+            ForEach(0..<3) { index in
+                let color = colors[index]
+                let snapshot = RingSnapshot(progress: values[index], mainColor: CodableColor(color), gradient: index > 0,
+                    secondaryColor: CodableColor(color.darker(by: 20) ?? color), outerGlow: false)
+                RingDrawing(snapshot: snapshot, kind: .roundedSquare, lineWidth: 25, progress: values[index])
+                    .frame(width: 300 * [1.0, 0.74, 0.48][index], height: 300 * [1.0, 0.74, 0.48][index])
+            }
+        }.frame(width: 300, height: 300).padding(30).background(.white)
+        let renderer = ImageRenderer(content: fixture)
+        renderer.scale = 3
+        Attachment.record(UIImage(cgImage: try #require(renderer.cgImage)), named: "Synthetic endpoint baseline", as: .png)
+    }
+
     @Test func motionDrawsIntermediateValuesAndRetargetsWithoutJumping() {
         let start = Date(timeIntervalSince1970: 1_000)
         let sweep = RingMotion(from: 0, to: 1.2, start: start, duration: 1)

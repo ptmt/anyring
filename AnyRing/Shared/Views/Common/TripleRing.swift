@@ -281,8 +281,12 @@ private struct RingPaint: Sendable {
         } else {
             seamLocation = headLocation
         }
-        // Keep the starting cap in the secondary color; the shaded tip covers this seam.
-        stops.append(.init(color: startColor, location: min(1, seamLocation + 0.00001)))
+        // A near-coincident reset pair is not a hard stop in Canvas's conic rasterizer:
+        // it leaks a secondary-color stripe back into the filled side of the endpoint.
+        // Partial arcs already have sampled starting colors beyond their coverage.
+        if progress.value >= 1 {
+            stops.append(.init(color: startColor, location: min(1, seamLocation + 0.00001)))
+        }
         stops.sort { $0.location < $1.location }
         return .conicGradient(Gradient(stops: stops), center: contour.center, angle: .degrees(-90))
     }
@@ -350,16 +354,39 @@ struct RingDrawing: View {
         let head = kind == .rectangular ? Path(rect) : Path(ellipseIn: rect)
         let main = snapshot.mainColor.color
         var shadow = context
+        // The head casts onto what is ahead, never back onto its own filled tube.
+        // Keeping the receiver separate preserves the raised tip on additional laps.
+        if state.value < 1 {
+            shadow.clip(to: contour.path(to: state.coverage).strokedPath(
+                StrokeStyle(lineWidth: lineWidth, lineCap: kind == .rectangular ? .butt : .round,
+                            lineJoin: kind == .rectangular ? .miter : .round)), options: .inverse)
+        } else {
+            // The previous lap receives a softly introduced shadow ahead of the head.
+            // A hard half-plane mask would itself introduce a straight seam.
+            shadow.clipToLayer { mask in
+                mask.fill(Path(rect.insetBy(dx: -lineWidth * 3, dy: -lineWidth * 3)),
+                    with: .linearGradient(Gradient(colors: [.clear, .white]),
+                        startPoint: .init(x: point.x - tangent.x * lineWidth / 2, y: point.y - tangent.y * lineWidth / 2),
+                        endPoint: .init(x: point.x + tangent.x * lineWidth / 2, y: point.y + tangent.y * lineWidth / 2)))
+            }
+        }
         shadow.addFilter(.shadow(color: .black.opacity(simplified ? 0.12 : 0.28), radius: lineWidth * 0.18,
                                  x: tangent.x * lineWidth * 0.18, y: tangent.y * lineWidth * 0.18, options: .shadowOnly))
         shadow.fill(head, with: .color(main))
-        context.fill(head, with: .color(main))
-        var highlight = context
-        highlight.clip(to: head)
-        highlight.fill(head, with: .linearGradient(Gradient(colors: [.white.opacity(snapshot.innerGlow ? 0.30 : 0.16), .clear, .black.opacity(0.08)]),
+        var tip = context
+        // Fade the trailing half into the existing tube, instead of drawing a second
+        // full-circle border and an independently lit, opaque disc over it.
+        tip.clipToLayer { mask in
+            mask.fill(head, with: .linearGradient(Gradient(stops: [
+                .init(color: .clear, location: 0), .init(color: .white, location: 0.65),
+                .init(color: .white, location: 1)
+            ]), startPoint: .init(x: point.x - tangent.x * lineWidth / 2, y: point.y - tangent.y * lineWidth / 2),
+                endPoint: .init(x: point.x + tangent.x * lineWidth / 2, y: point.y + tangent.y * lineWidth / 2)))
+        }
+        tip.fill(head, with: .color(main))
+        tip.fill(head, with: .linearGradient(Gradient(colors: [.white.opacity(snapshot.innerGlow ? 0.30 : 0.16), .clear, .black.opacity(0.08)]),
                         startPoint: .init(x: point.x - normal.x * lineWidth / 2, y: point.y - normal.y * lineWidth / 2),
                         endPoint: .init(x: point.x + normal.x * lineWidth / 2, y: point.y + normal.y * lineWidth / 2)))
-        context.stroke(head, with: .color(.white.opacity(snapshot.innerGlow ? 0.28 : 0.10)), lineWidth: max(0.4, lineWidth * 0.04))
     }
 }
 
