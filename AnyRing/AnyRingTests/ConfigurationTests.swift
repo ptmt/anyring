@@ -430,16 +430,26 @@ struct HealthRefreshTests {
     @Test func simultaneousSnapshotsReadAllMetricsIndependently() async throws {
         let source = ControlledHealthDataSource()
         let model = model(source)
-        try await settle()
+        // Wait for registration, not a fixed scheduling delay: the rendering suite
+        // can occupy MainActor long enough for a 50 ms sleep to finish first.
+        let initialDeadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while source.reads.count < 3 && ContinuousClock.now < initialDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try #require(source.reads.count == 3)
         source.reads.forEach { $0.complete(.success(1)) }
         var results: [RingWrapper<RingSnapshot>] = []
         let first = Task { results.append(try await model.getSnapshots()) }
         let second = Task { results.append(try await model.getSnapshots()) }
-        try await settle()
-        #expect(source.reads.count == 9)
+        let snapshotDeadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while source.reads.count < 9 && ContinuousClock.now < snapshotDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        // Abort before completing anything if registration failed: suffix(6) on
+        // the original three reads would resume their continuations twice.
+        try #require(source.reads.count == 9)
         #expect(Set(source.reads.suffix(6).map(\.type)).count == 3)
         for read in source.reads.suffix(6).reversed() { read.complete(.success(42)) }
-        try await settle()
         try await first.value
         try await second.value
         #expect(results.count == 2)
