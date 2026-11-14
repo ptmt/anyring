@@ -1,5 +1,19 @@
 # AnyProgress releases
 
+## Graphite icon + seamless endpoints — 2.0 (20.1)
+
+Published with the owner's explicit authorization on 2026-11-14.
+
+- Final source: [`79e67fdc95287f15e9e32a464e249718358ff453`](https://github.com/ptmt/anyring/commit/79e67fdc95287f15e9e32a464e249718358ff453): Graphite icons (`5cd05fd`), endpoint compositing (`67ee799`), and a narrow test-fixture scheduling correction (`79e67fd`). Production changes are confined to icon assets and `TripleRing.swift`; no HealthKit/data/feature removal.
+- [Release run 43609004987, attempt 1](https://github.com/ptmt/anyring/actions/runs/43609004987), **success**; validation job **132489688262**, upload job **132495908549**. Archive/upload build **20.1**, marketing version **2.0**.
+- Apple at `2026-11-14T15:39:39Z`: **“Progress 100%: Uploaded package is processing.”**, **“Progress 100%: Upload succeeded.”**, followed by **`** EXPORT SUCCEEDED **`**. Processing completion and tester availability are not verified.
+- All four profiles validated with original team/bundles, HealthKit, App Group, dates and certificate membership. Signed archive retained phone, phone widget, Watch and Watch widget. Signing cleanup succeeded; GitHub reports zero artifacts.
+- Hosted configuration tests, simulator build, Release archive, complete app/widget/UI test step and separate Release HealthKit regression all passed. Final push-only [43609004992](https://github.com/ptmt/anyring/actions/runs/43609004992) also passed (validation **132489684018**) and correctly skipped upload.
+- Local final app/widget suites passed in Debug and Release: **53 Swift Testing methods + 2 widget XCTest methods** (63 parameter-expanded executions); final six UI tests passed separately. Endpoint candidate's full Debug/Release suites also passed all 61 methods each (69 expanded executions), including **693 real ImageRenderer renders** per suite; iOS/watchOS builds and actual synthetic Watch harness evidence were reviewed. See [ENDPOINT-VERIFICATION.md](../docs/ENDPOINT-VERIFICATION.md).
+- Failed pre-final attempts were investigated, not hidden: icon-only push hit a no-process-ID UI launch failure; combined initial dispatch hit AX initialization timeout, then a pre-existing fixed-sleep test-fixture race exposed by rendering load. The fixture now waits for registered reads and requires the count before resuming continuations. No product behavior or test assertions were removed. Previous combined run `43605540520` never uploaded.
+- Earlier **icon-only 17.1** was separately uploaded by [43603667164](https://github.com/ptmt/anyring/actions/runs/43603667164), validation **132473573034**, upload **132477250148**, Apple processing/upload success at `14:29:22Z`. It was not restarted and must not be described as containing the endpoint fix.
+- Publication used normal non-force pushes from `anyring-graphite-release`; the original dirty worktree's 13 files still match the original backup hashes. All worktrees, user artwork and backups are retained. Scoped post-release build-scratch deletion was requested but paused by the tool's approval gate; no reclaimed-byte claim is made yet. Evidence remains under `~/.hermes/cache/scratch/anyring-combined-release/`.
+
 ## Combined laptop features + async HealthKit — 2.0 (14.1)
 
 Published with the owner's explicit authorization on 2026-11-13.
