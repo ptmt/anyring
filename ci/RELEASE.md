@@ -1,5 +1,17 @@
 # AnyProgress releases
 
+## Approved dark concentric Graphite icon — 2.0 (23.2)
+
+Published under the owner's continuing icon-release authorization; "справа" selected the right-hand constant-offset design.
+
+- Release source: [`32ef1a739f643f90c5329c3bafbeedfe47341046`](https://github.com/ptmt/anyring/commit/32ef1a739f643f90c5329c3bafbeedfe47341046), based on fetched `bbee324e9e41067be1f509ca8a42792d612ff91b`. Changes: **55 icon PNGs in three existing appiconsets plus documentation only**. No production renderer, HealthKit, target, project, profile or workflow change; the 20.1 endpoint fix is retained.
+- [Release run 43635294808, attempt 2](https://github.com/ptmt/anyring/actions/runs/43635294808), **success**, exact `headSha` above. Validation job **132576301260**; upload job **132579883434**. Logged archive/upload build **23.2**, marketing version **2.0**.
+- Apple at `2026-11-14T20:38:37Z`: **“Progress 100%: Uploaded package is processing.”**, **“Progress 100%: Upload succeeded.”**, followed by **`** EXPORT SUCCEEDED **`**. Processing completion and tester availability are not verified.
+- All four profiles validated original team/bundles, HealthKit, App Group, dates and certificate membership. Signed archive retained phone, phone widget, Watch and Watch widget; signing cleanup succeeded; GitHub reports zero artifacts.
+- Hosted configuration tests, simulator build, unsigned Release archive, complete app/widget/UI suite and separate Release HealthKit regression passed. Local 23 configuration/signing tests and all three real `actool` catalog compilations passed. [Asset verification](../docs/DARK-ICON-VERIFICATION.md) records master SHA-256 `7f60d6dd1a42673c72e0089a8c4668d191b69c480677f40df27fad3f56219134`, RGB/sRGB/dark-corner checks, all 55 hashes and byte-identical 1024px slots.
+- Attempt 1 failed before upload because XCTest could not terminate the app in `Tests_iOS.swift:8`. Push-only [43635285319](https://github.com/ptmt/anyring/actions/runs/43635285319) failed at `Tests_iOS.swift:23` with an Xcode application-launch timeout. Raw job logs retain both errors. Retried only the failed publication jobs on the **unchanged SHA**; all checks passed. No test weakening, new dispatch or duplicate Apple upload occurred; the push run remains failed and is not claimed green.
+- Published with a normal non-force push from new clean `anyring-dark-concentric-release`; original dirty worktree's 13 file hashes remain unchanged. Only this task's three compiled `actool-*` directories were deleted after verified upload with tool approval (860160 allocated file bytes before deletion); source art, previews, verification/log evidence, worktrees and other tasks' scratch remain untouched. No local DerivedData or xcresult was created by this icon-only task. Older cleanup approval gates were not bypassed.
+
 ## Graphite icon + seamless endpoints — 2.0 (20.1)
 
 Published with the owner's explicit authorization on 2026-11-14.
