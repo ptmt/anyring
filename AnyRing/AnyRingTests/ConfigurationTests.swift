@@ -542,6 +542,12 @@ struct HealthRefreshTests {
 
     private func settle() async throws { try await Task.sleep(for: .milliseconds(50)) }
 
+    private func waitUntil(_ ready: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(30))
+        while !ready() && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
+        try #require(ready())
+    }
+
     @Test func renameWhileAppReadingIsPendingPreservesResultAndQueryCount() async throws {
         let source = ControlledHealthDataSource()
         let model = model(source)
@@ -611,17 +617,17 @@ struct HealthRefreshTests {
     @Test func widgetRefreshRejectsLateResultsAndRetainsLastGoodReadingOnFailure() async throws {
         let source = ControlledHealthDataSource()
         let model = model(source)
-        try await settle()
+        try await waitUntil { source.reads.count == 3 }
         source.reads.forEach { $0.complete(.success(1)) }
         model.refreshWidgetSnapshot()
-        try await settle()
-        let obsolete = Array(source.reads.suffix(3))
+        try await waitUntil { source.reads.count == 6 }
+        let obsolete = Array(source.reads[3..<6])
         model.updateShape(.heart)
         model.refreshWidgetSnapshot()
-        try await settle()
-        let current = Array(source.reads.suffix(3))
+        try await waitUntil { source.reads.count == 9 }
+        let current = Array(source.reads[6..<9])
         current.forEach { $0.complete(.success(42)) }
-        try await settle()
+        try await waitUntil { model.persistence.widgetCache.restoreReading(config: model.config) != nil }
         let saved = try #require(model.persistence.widgetCache.restoreReading(config: model.config))
         #expect(saved.configuration.global.shape == .heart)
         obsolete.forEach { $0.complete(.success(999)) }
@@ -629,8 +635,8 @@ struct HealthRefreshTests {
         #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.date == saved.date)
         #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.rings[1].progress == 42 / model.config.configs[1].maxValue)
         model.refreshWidgetSnapshot()
-        try await settle()
-        source.reads.suffix(3).forEach { $0.complete(.failure(HealthDataError.noSamples)) }
+        try await waitUntil { source.reads.count == 12 }
+        source.reads[9..<12].forEach { $0.complete(.failure(HealthDataError.noSamples)) }
         try await settle()
         #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.date == saved.date)
         #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.rings[1].progress == 42 / model.config.configs[1].maxValue)
@@ -668,15 +674,15 @@ struct HealthRefreshTests {
     @Test func supersededRefreshCannotReplaceProgressOrError() async throws {
         let source = ControlledHealthDataSource()
         let model = model(source)
-        try await settle()
+        try await waitUntil { source.reads.count == 3 }
         let ring = model.rings!.first
         var changed = ring.configuration
         changed.maxValue = 200
         ring.update(config: changed)
-        try await settle()
+        try await waitUntil { source.reads.count == 4 }
         #expect(source.reads.count == 4)
         source.reads[3].complete(.success(80))
-        try await settle()
+        try await waitUntil { !ring.isRefreshing }
         source.reads[0].complete(.failure(HealthDataError.noSamples))
         try await settle()
         #expect(ring.progress.absolute == 80)
@@ -684,9 +690,9 @@ struct HealthRefreshTests {
         #expect(ring.error == nil)
         #expect(!ring.isRefreshing)
         ring.refresh()
-        try await settle()
-        source.reads.last!.complete(.failure(HealthDataError.noSamples))
-        try await settle()
+        try await waitUntil { source.reads.count == 5 }
+        source.reads[4].complete(.failure(HealthDataError.noSamples))
+        try await waitUntil { !ring.isRefreshing }
         #expect(ring.error is HealthDataError)
         #expect(ring.progress.absolute == 80) // Keep last good reading on error.
         source.reads[1...2].forEach { $0.complete(.success(1)) }
@@ -715,7 +721,8 @@ struct HealthRefreshTests {
         try await settle()
         let first = Task { [model = model!] in try await model.getSnapshots() }
         let second = Task { [model = model!] in try await model.getSnapshots() }
-        try await settle()
+        defer { first.cancel(); second.cancel() }
+        try await waitUntil { source.activeReads == 9 }
         #expect(source.activeReads == 9)
         first.cancel()
         do { _ = try await first.value; Issue.record("Cancelled snapshot returned progress") }
@@ -727,7 +734,7 @@ struct HealthRefreshTests {
         catch { #expect(error is CancellationError) }
         #expect(source.activeReads == 3)
         model = nil
-        try await settle()
+        try await waitUntil { source.activeReads == 0 }
         #expect(source.activeReads == 0)
         #expect(source.cancelledReads == 9)
     }

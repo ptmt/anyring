@@ -40,6 +40,12 @@ Initial harness issues: Release needs `ENABLE_TESTABILITY=YES`; an individual Sw
 - Independently inspected exported actual Release screenshots in `/Users/tinyserve/.hermes/cache/scratch/anyring-custom-names-review/screenshots/`: normal and XXXL editor/dashboard, long-name rectangular and inline widgets, compact shared Watch metric. Clear remains separate; Data Source still says HRV; dashboard wraps. Rectangular preserves **25%, 50%, 100%** and inline **25%**. Editor text truncates/scrolls rather than overlapping its clear control. Compact Watch render is synthetic shared-view evidence, not physical Watch evidence.
 - Original dirty main HEAD and all **13** changed/untracked file hashes matched the review-start manifest. The implementation candidate remains untouched. Synthetic test suites only; no user Health data or credentials accessed.
 
+## Hosted fixture failure and correction
+
+Initial source `855a62a978feebba015f3c5c2cc7c92721b488f8` passed local Release but both hosted runs exposed existing fixed-sleep fixture races under MainActor rendering load. Publish run `43699094850`, job `132766022254`, failed at `ConfigurationTests.swift:719`/`:723` (cancellation registration counts), then resumed an already-completed controlled continuation with 999 in the stale widget snapshot test. Push `43699088655`, job `132765997432`, also failed cancellation counts and had an Xcode launch timeout in the XXXL UI test at `Tests_iOS.swift:219`. Neither run uploaded.
+
+The narrow test-only correction waits for required query registration before capturing explicit, disjoint read ranges; it waits for observable completion where needed, and cancels spawned queries on exit. Existing assertions remain, with a failing bounded prerequisite before unsafe continuation access. Production HealthKit and feature code are unchanged. Hosted failures are RED evidence; subsequent local/hosted results are recorded below and in `ci/RELEASE.md`.
+
 ## Review boundary
 
 Physical paired Watch delivery, installed lock-screen widgets and real Health permission/data behavior are not claimed. Apple upload, once verified, is recorded separately in `ci/RELEASE.md`; upload does not establish processing completion or tester availability.
