@@ -69,7 +69,7 @@ struct MainScreen: View {
                     Color.clear.frame(width: 1, height: 1)
                         .accessibilityElement()
                         .accessibilityLabel("Refresh verification")
-                        .accessibilityValue("\(source.readCount),\(date?.timeIntervalSince1970 ?? 0)")
+                        .accessibilityValue(Text(verbatim: String(source.readCount) + "," + String(date?.timeIntervalSince1970 ?? 0)))
                         .accessibilityIdentifier("refreshVerification")
                 }
             }

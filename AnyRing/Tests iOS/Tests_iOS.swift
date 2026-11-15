@@ -147,7 +147,7 @@ final class Tests_iOS: XCTestCase {
     @MainActor
     func testPullToRefreshQueriesAndPersistsACompletedReading() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-testing", "--refresh-probe"]
+        app.launchArguments = ["--ui-testing", "--refresh-probe", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
         let probe = app.descendants(matching: .any)["refreshVerification"]
         XCTAssertTrue(probe.waitForExistence(timeout: 10))
