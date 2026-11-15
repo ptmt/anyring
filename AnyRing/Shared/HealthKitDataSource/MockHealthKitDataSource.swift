@@ -2,12 +2,18 @@ import Foundation
 import HealthKit
 
 final class MockHealthKitDataSource: HealthKitDataSource {
+    #if targetEnvironment(simulator)
+    private(set) var readCount = 0
+    #endif
     func isAvailable() -> Bool { true }
     func requestPermissions(permissions: Set<HKObjectType>) async throws -> Bool { true }
 
     func fetchStatistics(withStart: Date, to: Date, ofType sampleType: HKSampleType,
                          unit: HKUnit, aggregation: Aggregation) async throws -> Double {
         try Task.checkCancellation()
+        #if targetEnvironment(simulator)
+        readCount += 1
+        #endif
         switch sampleType {
         case HKQuantityType(.heartRate): return 55
         case HKQuantityType(.heartRateVariabilitySDNN): return 110

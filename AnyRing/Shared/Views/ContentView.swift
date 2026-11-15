@@ -27,7 +27,12 @@ struct ContentView: View {
                 } else if let rings = viewModel.rings {
                     MainScreen(rings: rings)
                         .environmentObject(viewModel)
-                        .refreshable { viewModel.refresh() }
+                        .refreshable {
+                            viewModel.refresh()
+                            #if os(iOS)
+                            connectivity.refresh()
+                            #endif
+                        }
                 } else {
                     ProgressView("Loading your rings")
                 }
@@ -46,17 +51,16 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("AnyProgress")
+            #if !os(iOS)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Refresh", systemImage: "arrow.clockwise") {
                         viewModel.refresh()
-                        #if os(iOS)
-                        connectivity.refresh()
-                        #endif
                     }
                     .accessibilityIdentifier("refresh")
                 }
             }
+            #endif
         }
     }
 }

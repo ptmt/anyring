@@ -10,9 +10,6 @@ struct MainScreen: View {
     var body: some View {
         Form {
             Section {
-                #if os(iOS)
-                SyncStatusHeader(connectivity: connectivity)
-                #endif
                 RingDashboard(size: 210, ring1: rings.first, ring2: rings.second,
                               ring3: rings.third, days: viewModel.globalConfig.days, shape: viewModel.globalConfig.shape)
                     .padding(.vertical, 16)
@@ -51,15 +48,33 @@ struct MainScreen: View {
                 .padding(.vertical, 8)
             }
             #if os(iOS)
-            Section("Apple Watch") {
-                Label(connectivity.status, systemImage: "applewatch")
-                    .font(.subheadline).foregroundStyle(.secondary)
-                Text("Settings sync automatically. Each device reads its own Apple Health data.")
-                    .font(.footnote).foregroundStyle(.secondary)
+            if !["Connecting", "Ready for Apple Watch", "Settings synced"].contains(connectivity.status) {
+                Section("Apple Watch") {
+                    Label(connectivity.status, systemImage: "applewatch")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text("Each device reads its own Apple Health data.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
             }
             #endif
         }
         .formStyle(.grouped)
+        #if targetEnvironment(simulator)
+        .overlay(alignment: .bottomTrailing) {
+            if ProcessInfo.processInfo.arguments.contains("--refresh-probe"),
+               let source = viewModel.dataSource as? MockHealthKitDataSource {
+                // Read-only synthetic test telemetry; never compiled into a device build.
+                TimelineView(.periodic(from: .now, by: 0.2)) { _ in
+                    let date = viewModel.persistence.widgetCache.restoreReading(config: viewModel.config)?.date
+                    Color.clear.frame(width: 1, height: 1)
+                        .accessibilityElement()
+                        .accessibilityLabel("Refresh verification")
+                        .accessibilityValue("\(source.readCount),\(date?.timeIntervalSince1970 ?? 0)")
+                        .accessibilityIdentifier("refreshVerification")
+                }
+            }
+        }
+        #endif
     }
 
     private func ringLink(_ ring: RingViewModel, number: Int) -> some View {

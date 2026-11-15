@@ -22,7 +22,11 @@ final class Tests_iOS: XCTestCase {
         app.launchArguments = ["--ui-testing"]
         app.launch()
         XCTAssertTrue(app.navigationBars["AnyProgress"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.descendants(matching: .any)["lastSync"].exists)
+        XCTAssertFalse(app.buttons["refresh"].exists)
+        XCTAssertFalse(app.buttons["Refresh"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["lastSync"].exists)
+        XCTAssertFalse(app.staticTexts["Not synced yet"].exists)
+        XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Last synced'")).firstMatch.exists)
         capture(app, name: "Rounded dashboard")
         let ring = app.buttons["ring1"]
         for _ in 0..<6 {
@@ -130,7 +134,7 @@ final class Tests_iOS: XCTestCase {
             let palette = app.buttons["palette.\(name)"]
             XCTAssertTrue(palette.exists)
             palette.tap()
-            let header = app.descendants(matching: .any)["lastSync"]
+            let header = app.descendants(matching: .any)["metric.0"]
             for _ in 0..<8 {
                 if header.isHittable { break }
                 app.swipeDown()
@@ -138,6 +142,43 @@ final class Tests_iOS: XCTestCase {
             XCTAssertTrue(header.isHittable)
             capture(app, name: "\(name) ring rendering")
         }
+    }
+
+    @MainActor
+    func testPullToRefreshQueriesAndPersistsACompletedReading() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--refresh-probe"]
+        app.launch()
+        let probe = app.descendants(matching: .any)["refreshVerification"]
+        XCTAssertTrue(probe.waitForExistence(timeout: 10))
+        func reading() -> [Double] {
+            (probe.value as? String ?? "").split(separator: ",").compactMap { Double($0) }
+        }
+        let ready = NSPredicate { _, _ in
+            let values = reading()
+            return values.count == 2 && values[0] > 0 && values[1] > 0
+        }
+        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: ready, object: nil)], timeout: 10) == .completed)
+        // Let launch/authorization work settle before measuring the gesture.
+        let first = reading()
+        sleep(2)
+        let before = reading()
+        XCTAssertEqual(first, before, "Automatic startup refresh must settle before the gesture")
+        XCTAssertEqual(before.count, 2)
+        guard before.count == 2 else { return }
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85))
+        start.press(forDuration: 0.1, thenDragTo: end)
+        let refreshed = NSPredicate { _, _ in
+            let after = reading()
+            // Three dashboard queries plus three persisted widget-snapshot queries.
+            return after.count == 2 && after[0] >= before[0] + 6 && after[1] > before[1]
+        }
+        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: refreshed, object: nil)], timeout: 10) == .completed,
+                      "Pull must execute queries and replace the matching persisted reading")
+        XCTAssertFalse(app.buttons["refresh"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["lastSync"].exists)
+        capture(app, name: "Native pull refreshed dashboard")
     }
 
     @MainActor

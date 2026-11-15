@@ -12,7 +12,7 @@ Rings sweep in on appearance and animate health-value changes from their current
 
 Circular Watch complications and Lock Screen accessories fit the chosen shape inside the system's circular mask, with room for strokes, tips, and glow. Square corners remain visible instead of being cropped by the circle.
 
-Metric cards separate the current value from its goal, show whether higher or lower values advance progress, and label a nonzero starting value. Units use familiar symbols such as `ms`, `bpm`, `kcal`, and `steps`. The header shows the last confirmed sync time, persisted across launches. Replaying an offline cache does not advance that timestamp; live acknowledgements and successful background transfers do.
+Metric cards separate the current value from its goal, show whether higher or lower values advance progress, and label a nonzero starting value. Units use familiar symbols such as `ms`, `bpm`, `kcal`, and `steps`. On iPhone, pull down on the dashboard to refresh; health values also refresh automatically. There is no fixed refresh button or routine sync timestamp/status. Actionable Health and Watch guidance remains. The Watch keeps its existing refresh controls and confirmed-sync timestamp.
 
 - [App architecture, Lock Screen widgets, and device checks](docs/APP.md)
 - [CI and TestFlight delivery](ci/README.md)
