@@ -67,7 +67,7 @@ final class AnyRingViewModel: ObservableObject {
             model.onConfigurationChanged = { [weak self] changed in self?.updateRing(changed) }
         }
         rings = RingWrapper(models)
-        let types = Set(config.configs.compactMap { ($0 as? HealthKitProvider.Configuration)?.healthKitParams.sampleType.hkSampleType })
+        let types = Set(config.configs.flatMap { ($0 as? HealthKitProvider.Configuration)?.readTypes ?? [] })
         observeHealthChanges()
         guard requestAuthorization else { return }
         let dataSource = dataSource
@@ -92,7 +92,7 @@ final class AnyRingViewModel: ObservableObject {
 
     private func observeHealthChanges() {
         guard requestAuthorization, let device = dataSource as? DeviceHealthKitDataSource else { return }
-        let types = Set(config.configs.compactMap { ($0 as? HealthKitProvider.Configuration)?.healthKitParams.sampleType.hkSampleType })
+        let types = Set(config.configs.flatMap { ($0 as? HealthKitProvider.Configuration)?.readTypes ?? [] })
         device.observe(types: types) { [weak self] in
             Task { @MainActor in self?.refresh() }
         }
@@ -149,8 +149,8 @@ final class AnyRingViewModel: ObservableObject {
     private func updateRing(_ changed: any ProviderConfiguration) {
         guard let index = config.configs.firstIndex(where: { $0.ring == changed.ring }) else { return }
         let namesOnly = config.configs[index].hasSameReadingConfiguration(as: changed)
-        let previousType = (config.configs[index] as? HealthKitProvider.Configuration)?.healthKitParams.sampleType
-        let currentType = (changed as? HealthKitProvider.Configuration)?.healthKitParams.sampleType
+        let previousType = (config.configs[index] as? HealthKitProvider.Configuration)?.readTypes
+        let currentType = (changed as? HealthKitProvider.Configuration)?.readTypes
         var updated = config
         updated.configs[index] = changed
         config = updated

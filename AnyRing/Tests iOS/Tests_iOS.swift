@@ -2,6 +2,57 @@ import XCTest
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testWorkoutZoneMetricsSelectionMinutesNamesAndRelaunch() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--workout-zone-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        func openRing(_ index: Int) {
+            let button = app.buttons["ring\(index)"]
+            for _ in 0..<8 { if button.isHittable { break }; app.swipeUp() }
+            XCTAssertTrue(button.waitForExistence(timeout: 5))
+            button.tap()
+        }
+        for (index, name, label) in [(1, "Heart rate zones 2–3", "Easy training"), (2, "Heart rate zones 4–5", "Hard training")] {
+            openRing(index)
+            app.buttons[index == 1 ? "HRV" : "Step count"].tap()
+            let metric = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", name)).firstMatch
+            XCTAssertTrue(metric.waitForExistence(timeout: 5))
+            metric.tap()
+            XCTAssertTrue(app.textFields["goal"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.switches["Reversed Direction"].exists)
+            XCTAssertFalse(app.buttons["Aggregation"].exists)
+            let goal = app.textFields["goal"]
+            goal.tap()
+            goal.press(forDuration: 1.2)
+            let selectAll = app.buttons["Select All"]
+            if selectAll.waitForExistence(timeout: 3) { selectAll.tap() }
+            else {
+                goal.doubleTap()
+                let select = app.buttons["Select"]
+                if select.waitForExistence(timeout: 2) { select.tap() }
+            }
+            goal.typeText("45")
+            let nameField = app.textFields["ringName"]
+            nameField.tap()
+            nameField.typeText(label + "\n")
+            capture(app, name: name + " editor minutes")
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        let period = app.segmentedControls["trackingPeriod"]
+        for _ in 0..<8 { if period.isHittable { break }; app.swipeUp() }
+        period.buttons["5"].tap()
+        for _ in 0..<8 { if app.buttons["ring1"].isHittable { break }; app.swipeDown() }
+        capture(app, name: "Workout zone dashboard synthetic")
+        app.terminate()
+        app.launchArguments += ["--preserve-test-settings"]
+        app.launch()
+        openRing(1)
+        XCTAssertTrue(app.buttons["Heart rate zones 2–3"].exists)
+        XCTAssertEqual(app.textFields["ringName"].value as? String, "Easy training")
+        XCTAssertEqual(app.textFields["goal"].value as? String, "45")
+        capture(app, name: "Workout zones restored")
+    }
+    @MainActor
     func testWidgetLinkOpensFirstRingAndUnknownRingDoesNotNavigate() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]

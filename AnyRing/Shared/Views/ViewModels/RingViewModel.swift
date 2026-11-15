@@ -11,10 +11,10 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
     var globalConfig: GlobalConfiguration
     var onConfigurationChanged: ((any ProviderConfiguration) -> Void)?
 
-    var isReversed: Bool { (configuration as? HealthKitProvider.Configuration)?.healthKitParams.reversed ?? false }
+    var isReversed: Bool { (configuration as? HealthKitProvider.Configuration).map { $0.workoutMetric == nil && $0.healthKitParams.reversed } ?? false }
     var direction: String { isReversed ? "Lower is better" : "Higher is better" }
     var comparison: String { isReversed ? "≤" : "≥" }
-    var valueText: String { isRefreshing && progress.empty ? "—" : format(progress.absolute) }
+    var valueText: String { progress.empty && (isRefreshing || error != nil) ? "—" : format(progress.absolute) }
     var goalText: String { "\(comparison) \(format(isReversed ? configuration.minValue : configuration.maxValue)) \(units)" }
     var startingValueText: String? {
         guard isReversed || configuration.minValue != 0 else { return nil }
@@ -70,6 +70,7 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
     func update(config: any ProviderConfiguration) {
         guard config.minValue.isFinite, config.maxValue.isFinite else { return }
         let needsReading = !configuration.hasSameReadingConfiguration(as: config)
+        if needsReading { progress = .Empty }
         applyMetadata(config)
         if let onConfigurationChanged { onConfigurationChanged(config) }
         else { provider.configPersistence.update(config: config) }

@@ -76,7 +76,7 @@ struct RingWidgetEntryView: View {
                         VStack(alignment: .leading, spacing: 1) {
                             ForEach(0..<3, id: \.self) { index in
                                 HStack(spacing: 3) {
-                                    Text(name(at: index)).lineLimit(1).truncationMode(.tail)
+                                    Text(name(at: index)).lineLimit(1).truncationMode(.middle)
                                     Text(rings.list[index].percentageText).fixedSize()
                                 }
                                 .font(.caption2)

@@ -58,7 +58,8 @@ jobs:
           xcodebuild -project AnyRing/AnyRing.xcodeproj -scheme 'AnyRing (iOS)' \
             -configuration Release -destination "platform=iOS Simulator,id=$device" \
             -derivedDataPath "$RUNNER_TEMP/ios-tests" \
-            -only-testing:AnyRingTests/BackgroundHealthDeliveryTests \
+            -only-testing:AnyRingTests \
+            '-only-testing:Tests iOS/Tests_iOS/testWorkoutZoneMetricsSelectionMinutesNamesAndRelaunch' \
             '-only-testing:Tests iOS/Tests_iOS/testDashboardAndMetricEditor' \
             '-only-testing:Tests iOS/Tests_iOS/testPullToRefreshQueriesAndPersistsACompletedReading' \
             CODE_SIGNING_ALLOWED=NO ENABLE_TESTABILITY=YES test

@@ -11,6 +11,38 @@ import SwiftUI
 /// Render the production widget view, not a reimplementation, at accessory sizes.
 final class WidgetRenderingTests: XCTestCase {
     @MainActor
+    func testWorkoutZoneNamesMinutesInCompactWatchAndWidgets() throws {
+        var config = UserDefaultsConfigurationPersistence.defaultConfig
+        for (index, metric) in WorkoutZoneMetric.allCases.enumerated() {
+            var ring = config.configs[index] as! HealthKitProvider.Configuration
+            ring.selectWorkoutMetric(metric)
+            config.configs[index] = ring
+            let provider = ring.provider.init(dataSource: MockHealthKitDataSource(), config: ring,
+                configPersistence: MockConfigurationPersistence())
+            let model = provider.viewModel(globalConfig: GlobalConfiguration(days: 5))
+            XCTAssertEqual(model.units, "min")
+            let renderer = ImageRenderer(content: RingMetricView(ring: model, compact: true)
+                .frame(width: 184).padding().background(.black).environment(\.colorScheme, .dark))
+            let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+            attachment.name = metric.name + " compact Watch"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+        let rings = RingWrapper([0.2, 0.4, 0.6].map { RingSnapshot(progress: $0, mainColor: CodableColor(.green)) })
+        for family in [WidgetFamily.accessoryInline, .accessoryRectangular] {
+            let entry = SimpleEntry(date: Date(), rings: rings, names: config.configs.map(\.displayName), readingDate: nil)
+            let renderer = ImageRenderer(content: RingWidgetEntryView(entry: entry, familyOverride: family)
+                .environment(\.colorScheme, .dark).foregroundStyle(.white)
+                .frame(width: family == .accessoryInline ? 250 : 170, height: family == .accessoryInline ? 26 : 76)
+                .background(.black))
+            let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+            attachment.name = "Workout zones \(family)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+    }
+
+    @MainActor
     func testPrivacyDoesNotRevealRingShapesOrProgress() throws {
         func render(_ values: [Double]) throws -> Data {
             let entry = SimpleEntry(date: Date(), rings: RingWrapper(values.map {
@@ -100,6 +132,123 @@ final class WidgetRenderingTests: XCTestCase {
 
 @Suite @MainActor
 struct ConfigurationTests {
+    @Test func actualHealthKitZoneConfigurationUsesZeroBasedFiveZones() throws {
+        if #available(iOS 27.0, *) {
+            let unit = HKUnit.count().unitDivided(by: .minute())
+            let configuration = try HKWorkoutZoneConfiguration(quantityType: HKQuantityType(.heartRate),
+                zoneBoundaries: [100.0, 120, 140, 160].map { HKQuantity(unit: unit, doubleValue: $0) })
+            #expect(configuration.zones.map(\.index) == Array(0...4))
+            #expect(configuration.source == .app)
+        }
+    }
+    @Test func workoutZoneCoverageRejectsBoundariesOverlapsMissingAndInvalidValues() throws {
+        let start = Date(timeIntervalSince1970: 1000)
+        func record(_ id: String = "a", _ offset: Double = 0, _ duration: Double = 600,
+                    _ values: [Int: Double]? = [0: 60, 1: 120, 2: 180, 3: 60, 4: 180],
+                    _ indices: [Int] = Array(0...4)) -> WorkoutZoneRecord {
+            WorkoutZoneRecord(id: id, start: start.addingTimeInterval(offset),
+                end: start.addingTimeInterval(offset + duration), activeDuration: duration,
+                configurationIndices: indices, durations: values)
+        }
+        let period = DateInterval(start: start, duration: 1200)
+        let valid = record()
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones2And3, records: [valid, valid], period: period) == 5)
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones2And3, records: [record("b", 600), valid], period: period) == 10)
+        for records in [[], [record("a", -1)], [record("a", 601)], [valid, record("b", 300)],
+                        [record("a", 0, 600, nil)], [record("a", 0, 600, [:])],
+                        [record("a", 0, 600, [0: .nan, 1: 120, 2: 180, 3: 60, 4: 180])],
+                        [record("a", 0, 600, [0: -1, 1: 120, 2: 180, 3: 60, 4: 180])],
+                        [record("a", 0, 600, [0: 60, 1: 120, 2: 180, 3: 60, 4: .infinity])],
+                        [record("a", 0, 600, [0: 60, 1: 120, 2: 180, 3: 60, 4: 180], [1,2,3,4,5])]] {
+            #expect(throws: WorkoutZoneError.self) {
+                try WorkoutZoneTotals.minutes(.combinedZones2And3, records: records, period: period)
+            }
+        }
+        let zero = record("zero", 0, 600, [0: 600, 1: 0, 2: 0, 3: 0, 4: 0])
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones2And3, records: [zero], period: period) == 0)
+    }
+
+    @Test func workoutPeriodUsesCalendarDaysThroughBothDSTTransitions() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
+        for (month, day, hours) in [(3, 30, 59.0), (10, 26, 61.0)] {
+            let now = calendar.date(from: DateComponents(year: 2026, month: month, day: day, hour: 12))!
+            let period = WorkoutZoneTotals.period(days: 3, now: now, calendar: calendar)
+            #expect(calendar.component(.hour, from: period.start) == 0)
+            #expect(calendar.component(.day, from: period.start) == day - 2)
+            #expect(period.duration / 3600 == hours)
+        }
+    }
+    @Test func storedHealthKitAggregateDoesNotRequireFullActiveDurationCoverage() throws {
+        let start = Date(timeIntervalSince1970: 1000)
+        let stored = WorkoutZoneRecord(id: "stored", start: start, end: start.addingTimeInterval(900),
+            activeDuration: 600, configurationIndices: Array(0...4),
+            durations: [0: 30, 1: 120, 2: 180, 3: 0, 4: 0])
+        let period = DateInterval(start: start, duration: 900)
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones2And3, records: [stored], period: period) == 5)
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones4And5, records: [stored], period: period) == 0)
+    }
+    @Test func workoutZoneMissingDurationEntryIsNotRecordedZero() {
+        let start = Date(timeIntervalSince1970: 1000)
+        let sparse = WorkoutZoneRecord(id: "sparse", start: start, end: start.addingTimeInterval(600),
+            activeDuration: 600, configurationIndices: Array(0...4),
+            durations: [0: 60, 1: 0, 2: 0, 3: 0])
+        #expect(throws: WorkoutZoneError.self) {
+            try WorkoutZoneTotals.minutes(.combinedZones2And3, records: [sparse],
+                period: DateInterval(start: start, duration: 600))
+        }
+    }
+    @Test func workoutSourceCompatibilityFailsClosedAndLegacyConfigSurvives() async throws {
+        let original = UserDefaultsConfigurationPersistence.defaultConfig
+        #expect(try JSONDecoder().decode(AnyRingConfig.self, from: JSONEncoder().encode(original)) == original)
+        var ring = original.configs[0] as! HealthKitProvider.Configuration
+        ring.selectWorkoutMetric(.combinedZones2And3)
+        let data = try JSONEncoder().encode(ring)
+        var object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        object["workoutMetric"] = "futureUnknownZoneMetric"
+        #expect(throws: DecodingError.self) {
+            try JSONDecoder().decode(HealthKitProvider.Configuration.self, from: JSONSerialization.data(withJSONObject: object))
+        }
+        object.removeValue(forKey: "workoutMetric")
+        let oldClient = try JSONDecoder().decode(HealthKitProvider.Configuration.self,
+            from: JSONSerialization.data(withJSONObject: object))
+        #expect(oldClient.workoutMetric == nil)
+        #expect(oldClient.healthKitParams.aggregation == .sum)
+        await #expect(throws: HealthDataError.self) {
+            try await DeviceHealthKitDataSource().fetchStatistics(withStart: Date(timeIntervalSince1970: 0), to: Date(),
+                ofType: oldClient.healthKitParams.sampleType.hkSampleType,
+                unit: oldClient.healthKitParams.units.hkunit, aggregation: oldClient.healthKitParams.aggregation)
+        }
+    }
+    @Test func workoutMetricsPersistIndependentSourceIdentityAndMinutes() throws {
+        var config = UserDefaultsConfigurationPersistence.defaultConfig
+        var first = config.configs[0] as! HealthKitProvider.Configuration
+        first.selectWorkoutMetric(.combinedZones2And3)
+        first.customName = "Easy training"
+        first.maxValue = 42
+        config.configs[0] = first
+        var second = first
+        second.ring = .second
+        second.selectWorkoutMetric(.combinedZones4And5)
+        config.configs[1] = second
+        config.global.days = 5
+        let restored = try JSONDecoder().decode(AnyRingConfig.self, from: JSONEncoder().encode(config))
+        #expect(restored == config)
+        #expect(first.units == "min")
+        #expect(first.name == "Heart rate zones 2–3")
+        #expect(first.readTypes == Set([HKObjectType.workoutType(), HKQuantityType(.heartRate)]))
+        #expect(!first.hasSameReadingConfiguration(as: second))
+        #expect(restored.global.days == 5)
+    }
+    @Test func workoutZonesSumSecondsNotHeartRateAndUseZeroBasedIndices() throws {
+        let start = Date(timeIntervalSince1970: 1000)
+        let workout = WorkoutZoneRecord(id: "a", start: start, end: start.addingTimeInterval(900),
+            activeDuration: 600, configurationIndices: Array(0...4),
+            durations: [0: 60, 1: 120, 2: 180, 3: 60, 4: 180])
+        let period = DateInterval(start: start, duration: 1000)
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones2And3, records: [workout], period: period) == 5)
+        #expect(try WorkoutZoneTotals.minutes(.combinedZones4And5, records: [workout], period: period) == 4)
+    }
     private func store() -> UserDefaultsConfigurationPersistence {
         let defaults = UserDefaults(suiteName: "AnyRingTests.\(UUID().uuidString)")!
         return UserDefaultsConfigurationPersistence(userDefaults: defaults)
@@ -490,6 +639,92 @@ struct BackgroundHealthDeliveryTests {
     }
 }
 
+@MainActor
+private final class ControlledWorkoutSource: HealthKitDataSource {
+    struct Read {
+        let start: Date
+        let end: Date
+        let continuation: CheckedContinuation<[WorkoutZoneRecord], Error>
+    }
+    var reads: [Read] = []
+    var statisticsCount = 0
+    func isAvailable() -> Bool { true }
+    func requestPermissions(permissions: Set<HKObjectType>) async throws -> Bool { true }
+    func fetchStatistics(withStart: Date, to: Date, ofType: HKSampleType,
+                         unit: HKUnit, aggregation: Aggregation) async throws -> Double {
+        statisticsCount += 1
+        return 55
+    }
+    func fetchWorkouts(from start: Date, to end: Date) async throws -> [WorkoutZoneRecord] {
+        try await withCheckedThrowingContinuation { reads.append(Read(start: start, end: end, continuation: $0)) }
+    }
+    func complete(_ index: Int, factor: Double = 1) {
+        let end = reads[index].end.addingTimeInterval(-60)
+        let record = WorkoutZoneRecord(id: "synthetic", start: end.addingTimeInterval(-600 * factor), end: end,
+            activeDuration: 600 * factor, configurationIndices: Array(0...4),
+            durations: [0: 60 * factor, 1: 120 * factor, 2: 180 * factor, 3: 60 * factor, 4: 180 * factor])
+        let continuation = reads[index].continuation
+        // Actual background callback delivery, no Health samples or private logs.
+        DispatchQueue.global().async { continuation.resume(returning: [record]) }
+    }
+}
+
+@Suite @MainActor
+struct WorkoutProviderTests {
+    private func wait(_ condition: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(20))
+        while !condition() && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
+        try #require(condition())
+    }
+    @Test func actualModelConcurrentWorkoutMetricsRenameGenerationCancellationAndCache() async throws {
+        var config = UserDefaultsConfigurationPersistence.defaultConfig
+        for (index, metric) in WorkoutZoneMetric.allCases.enumerated() {
+            var ring = config.configs[index] as! HealthKitProvider.Configuration
+            ring.selectWorkoutMetric(metric)
+            config.configs[index] = ring
+        }
+        config.global.days = 5
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "WorkoutAsync.\(UUID())")!)
+        persistence.persist(config: config)
+        let source = ControlledWorkoutSource()
+        let model = AnyRingViewModel(persistence: persistence, dataSource: source, requestAuthorization: false)
+        try await wait { source.reads.count == 2 }
+        let first = model.rings!.first
+        let second = model.rings!.second
+        var renamed = first.configuration
+        renamed.customName = "Easy training"
+        first.update(config: renamed)
+        #expect(source.reads.count == 2)
+        model.refresh()
+        try await wait { source.reads.count == 4 }
+        source.complete(0, factor: 2)
+        source.complete(1, factor: 2)
+        source.complete(2)
+        source.complete(3)
+        try await wait { !first.isRefreshing && !second.isRefreshing }
+        #expect(first.progress.absolute == 5)
+        #expect(second.progress.absolute == 4)
+        #expect(first.name == "Easy training")
+        #expect(first.units == "min")
+        #expect(first.direction == "Higher is better")
+        #expect(source.statisticsCount == 2) // Third ring only, never an HR-mean fallback.
+        #expect(source.reads.allSatisfy { Calendar.current.isDate($0.start, inSameDayAs: Calendar.current.date(byAdding: .day, value: -4, to: $0.end)!) })
+        model.refreshWidgetSnapshot()
+        try await wait { source.reads.count == 6 }
+        source.complete(4)
+        source.complete(5)
+        try await wait { persistence.widgetCache.restoreReading(config: model.config) != nil }
+        let cached = try #require(persistence.widgetCache.restoreReading(config: model.config))
+        let date = cached.date
+        var label = first.configuration
+        label.customName = "Renamed without reads"
+        first.update(config: label)
+        #expect(source.reads.count == 6)
+        #expect(persistence.widgetCache.restoreReading(config: model.config)?.date == date)
+        #expect(persistence.restore() == model.config)
+    }
+}
+
 /// Deliberately ignores cancellation to exercise late results from superseded work.
 @MainActor
 private final class ControlledHealthDataSource: HealthKitDataSource {
@@ -533,6 +768,20 @@ private final class CancellableHealthDataSource: HealthKitDataSource {
 
 @Suite @MainActor
 struct HealthRefreshTests {
+    @Test func switchingToUnavailableWorkoutMetricDoesNotShowPreviousHeartRateAsMinutes() async throws {
+        let source = MockHealthKitDataSource()
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "WorkoutSwitch.\(UUID())")!)
+        let model = AnyRingViewModel(persistence: persistence, dataSource: source, requestAuthorization: false)
+        let ring = model.rings!.first
+        for _ in 0..<100 where ring.isRefreshing { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(!ring.progress.empty)
+        var changed = ring.configuration as! HealthKitProvider.Configuration
+        changed.selectWorkoutMetric(.combinedZones2And3)
+        ring.update(config: changed)
+        for _ in 0..<100 where ring.isRefreshing { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(ring.valueText == "—")
+        #expect(ring.progress.empty)
+    }
     private func model(_ source: ControlledHealthDataSource, authorize: Bool = false) -> AnyRingViewModel {
         let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "RefreshTests.\(UUID())")!)
         let model = AnyRingViewModel(persistence: persistence, dataSource: source, requestAuthorization: authorize)

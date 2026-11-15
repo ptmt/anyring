@@ -181,7 +181,8 @@ class HealthKitProvider: RingProvider {
     }
     
     struct Configuration: ProviderConfiguration {
-        var provider: RingProvider.Type { HealthKitProvider.self }
+        var provider: RingProvider.Type { workoutMetric == nil ? HealthKitProvider.self : HealthKitWorkoutProvider.self }
+        var workoutMetric: WorkoutZoneMetric? = nil
         var ring: RingID
         var healthKitParams: HealthKitConfiguration
         var appearance: RingAppearance
@@ -189,7 +190,7 @@ class HealthKitProvider: RingProvider {
             didSet { customName = RingName.normalized(customName) }
         }
 
-        enum CodingKeys: String, CodingKey { case ring, healthKitParams, appearance, customName }
+        enum CodingKeys: String, CodingKey { case ring, healthKitParams, appearance, customName, workoutMetric }
 
         init(ring: RingID, healthKitParams: HealthKitConfiguration, appearance: RingAppearance, customName: String? = nil) {
             self.ring = ring
@@ -200,6 +201,7 @@ class HealthKitProvider: RingProvider {
 
         init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
+            workoutMetric = try values.decodeIfPresent(WorkoutZoneMetric.self, forKey: .workoutMetric)
             ring = try values.decode(RingID.self, forKey: .ring)
             healthKitParams = try values.decode(HealthKitConfiguration.self, forKey: .healthKitParams)
             appearance = try values.decode(RingAppearance.self, forKey: .appearance)
@@ -226,15 +228,28 @@ class HealthKitProvider: RingProvider {
         
         var name: String {
             get {
-                healthKitParams.name
+                workoutMetric?.name ?? healthKitParams.name
             }
             set {
                 healthKitParams.name = newValue
             }
         }
         
+        var readTypes: Set<HKSampleType> {
+            workoutMetric == nil ? [healthKitParams.sampleType.hkSampleType] : [HKObjectType.workoutType(), HKQuantityType(.heartRate)]
+        }
+
+        mutating func selectWorkoutMetric(_ metric: WorkoutZoneMetric) {
+            workoutMetric = metric
+            // Compatibility payload for older builds: unsupported aggregation fails closed,
+            // rather than displaying an unrelated heart-rate mean as workout minutes.
+            healthKitParams = HealthKitConfiguration(name: metric.name,
+                description: "Stored heart rate zones during workouts only.", units: .minute,
+                sampleType: .heartRate, minValue: 0, maxValue: 30, aggregation: .sum)
+        }
+
         var units: String {
-            healthKitParams.units.displaySymbol(for: healthKitParams.sampleType)
+            workoutMetric == nil ? healthKitParams.units.displaySymbol(for: healthKitParams.sampleType) : "min"
         }
     }
     
@@ -259,7 +274,12 @@ class HealthKitProvider: RingProvider {
     
     func calculateProgress(providerConfig: ProviderConfiguration, globalConfig: GlobalConfiguration) async throws -> Progress {
         try Task.checkCancellation()
-        let parameters = (providerConfig as! Configuration).healthKitParams
+        let configuration = providerConfig as! Configuration
+        if let metric = configuration.workoutMetric {
+            return try await HealthKitWorkoutProvider.progress(metric: metric, configuration: configuration,
+                global: globalConfig, dataSource: dataSource)
+        }
+        let parameters = configuration.healthKitParams
         let calendar = Calendar.current
         let now = Date()
         let firstDay = calendar.date(byAdding: .day, value: -(max(globalConfig.days, 1) - 1), to: now) ?? now
@@ -278,6 +298,20 @@ class HealthKitProvider: RingProvider {
     }
 }
 
+
+/// Dedicated workout source; existing configuration/cache/Watch transport remains shared.
+final class HealthKitWorkoutProvider: HealthKitProvider {
+    static func progress(metric: WorkoutZoneMetric, configuration: Configuration,
+                         global: GlobalConfiguration, dataSource: any HealthKitDataSource) async throws -> Progress {
+        try Task.checkCancellation()
+        let period = WorkoutZoneTotals.period(days: global.days, now: Date())
+        let records = try await dataSource.fetchWorkouts(from: period.start, to: period.end)
+        try Task.checkCancellation()
+        let minutes = try WorkoutZoneTotals.minutes(metric, records: records, period: period)
+        return Progress(absolute: minutes, maxAbsolute: configuration.maxValue,
+                        minAbsolute: 0, reversed: false)
+    }
+}
 
 let secondsInDayApprox: Double = 60 * 60 * 24
 

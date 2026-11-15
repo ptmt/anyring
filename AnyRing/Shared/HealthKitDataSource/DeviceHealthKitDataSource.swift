@@ -33,6 +33,32 @@ final class DeviceHealthKitDataSource: HealthKitDataSource {
         return success
     }
 
+    func fetchWorkouts(from start: Date, to end: Date) async throws -> [WorkoutZoneRecord] {
+        try Task.checkCancellation()
+        guard #available(iOS 27.0, watchOS 27.0, macOS 27.0, *) else { throw WorkoutZoneError.unavailable }
+        // No strict-start option: discover workouts crossing either boundary, then fail
+        // coverage explicitly; aggregate durations cannot be clipped proportionally.
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let query = HKSampleQueryDescriptor(predicates: [.workout(predicate)],
+            sortDescriptors: [SortDescriptor(\HKWorkout.startDate)])
+        let workouts = try await query.result(for: healthStore)
+        try Task.checkCancellation()
+        return workouts.map { workout in
+            let group = workout.zoneGroupsByType?[HKQuantityType(.heartRate)]
+            // Do not combine activity groups with the parent aggregate. Preserve invalid
+            // duplicate indices as missing instead of trapping Dictionary(uniqueKeysWithValues:).
+            var durations: [Int: TimeInterval] = [:]
+            var valid = true
+            for value in group?.zoneDurations ?? [] {
+                if durations.updateValue(value.duration, forKey: value.zone.index) != nil { valid = false }
+            }
+            return WorkoutZoneRecord(id: workout.uuid.uuidString, start: workout.startDate,
+                end: workout.endDate, activeDuration: workout.duration,
+                configurationIndices: group?.configuration.zones.map(\.index) ?? [],
+                durations: group != nil && valid ? durations : nil)
+        }
+    }
+
     nonisolated static func statisticsOption(for aggregation: Aggregation) -> HKStatisticsOptions {
         switch aggregation {
         case .sum: .cumulativeSum

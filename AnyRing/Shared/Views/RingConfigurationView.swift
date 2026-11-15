@@ -6,6 +6,7 @@ struct RingConfigurationView: View {
     @EnvironmentObject private var viewModel: AnyRingViewModel
     @State private var permissionTask: Task<Void, Never>?
     @State private var nameDraft = ""
+    @State private var workoutGoalDraft = ""
     @FocusState private var editingName: Bool
 
     private func binding<Value>(_ get: @escaping (any ProviderConfiguration) -> Value,
@@ -53,19 +54,38 @@ struct RingConfigurationView: View {
         }
         Section("Data Source") {
             NavigationLink {
-                SelectProviderScreen(selected: ring.metricName) { parameters in
+                SelectProviderScreen(selected: ring.metricName, onSelectWorkout: { metric in
                     guard var changed = ring.configuration as? HealthKitProvider.Configuration else { return }
+                    changed.selectWorkoutMetric(metric)
+                    select(changed)
+                }) { parameters in
+                    guard var changed = ring.configuration as? HealthKitProvider.Configuration else { return }
+                    changed.workoutMetric = nil
                     changed.healthKitParams = parameters
-                    ring.update(config: changed)
-                    permissionTask?.cancel()
-                    permissionTask = Task {
-                        // Keep the existing behavior: refresh after a completed prompt, even false.
-                        if (try? await viewModel.handlePermissions(permissions: [parameters.sampleType.hkSampleType])) != nil,
-                           !Task.isCancelled { viewModel.refresh() }
-                    }
+                    select(changed)
                 }
             } label: { Label(ring.metricName, systemImage: "heart.fill") }
             if let config = ring.configuration as? HealthKitProvider.Configuration {
+                if config.workoutMetric != nil {
+                    HStack {
+                        Text("Goal (min)")
+                        TextField("Goal (min)", text: $workoutGoalDraft)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityIdentifier("goal")
+                            #if os(iOS)
+                            .keyboardType(.decimalPad)
+                            #endif
+                            .onAppear { workoutGoalDraft = config.maxValue.formatted(.number.grouping(.never)) }
+                            .onChange(of: workoutGoalDraft) { _, text in
+                                guard let value = try? Double(text, format: .number), value.isFinite, value > 0 else { return }
+                                var changed = ring.configuration
+                                changed.maxValue = value
+                                ring.update(config: changed)
+                            }
+                    }
+                    Text("Total workout minutes over the selected days. Set your own goal; the default is not a training recommendation.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                } else {
                 numericField(config.healthKitParams.reversed ? "Goal" : "Start From", value: binding({ $0.minValue }, { $0.minValue = $1 }))
                 numericField(config.healthKitParams.reversed ? "Start From" : "Goal", value: binding({ $0.maxValue }, { $0.maxValue = $1 }))
                 if config.minValue >= config.maxValue {
@@ -93,6 +113,7 @@ struct RingConfigurationView: View {
                         Text("Maximum").tag(Aggregation.max)
                     }
                 }
+                }
                 if let error = ring.error { Text(error.localizedDescription).font(.footnote).foregroundStyle(.secondary) }
             }
         }
@@ -108,6 +129,16 @@ struct RingConfigurationView: View {
         .onDisappear { permissionTask?.cancel() }
     }
 
+    private func select(_ changed: HealthKitProvider.Configuration) {
+        if changed.workoutMetric != nil { workoutGoalDraft = changed.maxValue.formatted(.number.grouping(.never)) }
+        ring.update(config: changed)
+        permissionTask?.cancel()
+        permissionTask = Task {
+            if (try? await viewModel.handlePermissions(permissions: Array(changed.readTypes))) != nil,
+               !Task.isCancelled { viewModel.refresh() }
+        }
+    }
+
     private func numericField(_ label: String, value: Binding<Double>) -> some View {
         HStack {
             Text(label)
@@ -116,7 +147,7 @@ struct RingConfigurationView: View {
                 #if os(iOS)
                 .keyboardType(.decimalPad)
                 #endif
-                .accessibilityIdentifier(label == "Goal" ? "goal" : "startFrom")
+                .accessibilityIdentifier(label.hasPrefix("Goal") ? "goal" : "startFrom")
         }
     }
 }
