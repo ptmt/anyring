@@ -49,6 +49,10 @@ This release intentionally fails closed rather than estimating incomplete totals
 
 No Health sample values are logged or written to docs. All fixture values are explicitly synthetic and simulator-gated.
 
+## Verified publication
+
+Version **2.0 (35.1)** uploaded successfully from exact source `872b7411f3ef45e617dbb16da3ed678cd5879b1d` in [run 43737045403](https://github.com/ptmt/anyring/actions/runs/43737045403), validation job `132881838385`, upload job `132890597719`. Apple explicitly reported **Uploaded package is processing.** and **Upload succeeded.** at `2026-11-15T17:17:44Z`, followed by **EXPORT SUCCEEDED**. Cleanup passed, zero artifacts; sibling push validation also passed. Processing completion and tester/device availability are not verified. This is the first workout-zone release: **OS 27+ and stored five-zone aggregates required**; app minimum 26 unchanged. Full release and failed-attempt evidence: [ci/RELEASE.md](../ci/RELEASE.md).
+
 ## Independent review / release gate
 
 - Re-read all eleven Swift changes, Apple documentation JSON and the installed 27.2 HealthKit swiftinterface. Verified native parent aggregate access, zero-based indices, workout + HR read-only access, unchanged deployment minimum 26 and guarded OS 27 API access. OS 26 runtime is not installed/tested; the compile-time availability guard returns unavailable before the query/API path.
