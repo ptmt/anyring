@@ -1,5 +1,16 @@
 # AnyProgress releases
 
+## Native iPhone refresh cleanup — 2.0 (27.2)
+
+- Release source: [`ed9017de67fceb55f857e6f4341e76e165a22ef8`](https://github.com/ptmt/anyring/commit/ed9017de67fceb55f857e6f4341e76e165a22ef8), including UI commit `0e32c50b955957d61d7078cf3a6d242d7a607ad1`, based on `0c3c9214fcebc067801af18b22d08fe8162eb451`. Dark concentric icon and all Watch/settings/widget/privacy/async behavior preserved. [Scope and test evidence](../docs/NATIVE-REFRESH.md).
+- [Release run 43693772893, attempt 2](https://github.com/ptmt/anyring/actions/runs/43693772893) **success**, exact `headSha` above. Validation job **132753201154**, upload job **132758191451**. Logged archive/upload build **27.2**, marketing version **2.0** retained.
+- Apple at `2026-11-15T08:56:49Z`: **Uploaded package is processing**, **Upload succeeded**, then **EXPORT SUCCEEDED**. Signed archive succeeded with all four bundles, signing cleanup succeeded, zero GitHub artifacts. Processing completion and tester availability are not verified.
+- Local full Release: **62 methods / 70 parameter-expanded executions**, including seven UI tests, passed. Real drag required six new datasource queries and a newer persisted matching reading; disconnected-callback negative control failed. No-button/no-sync-header test was RED before cleanup, GREEN after. 23 configuration/signing tests passed. Independent read-only code reviews found no security or logic issues.
+- Hosted final full Debug suite, simulator build, unsigned Release archive, and separate Release HealthKit + no-chrome + gesture UI regressions passed. Push-only [43693772536](https://github.com/ptmt/anyring/actions/runs/43693772536) also succeeded and skipped upload.
+- First source's [43692038411](https://github.com/ptmt/anyring/actions/runs/43692038411) failed because localized test telemetry split into five fields (Tests_iOS.swift:161/167). Reproduced locally with en_US, corrected only simulator telemetry using `Text(verbatim:)`, retained explicit-locale regression, then published the corrected source. No upload occurred on the failed source.
+- Final attempt 1 passed the gesture but hit an existing fixture scheduling deadline at `ConfigurationTests.swift:450` (`source.reads.count == 9`). Raw job logs retained. Same-SHA push suite passed; rerunning failed publication jobs on unchanged source passed. No tests weakened or async fences changed; exactly one Apple upload succeeded.
+- Published non-force from clean `anyring-native-refresh`; original dirty worktree's 13 file hashes verified unchanged. Evidence: `~/.hermes/cache/scratch/anyring-native-refresh/`, including screenshot exports and raw CI logs. No unrelated app or signing configuration changes.
+
 ## Approved dark concentric Graphite icon — 2.0 (23.2)
 
 Published under the owner's continuing icon-release authorization; "справа" selected the right-hand constant-offset design.
