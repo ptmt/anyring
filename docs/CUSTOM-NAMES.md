@@ -46,6 +46,12 @@ Initial source `855a62a978feebba015f3c5c2cc7c92721b488f8` passed local Release b
 
 The narrow test-only correction waits for required query registration before capturing explicit, disjoint read ranges; it waits for observable completion where needed, and cancels spawned queries on exit. Existing assertions remain, with a failing bounded prerequisite before unsafe continuation access. Production HealthKit and feature code are unchanged. Hosted failures are RED evidence; subsequent local/hosted results are recorded below and in `ci/RELEASE.md`.
 
+## Release and evidence retention
+
+Source `d33b3e8c91823c79aac228f90b59c43eb7c2e82b` uploaded as **2.0 (31.3)** in [run 43701626684 attempt 3](https://github.com/ptmt/anyring/actions/runs/43701626684). Validation `132785638803`, upload `132792416014`; Apple explicitly confirmed upload at `2026-11-15T11:15:51Z`. Final local fixture-corrected full Release remains **73 methods / 81 executions**, zero failures/skips/runtime warnings. Final hosted full suite and separate Release checks passed. Failed readiness/launch attempts and the green same-SHA push are retained in [release evidence](../ci/RELEASE.md).
+
+Post-upload, only the review-owned DerivedData and three xcresult bundles were removed with tool approval. Compact summaries, exported screenshots, CI logs and original-file hash manifest remain in `~/.hermes/cache/scratch/anyring-custom-names-review/`. Earlier implementation evidence was not deleted.
+
 ## Review boundary
 
-Physical paired Watch delivery, installed lock-screen widgets and real Health permission/data behavior are not claimed. Apple upload, once verified, is recorded separately in `ci/RELEASE.md`; upload does not establish processing completion or tester availability.
+Physical paired Watch delivery, installed lock-screen widgets and real Health permission/data behavior are not claimed. Upload is verified; Apple processing completion and tester availability are not.
