@@ -825,9 +825,7 @@ struct HealthRefreshTests {
         try #require(source.reads.count == 3)
         source.reads.forEach { $0.complete(.success(1)) }
         model.refreshWidgetSnapshot()
-        let deadline = ContinuousClock.now.advanced(by: .seconds(10))
-        while source.reads.count < 6 && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
-        try #require(source.reads.count == 6)
+        try await waitUntil { source.reads.count == 6 }
         let original = model.config
         var renamed = model.rings!.first.configuration
         renamed.customName = "Latest name"
@@ -905,13 +903,9 @@ struct HealthRefreshTests {
         var results: [RingWrapper<RingSnapshot>] = []
         let first = Task { results.append(try await model.getSnapshots()) }
         let second = Task { results.append(try await model.getSnapshots()) }
-        let snapshotDeadline = ContinuousClock.now.advanced(by: .seconds(10))
-        while source.reads.count < 9 && ContinuousClock.now < snapshotDeadline {
-            try await Task.sleep(for: .milliseconds(10))
-        }
-        // Abort before completing anything if registration failed: suffix(6) on
-        // the original three reads would resume their continuations twice.
-        try #require(source.reads.count == 9)
+        // Rendering can occupy MainActor beyond ten seconds on the hosted runner.
+        // Use the existing readiness helper, retaining exact independent query counts.
+        try await waitUntil { source.reads.count == 9 }
         #expect(Set(source.reads.suffix(6).map(\.type)).count == 3)
         for read in source.reads.suffix(6).reversed() { read.complete(.success(42)) }
         try await first.value
