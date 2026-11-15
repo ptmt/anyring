@@ -59,9 +59,14 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
             userDefaults.set(data, forKey: Self.snapshotKey)
             userDefaults.set(legacy, forKey: Self.key)
             if previousConfig != snapshot.config {
+                let reading = widgetCache.restoreReading(config: previousConfig)
                 userDefaults.removeObject(forKey: SimpleCache.key)
                 userDefaults.removeObject(forKey: SimpleCache.configurationKey)
                 userDefaults.removeObject(forKey: SimpleCache.readingKey)
+                if let previousConfig, previousConfig.hasSameReadingConfiguration(as: snapshot.config), let reading {
+                    // Rename the metadata, not the acquisition date or progress.
+                    widgetCache.store(lastSnapshot: RingWrapper(reading.rings), config: snapshot.config, date: reading.date)
+                }
             }
         } catch { logger.error("Cannot save configuration: \(error.localizedDescription)") }
     }

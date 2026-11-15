@@ -182,6 +182,59 @@ final class Tests_iOS: XCTestCase {
     }
 
     @MainActor
+    func testCustomNamePersistsClearsAndKeepsMetric() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        app.launch()
+        app.open(URL(string: "anyprogress://ring/0")!)
+        let field = app.textFields["ringName"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        guard field.exists else { return }
+        field.tap()
+        field.typeText("Morning recovery with a personal name")
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["HRV"].exists)
+        capture(app, name: "Custom name editor")
+        app.terminate()
+        app.launchArguments = ["--ui-testing", "--preserve-test-settings"]
+        app.launch()
+        let metric = app.descendants(matching: .any)["metric.0"]
+        XCTAssertTrue(metric.waitForExistence(timeout: 5))
+        XCTAssertTrue(metric.label.contains("Morning recovery with a personal name"))
+        capture(app, name: "Custom name dashboard after relaunch")
+        app.open(URL(string: "anyprogress://ring/0")!)
+        XCTAssertEqual(field.value as? String, "Morning recovery with a personal name")
+        app.buttons["clearRingName"].tap()
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(metric.waitForExistence(timeout: 5))
+        XCTAssertTrue(metric.label.contains("HRV"))
+        XCTAssertFalse(metric.label.contains("Morning recovery"))
+    }
+
+    @MainActor
+    func testCustomNameAtAccessibilitySize() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        app.open(URL(string: "anyprogress://ring/0")!)
+        let field = app.textFields["ringName"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("Personal recovery goal for every morning beyond the limit")
+        app.buttons["Done"].tap()
+        XCTAssertEqual(field.value as? String, "Personal recovery goal for every morning")
+        capture(app, name: "Accessibility size custom name editor")
+        app.terminate()
+        app.launchArguments += ["--preserve-test-settings"]
+        app.launch()
+        let metric = app.descendants(matching: .any)["metric.0"]
+        for _ in 0..<4 { if metric.isHittable { break }; app.swipeUp() }
+        XCTAssertTrue(metric.label.contains("Personal recovery goal for every morning"))
+        capture(app, name: "Accessibility size custom name dashboard")
+    }
+
+    @MainActor
     private func capture(_ app: XCUIApplication, name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name

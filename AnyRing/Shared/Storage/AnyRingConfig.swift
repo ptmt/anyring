@@ -40,6 +40,15 @@ struct AnyRingConfig: Codable, Equatable, Sendable {
         try container.encode(global, forKey: .global)
     }
 
+    /// Labels do not change a reading or its rendering. All other fields still must match.
+    func hasSameReadingConfiguration(as other: Self) -> Bool {
+        var lhs = self
+        var rhs = other
+        for index in lhs.configs.indices { lhs.configs[index].customName = nil }
+        for index in rhs.configs.indices { rhs.configs[index].customName = nil }
+        return lhs == rhs
+    }
+
     static func == (lhs: Self, rhs: Self) -> Bool {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys

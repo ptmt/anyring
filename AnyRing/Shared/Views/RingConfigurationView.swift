@@ -5,6 +5,8 @@ struct RingConfigurationView: View {
     @ObservedObject var ring: RingViewModel
     @EnvironmentObject private var viewModel: AnyRingViewModel
     @State private var permissionTask: Task<Void, Never>?
+    @State private var nameDraft = ""
+    @FocusState private var editingName: Bool
 
     private func binding<Value>(_ get: @escaping (any ProviderConfiguration) -> Value,
                                 _ set: @escaping (inout any ProviderConfiguration, Value) -> Void) -> Binding<Value> {
@@ -16,9 +18,42 @@ struct RingConfigurationView: View {
     }
 
     var body: some View {
+        Section {
+            HStack {
+                TextField("Name", text: $nameDraft, prompt: Text(ring.metricName))
+                    .accessibilityIdentifier("ringName")
+                    .focused($editingName)
+                    .submitLabel(.done)
+                    .onSubmit { editingName = false }
+                    .onAppear { nameDraft = ring.configuration.customName ?? "" }
+                    .onChange(of: nameDraft) { _, value in
+                        let bounded = String(value.prefix(RingName.maximumLength))
+                        if value != bounded { nameDraft = bounded }
+                        var changed = ring.configuration
+                        changed.customName = RingName.normalized(bounded)
+                        // Keep the editing buffer's spaces; normalize only the persisted label.
+                        if changed.customName != ring.configuration.customName { ring.update(config: changed) }
+                    }
+                if !nameDraft.isEmpty {
+                    Button {
+                        nameDraft = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel("Clear Name")
+                    .accessibilityIdentifier("clearRingName")
+                }
+            }
+        } header: {
+            Text("Ring Name")
+        } footer: {
+            Text("Optional. Leave blank to use the metric name. Up to 40 characters.")
+        }
         Section("Data Source") {
             NavigationLink {
-                SelectProviderScreen(selected: ring.name) { parameters in
+                SelectProviderScreen(selected: ring.metricName) { parameters in
                     guard var changed = ring.configuration as? HealthKitProvider.Configuration else { return }
                     changed.healthKitParams = parameters
                     ring.update(config: changed)
@@ -29,7 +64,7 @@ struct RingConfigurationView: View {
                            !Task.isCancelled { viewModel.refresh() }
                     }
                 }
-            } label: { Label(ring.name, systemImage: "heart.fill") }
+            } label: { Label(ring.metricName, systemImage: "heart.fill") }
             if let config = ring.configuration as? HealthKitProvider.Configuration {
                 numericField(config.healthKitParams.reversed ? "Goal" : "Start From", value: binding({ $0.minValue }, { $0.minValue = $1 }))
                 numericField(config.healthKitParams.reversed ? "Start From" : "Goal", value: binding({ $0.maxValue }, { $0.maxValue = $1 }))

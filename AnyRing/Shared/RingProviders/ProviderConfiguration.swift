@@ -41,6 +41,7 @@ protocol ProviderConfiguration: Codable, Sendable {
     @MainActor var provider: RingProvider.Type { get }
     var ring: RingID { get }
     var name: String { get set }
+    var customName: String? { get set }
     
     var minValue: Double { get set }
     var maxValue: Double { get set }
@@ -48,5 +49,31 @@ protocol ProviderConfiguration: Codable, Sendable {
     var appearance: RingAppearance { get set }
     
     var units: String { get }
+}
+
+/// Shared limit counts extended grapheme clusters, never splits emoji or accents.
+enum RingName {
+    static let maximumLength = 40
+    static func normalized(_ value: String?) -> String? {
+        guard let value else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let bounded = String(trimmed.prefix(maximumLength)).trimmingCharacters(in: .whitespacesAndNewlines)
+        return bounded.isEmpty ? nil : bounded
+    }
+}
+
+extension ProviderConfiguration {
+    var displayName: String { RingName.normalized(customName) ?? name }
+
+    func hasSameReadingConfiguration(as other: any ProviderConfiguration) -> Bool {
+        var lhs = self
+        var rhs = other
+        lhs.customName = nil
+        rhs.customName = nil
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        guard let a = try? encoder.encode(lhs), let b = try? encoder.encode(rhs) else { return false }
+        return a == b
+    }
 }
 

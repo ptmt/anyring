@@ -115,9 +115,9 @@ final class AnyRingViewModel: ObservableObject {
             // An unavailable reading keeps the last matching cache and its original date.
             guard let snapshots = try? await Self.getSnapshots(providers: providers, config: requestedConfig),
                   !Task.isCancelled, let self, self.widgetGeneration == generation,
-                  self.config == requestedConfig,
-                  self.persistence.restore() == requestedConfig else { return }
-            self.persistence.widgetCache.store(lastSnapshot: snapshots, config: requestedConfig)
+                  self.config.hasSameReadingConfiguration(as: requestedConfig),
+                  self.persistence.restore() == self.config else { return }
+            self.persistence.widgetCache.store(lastSnapshot: snapshots, config: self.config)
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
@@ -148,6 +148,7 @@ final class AnyRingViewModel: ObservableObject {
 
     private func updateRing(_ changed: any ProviderConfiguration) {
         guard let index = config.configs.firstIndex(where: { $0.ring == changed.ring }) else { return }
+        let namesOnly = config.configs[index].hasSameReadingConfiguration(as: changed)
         let previousType = (config.configs[index] as? HealthKitProvider.Configuration)?.healthKitParams.sampleType
         let currentType = (changed as? HealthKitProvider.Configuration)?.healthKitParams.sampleType
         var updated = config
@@ -155,7 +156,8 @@ final class AnyRingViewModel: ObservableObject {
         config = updated
         persistence.persist(config: updated)
         if previousType != currentType { observeHealthChanges() }
-        if requestAuthorization { refreshWidgetSnapshot() }
+        if namesOnly { WidgetCenter.shared.reloadAllTimelines() }
+        else if requestAuthorization { refreshWidgetSnapshot() }
         onConfigurationChanged?(updated)
     }
 
@@ -163,7 +165,13 @@ final class AnyRingViewModel: ObservableObject {
     func apply(_ snapshot: ConfigurationSnapshot) {
         persistence.persist(snapshot: snapshot)
         guard snapshot.config != config else { refresh(); return }
+        let namesOnly = config.hasSameReadingConfiguration(as: snapshot.config)
         config = snapshot.config
+        if namesOnly, let rings {
+            for (model, changed) in zip(rings.list, config.configs) { model.applyMetadata(changed) }
+            WidgetCenter.shared.reloadAllTimelines()
+            return
+        }
         installProviders()
         if requestAuthorization { refreshWidgetSnapshot() }
     }

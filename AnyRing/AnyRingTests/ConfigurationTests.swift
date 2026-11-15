@@ -24,6 +24,53 @@ final class WidgetRenderingTests: XCTestCase {
     }
 
     @MainActor
+    func testPrivateWidgetNamesDoNotChangeRedactedPixels() throws {
+        let rings = RingWrapper([0.25, 0.5, 1].map { RingSnapshot(progress: $0, mainColor: CodableColor(.green)) })
+        for family in [WidgetFamily.accessoryInline, .accessoryRectangular, .accessoryCircular] {
+            func render(_ names: [String]) throws -> Data {
+                let entry = SimpleEntry(date: Date(), rings: rings, names: names, readingDate: nil)
+                let renderer = ImageRenderer(content: RingWidgetEntryView(entry: entry, familyOverride: family)
+                    .redacted(reason: .privacy).frame(width: 170, height: 76))
+                return try XCTUnwrap(renderer.uiImage?.pngData())
+            }
+            XCTAssertEqual(try render(["Private recovery goal", "Private steps", "Private energy"]),
+                           try render(["Other", "", String(repeating: "秘密", count: 20)]))
+        }
+    }
+
+    @MainActor
+    func testCustomNamesRenderInWidgetsAndCompactWatchMetrics() throws {
+        var config = UserDefaultsConfigurationPersistence.defaultConfig
+        config.configs[0].customName = "Personal recovery goal for every morning"
+        config.configs[1].customName = "Мои шаги 👟"
+        let names = config.configs.map(\.displayName)
+        XCTAssertEqual(names[0], "Personal recovery goal for every morning")
+        XCTAssertEqual(names[1], "Мои шаги 👟")
+        XCTAssertEqual(names[2], config.configs[2].name)
+        let rings = RingWrapper([0.25, 0.5, 1].map { RingSnapshot(progress: $0, mainColor: CodableColor(.green)) })
+        let entry = SimpleEntry(date: Date(), rings: rings, names: names, readingDate: nil)
+        for (family, size) in [(WidgetFamily.accessoryRectangular, CGSize(width: 170, height: 76)),
+                               (.accessoryInline, CGSize(width: 250, height: 26))] {
+            let renderer = ImageRenderer(content: RingWidgetEntryView(entry: entry, familyOverride: family)
+                .environment(\.colorScheme, .light)
+                .frame(width: size.width, height: size.height).background(.white))
+            let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+            attachment.name = "Custom names \(family)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+        let provider = HealthKitProvider(dataSource: MockHealthKitDataSource(), config: config.configs[0],
+                                         configPersistence: MockConfigurationPersistence())
+        let model = provider.viewModel(globalConfig: config.global)
+        let renderer = ImageRenderer(content: RingMetricView(ring: model, compact: true)
+            .frame(width: 184).padding().background(.black).environment(\.colorScheme, .dark))
+        let attachment = XCTAttachment(image: try XCTUnwrap(renderer.uiImage))
+        attachment.name = "Custom name compact Watch metric"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    @MainActor
     func testAccessoryFamiliesRenderDataEmptyAndPrivacyStates() throws {
         let rings = RingWrapper([0.0, 0.5, 1.5].map { RingSnapshot(progress: $0, mainColor: CodableColor(.green)) })
         let populated = SimpleEntry(date: Date(), rings: rings,
@@ -56,6 +103,122 @@ struct ConfigurationTests {
     private func store() -> UserDefaultsConfigurationPersistence {
         let defaults = UserDefaults(suiteName: "AnyRingTests.\(UUID().uuidString)")!
         return UserDefaultsConfigurationPersistence(userDefaults: defaults)
+    }
+
+    @Test func customNameWireRoundTripTrimsWhitespaceWithoutChangingMetric() throws {
+        let original = UserDefaultsConfigurationPersistence.defaultConfig
+        var object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(original)) as! [String: Any]
+        var first = object["first"] as! [String: Any]
+        first["customName"] = "  Мой пульс 🫀 \n"
+        object["first"] = first
+        let decoded = try JSONDecoder().decode(AnyRingConfig.self, from: JSONSerialization.data(withJSONObject: object))
+        let encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(decoded)) as! [String: Any]
+        #expect((encoded["first"] as? [String: Any])?["customName"] as? String == "Мой пульс 🫀")
+        #expect(decoded.configs[0].name == original.configs[0].name)
+    }
+
+    @Test func customNameWireCompatibilityAndInvalidTypes() throws {
+        let original = UserDefaultsConfigurationPersistence.defaultConfig
+        let encoded = try JSONEncoder().encode(original)
+        for value: Any in [NSNull(), " \n\t ", String(repeating: "e\u{301}", count: 41)] {
+            var object = try JSONSerialization.jsonObject(with: encoded) as! [String: Any]
+            var first = object["first"] as! [String: Any]
+            first["customName"] = value
+            first["futureUnknownField"] = ["ignored": true]
+            object["first"] = first
+            let decoded = try JSONDecoder().decode(AnyRingConfig.self, from: JSONSerialization.data(withJSONObject: object))
+            #expect(decoded.hasSameReadingConfiguration(as: original))
+            #expect(decoded.configs[0].customName == RingName.normalized(value as? String))
+        }
+        for value: Any in [42, true, ["not": "a string"], ["not a string"]] {
+            var object = try JSONSerialization.jsonObject(with: encoded) as! [String: Any]
+            var first = object["first"] as! [String: Any]
+            first["customName"] = value
+            object["first"] = first
+            let data = try JSONSerialization.data(withJSONObject: object)
+            #expect(throws: DecodingError.self) { try JSONDecoder().decode(AnyRingConfig.self, from: data) }
+        }
+        var object = try JSONSerialization.jsonObject(with: encoded) as! [String: Any]
+        for key in ["first", "second", "third"] {
+            var ring = object[key] as! [String: Any]
+            ring.removeValue(forKey: "customName")
+            object[key] = ring
+        }
+        let legacy = try JSONDecoder().decode(AnyRingConfig.self, from: JSONSerialization.data(withJSONObject: object))
+        #expect(legacy == original)
+    }
+
+    @Test func customNamesAreOptionalBoundedAndClearable() throws {
+        let original = UserDefaultsConfigurationPersistence.defaultConfig
+        let legacy = try JSONDecoder().decode(AnyRingConfig.self, from: JSONEncoder().encode(original))
+        #expect(legacy.configs.allSatisfy { $0.customName == nil && $0.displayName == $0.name })
+        var config = original
+        config.configs[0].customName = String(repeating: "👨‍👩‍👧‍👦", count: 45)
+        #expect(config.configs[0].customName == String(repeating: "👨‍👩‍👧‍👦", count: 40))
+        config.configs[0].customName = " \n\t "
+        #expect(config.configs[0].customName == nil)
+        #expect(config == original)
+    }
+
+    @Test func renamePersistsPublishesAndRebindsCacheWithoutHealthRead() async throws {
+        let defaults = UserDefaults(suiteName: "RenameTests.\(UUID())")!
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+        let source = MockHealthKitDataSource()
+        var config = UserDefaultsConfigurationPersistence.defaultConfig
+        var heart = config.configs[0] as! HealthKitProvider.Configuration
+        heart.healthKitParams = hrConfiguration
+        heart.minValue = 42
+        heart.maxValue = 80
+        config.configs[0] = heart
+        persistence.persist(config: config)
+        let model = AnyRingViewModel(persistence: persistence, dataSource: source, requestAuthorization: false)
+        let snapshots = try await model.getSnapshots()
+        let acquired = Date(timeIntervalSince1970: 1234)
+        persistence.widgetCache.store(lastSnapshot: snapshots, config: config, date: acquired)
+        for _ in 0..<10 { await Task.yield() }
+        let before = source.readCount
+        var published: AnyRingConfig?
+        model.onConfigurationChanged = { published = $0 }
+        var renamed = model.rings!.first.configuration
+        renamed.customName = "  Мой пульс 🫀  "
+        model.rings!.first.update(config: renamed)
+        for _ in 0..<10 { await Task.yield() }
+        #expect(model.rings!.first.name == "Мой пульс 🫀")
+        #expect(source.readCount == before)
+        #expect(published?.configs[0].customName == "Мой пульс 🫀")
+        #expect(persistence.widgetCache.restoreReading(config: model.config)?.date == acquired)
+        #expect(persistence.widgetCache.restoreReading(config: config) == nil)
+        let relaunched = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+        #expect(relaunched.restore() == model.config)
+        let saved = try #require(relaunched.restore()?.configs[0] as? HealthKitProvider.Configuration)
+        #expect(saved.healthKitParams == heart.healthKitParams)
+        #expect(saved.appearance.mainColor.red == heart.appearance.mainColor.red)
+        #expect(saved.appearance.gradient == heart.appearance.gradient)
+        #expect(saved.ring == heart.ring)
+    }
+
+    @Test func watchRenameRoundTripsWithoutReplacingModelsOrReadingAgain() async throws {
+        let source = MockHealthKitDataSource()
+        let watch = AnyRingViewModel(persistence: store(), dataSource: source, requestAuthorization: false)
+        let existing = watch.rings!.first
+        for _ in 0..<10 { await Task.yield() }
+        let count = source.readCount
+        var renamed = watch.config
+        renamed.configs[0].customName = "Recovery 🫀"
+        renamed.configs[1].customName = "Daily walk"
+        renamed.configs[2].customName = "Energy"
+        let snapshot = ConfigurationSnapshot(config: renamed, revision: 500)
+        let decoded = try JSONDecoder().decode(ConfigurationSnapshot.self, from: JSONEncoder().encode(snapshot))
+        watch.apply(decoded)
+        for _ in 0..<10 { await Task.yield() }
+        #expect(watch.rings!.first === existing)
+        #expect(watch.rings!.list.map(\.name) == ["Recovery 🫀", "Daily walk", "Energy"])
+        #expect(source.readCount == count)
+        #expect(watch.persistence.restoreSnapshot()?.revision == 500)
+        renamed.configs[0].customName = nil
+        watch.apply(ConfigurationSnapshot(config: renamed, revision: 501))
+        #expect(watch.rings!.first.name == "HRV")
+        #expect(watch.persistence.restore()?.configs[0].customName == nil)
     }
 
     @Test func queuedOlderDeliveryCannotReplaceLiveReply() {
@@ -378,6 +541,52 @@ struct HealthRefreshTests {
     }
 
     private func settle() async throws { try await Task.sleep(for: .milliseconds(50)) }
+
+    @Test func renameWhileAppReadingIsPendingPreservesResultAndQueryCount() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        let deadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while source.reads.count < 3 && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
+        try #require(source.reads.count == 3)
+        let ring = model.rings!.first
+        var renamed = ring.configuration
+        renamed.customName = "Pending recovery"
+        ring.update(config: renamed)
+        source.reads.forEach { $0.complete(.success(42)) }
+        let completeDeadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while ring.isRefreshing && ContinuousClock.now < completeDeadline { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(!ring.isRefreshing)
+        #expect(ring.progress.absolute == 42)
+        #expect(ring.name == "Pending recovery")
+        #expect(source.reads.count == 3)
+        #expect(model.rings!.first === ring)
+    }
+
+    @Test func renameWhileWidgetReadingIsPendingUsesLatestLabelsWithoutExtraQueries() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        let initialDeadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while source.reads.count < 3 && ContinuousClock.now < initialDeadline { try await Task.sleep(for: .milliseconds(10)) }
+        try #require(source.reads.count == 3)
+        source.reads.forEach { $0.complete(.success(1)) }
+        model.refreshWidgetSnapshot()
+        let deadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while source.reads.count < 6 && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
+        try #require(source.reads.count == 6)
+        let original = model.config
+        var renamed = model.rings!.first.configuration
+        renamed.customName = "Latest name"
+        model.rings!.first.update(config: renamed)
+        source.reads.suffix(3).forEach { $0.complete(.success(42)) }
+        let savedDeadline = ContinuousClock.now.advanced(by: .seconds(10))
+        while model.persistence.widgetCache.restoreReading(config: model.config) == nil && ContinuousClock.now < savedDeadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let reading = try #require(model.persistence.widgetCache.restoreReading(config: model.config))
+        #expect(reading.configuration.configs[0].displayName == "Latest name")
+        #expect(source.reads.count == 6)
+        #expect(model.persistence.widgetCache.restoreReading(config: original) == nil)
+    }
 
     @Test func shapeEditRefreshesTheInvalidatedWidgetCache() async throws {
         let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "ShapeCacheTests.\(UUID())")!)

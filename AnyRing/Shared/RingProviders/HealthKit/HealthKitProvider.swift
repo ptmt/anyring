@@ -185,6 +185,26 @@ class HealthKitProvider: RingProvider {
         var ring: RingID
         var healthKitParams: HealthKitConfiguration
         var appearance: RingAppearance
+        var customName: String? = nil {
+            didSet { customName = RingName.normalized(customName) }
+        }
+
+        enum CodingKeys: String, CodingKey { case ring, healthKitParams, appearance, customName }
+
+        init(ring: RingID, healthKitParams: HealthKitConfiguration, appearance: RingAppearance, customName: String? = nil) {
+            self.ring = ring
+            self.healthKitParams = healthKitParams
+            self.appearance = appearance
+            self.customName = RingName.normalized(customName)
+        }
+
+        init(from decoder: Decoder) throws {
+            let values = try decoder.container(keyedBy: CodingKeys.self)
+            ring = try values.decode(RingID.self, forKey: .ring)
+            healthKitParams = try values.decode(HealthKitConfiguration.self, forKey: .healthKitParams)
+            appearance = try values.decode(RingAppearance.self, forKey: .appearance)
+            customName = RingName.normalized(try values.decodeIfPresent(String.self, forKey: .customName))
+        }
         
         var minValue: Double {
             get {

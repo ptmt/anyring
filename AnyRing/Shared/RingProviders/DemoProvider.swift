@@ -13,6 +13,7 @@ import SwiftUI
 class DemoProvider: RingProvider {
     
     struct Configuration: ProviderConfiguration {
+        var customName: String? = nil
         var name: String
         var provider: RingProvider.Type { DemoProvider.self }
         var ring: RingID

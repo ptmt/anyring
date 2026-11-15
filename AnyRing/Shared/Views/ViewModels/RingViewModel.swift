@@ -25,7 +25,8 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
         return value.formatted(.number.precision(.fractionLength(0...1)))
     }
 
-    var name: String { configuration.name }
+    var name: String { configuration.displayName }
+    var metricName: String { configuration.name }
     var fullName: String { "\(type(of: provider).name) / \(name)" }
     var providerDescription: String { type(of: provider).description }
     private let provider: any RingProvider
@@ -68,11 +69,17 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
 
     func update(config: any ProviderConfiguration) {
         guard config.minValue.isFinite, config.maxValue.isFinite else { return }
-        provider.config = config
-        configuration = config
+        let needsReading = !configuration.hasSameReadingConfiguration(as: config)
+        applyMetadata(config)
         if let onConfigurationChanged { onConfigurationChanged(config) }
         else { provider.configPersistence.update(config: config) }
-        refresh()
+        if needsReading { refresh() }
+    }
+
+    /// The owner uses this only after verifying a label-only configuration change.
+    func applyMetadata(_ config: any ProviderConfiguration) {
+        provider.config = config
+        configuration = config
     }
 
     func updateFromSnapshot(snapshot: RingSnapshot) {

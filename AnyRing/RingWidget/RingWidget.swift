@@ -40,7 +40,7 @@ struct Provider: TimelineProvider {
             cache.store(lastSnapshot: snapshots, config: config)
             let reading = cache.restoreReading(config: config)
             callback.call(SimpleEntry(date: Date(), rings: reading.map { RingWrapper($0.rings) },
-                                      names: config.configs.map(\.name), readingDate: reading?.date,
+                                      names: config.configs.map(\.displayName), readingDate: reading?.date,
                                       shape: config.global.shape))
         }
     }
@@ -69,14 +69,17 @@ struct RingWidgetEntryView: View {
                 switch family {
                 case .accessoryInline:
                     Text("\(entry.names.first ?? "Progress") \(rings.first.percentageText)")
+                        .lineLimit(1).truncationMode(.middle)
                 case .accessoryRectangular:
                     HStack(spacing: 6) {
                         ringGraphic(rings, size: 44)
                         VStack(alignment: .leading, spacing: 1) {
                             ForEach(0..<3, id: \.self) { index in
-                                Text("\(name(at: index)) \(rings.list[index].percentageText)")
-                                    .lineLimit(1).minimumScaleFactor(0.8)
-                                    .font(.caption2)
+                                HStack(spacing: 3) {
+                                    Text(name(at: index)).lineLimit(1).truncationMode(.tail)
+                                    Text(rings.list[index].percentageText).fixedSize()
+                                }
+                                .font(.caption2)
                             }
                         }
                     }
