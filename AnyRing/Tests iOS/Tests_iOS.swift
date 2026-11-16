@@ -2,6 +2,60 @@ import XCTest
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testSavedConfigurationStripRestoresCompleteSettings() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--legacy-template-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let save = app.buttons["saveConfiguration"]
+        XCTAssertTrue(save.waitForExistence(timeout: 10), "Saved configurations must be reachable beside the graph")
+        guard save.exists else { return }
+        save.tap()
+        app.textFields["Template name"].typeText("Recovery")
+        app.alerts.buttons["Save"].tap()
+        let preset = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'savedConfiguration.'")).firstMatch
+        XCTAssertTrue(preset.waitForExistence(timeout: 5))
+        XCTAssertTrue(preset.isSelected)
+        capture(app, name: "Saved complete configuration synthetic")
+        app.buttons["trackingPeriod"].tap()
+        app.buttons["7 days"].tap()
+        let shape = app.buttons["visualizationShape"]
+        for _ in 0..<6 { if shape.isHittable { break }; app.swipeUp() }
+        shape.tap()
+        app.buttons["shape.circle"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        let firstRing = app.buttons["ring1"]
+        for _ in 0..<6 { if firstRing.isHittable { break }; app.swipeUp() }
+        firstRing.tap()
+        app.buttons["Heart-rate"].tap()
+        app.buttons.matching(NSPredicate(format: "label CONTAINS 'Step count'")).firstMatch.tap()
+        XCTAssertEqual((app.textFields["goal"].value as? String)?.replacingOccurrences(of: ",", with: ""), "8000")
+        app.navigationBars.buttons.firstMatch.tap()
+        for _ in 0..<8 { if preset.isHittable { break }; app.swipeDown() }
+        XCTAssertFalse(preset.isSelected)
+        preset.tap()
+        app.alerts.buttons["Use template"].tap()
+        for _ in 0..<8 { if app.buttons["trackingPeriod"].isHittable { break }; app.swipeDown() }
+        XCTAssertTrue(app.buttons["trackingPeriod"].label.contains("5 days"))
+        XCTAssertTrue(preset.isSelected)
+        app.terminate()
+        app.launchArguments += ["--preserve-test-settings"]
+        app.launch()
+        XCTAssertTrue(preset.waitForExistence(timeout: 10))
+        XCTAssertTrue(preset.isSelected)
+        capture(app, name: "Saved configuration cold relaunch synthetic")
+        for _ in 0..<6 { if shape.isHittable { break }; app.swipeUp() }
+        shape.tap()
+        XCTAssertTrue(app.buttons["shape.rectangular"].isSelected)
+        app.navigationBars.buttons.firstMatch.tap()
+        for _ in 0..<6 { if firstRing.isHittable { break }; app.swipeUp() }
+        firstRing.tap()
+        XCTAssertTrue(app.buttons["Heart-rate"].exists)
+        XCTAssertEqual(app.textFields["ringName"].value as? String, "Resting")
+        XCTAssertEqual(app.textFields["goal"].value as? String, "35")
+        XCTAssertEqual(app.textFields["startFrom"].value as? String, "60")
+        capture(app, name: "Restored saved source goal baseline name synthetic")
+    }
+    @MainActor
     func testCompactDashboardInlinePeriodAndAppearance() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--refresh-probe", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

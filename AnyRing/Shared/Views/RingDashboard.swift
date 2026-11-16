@@ -110,21 +110,39 @@ struct RingDashboard: View {
     var updatePeriod: ((Int) -> Void)?
     var refresh: () -> Void = {}
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private func graphic(_ dimension: CGFloat) -> some View {
+        TripleRingView(size: dimension, ring1: ring1.snapshot(), ring2: ring2.snapshot(),
+                       ring3: ring3.snapshot(), shape: shape)
+            .accessibilityHidden(true)
+    }
+
+    private var legend: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            RingDashboardLegend(ring: ring1)
+            RingDashboardLegend(ring: ring2)
+            RingDashboardLegend(ring: ring3)
+        }.frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
-            TripleRingView(size: size, ring1: ring1.snapshot(), ring2: ring2.snapshot(),
-                           ring3: ring3.snapshot(), shape: shape)
-                .accessibilityHidden(true)
+        VStack(spacing: 16) {
+            if dynamicTypeSize.isAccessibilitySize || dynamicTypeSize > .xLarge {
+                graphic(min(size, 180))
+                legend
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .center, spacing: 16) {
+                        graphic(min(size, 140))
+                        legend.frame(minWidth: 140)
+                    }
+                    VStack(spacing: 16) { graphic(min(size, 180)); legend }
+                }
+            }
             #if os(iOS)
             if let updatePeriod { TrackingWeekView(days: days, updatePeriod: updatePeriod, refresh: refresh) }
             #endif
-            VStack(spacing: 12) {
-                RingMetricView(ring: ring1)
-                Divider()
-                RingMetricView(ring: ring2)
-                Divider()
-                RingMetricView(ring: ring3)
-            }
             if [ring1, ring2, ring3].allSatisfy({ $0.progress.empty && !$0.isRefreshing }) {
                 Text("No health data yet. If you expected data, check AnyProgress’s access in Apple Health.")
                     .font(.footnote).foregroundStyle(.secondary)

@@ -92,6 +92,124 @@ struct TemplatesView: View {
     }
 }
 
+#if os(iOS)
+/// Full saved settings live here; TemplatesView above remains appearance-only.
+struct SavedConfigurationsView: View {
+    @EnvironmentObject private var model: AnyRingViewModel
+    @State private var name = ""
+    @State private var naming = false
+    @State private var renaming: UUID?
+    @State private var pending: SavedConfiguration?
+    @State private var confirmSwitch = false
+    @State private var deleting: SavedConfiguration?
+    @State private var confirmDelete = false
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Saved templates").font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button("Save current", systemImage: "plus") {
+                    name = ""; renaming = nil; naming = true
+                }
+                .font(.caption).frame(minHeight: 44)
+                .accessibilityIdentifier("saveConfiguration")
+                .disabled(model.savedConfigurationsError != nil)
+            }
+            if let message = model.savedConfigurationsError {
+                Text(message).font(.caption).foregroundStyle(.secondary)
+            }
+            if !model.savedConfigurations.isEmpty {
+                ScrollView(.horizontal) {
+                    HStack(spacing: 10) {
+                        ForEach(model.savedConfigurations) { record in
+                            Button {
+                                guard record.config != model.config else { return }
+                                pending = record
+                                if model.savedConfigurations.contains(where: { $0.config == model.config }) {
+                                    choosePending()
+                                } else { confirmSwitch = true }
+                            } label: {
+                                VStack(spacing: 4) {
+                                    let snapshots = preview(record.config)
+                                    TripleRingView(size: 44, ring1: snapshots.first, ring2: snapshots.second,
+                                        ring3: snapshots.third, simplified: true, shape: record.config.global.shape)
+                                        .padding(6)
+                                    Text(record.name).font(.caption2).lineLimit(2)
+                                    if record.config == model.config {
+                                        Image(systemName: "checkmark").font(.caption2)
+                                    }
+                                }.frame(width: 72, alignment: .top)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(record.name)
+                            .accessibilityHint("Applies saved data sources, goals, period and appearance")
+                            .accessibilityAddTraits(record.config == model.config ? .isSelected : [])
+                            .accessibilityIdentifier("savedConfiguration.\(record.id.uuidString)")
+                            .contextMenu {
+                                Button("Rename", systemImage: "pencil") {
+                                    renaming = record.id; name = record.name; naming = true
+                                }
+                                Button("Delete", systemImage: "trash", role: .destructive) {
+                                    deleting = record; confirmDelete = true
+                                }
+                            }
+                        }
+                    }.padding(.vertical, 4)
+                }.scrollIndicators(.hidden)
+            }
+        }
+        .alert(renaming == nil ? "Save template" : "Rename template", isPresented: $naming) {
+            TextField("Template name", text: $name)
+            Button("Cancel", role: .cancel) { pending = nil }
+            Button("Save") {
+                perform {
+                    if let renaming { try model.renameConfiguration(id: renaming, name: name) }
+                    else { try model.saveConfiguration(named: name) }
+                    choosePending()
+                }
+            }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } message: { Text("Includes data sources, goals, period and appearance.") }
+        .alert("Save current settings?", isPresented: $confirmSwitch) {
+            Button("Save current") { name = ""; renaming = nil; naming = true }
+            Button("Use template", role: .destructive) { choosePending() }
+            Button("Cancel", role: .cancel) { pending = nil }
+        } message: { Text("These settings are not in a saved template. Switching will replace the current settings, not your saved templates.") }
+        .alert("Delete template?", isPresented: $confirmDelete) {
+            Button("Delete", role: .destructive) {
+                if let deleting { perform { try model.deleteConfiguration(id: deleting.id) } }
+                deleting = nil
+            }
+            Button("Cancel", role: .cancel) { deleting = nil }
+        } message: { Text("Current settings will not change.") }
+        .alert("Template unavailable", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
+            Button("OK", role: .cancel) { error = nil }
+        } message: { Text(error ?? "") }
+    }
+
+    private func choosePending() {
+        guard let pending else { return }
+        perform { try model.selectConfiguration(id: pending.id) }
+        self.pending = nil
+    }
+
+    private func perform(_ action: () throws -> Void) {
+        do { try action() }
+        catch { self.error = error.localizedDescription }
+    }
+
+    private func preview(_ config: AnyRingConfig) -> RingWrapper<RingSnapshot> {
+        RingWrapper(config.configs.enumerated().map { index, ring in
+            RingSnapshot(progress: [0.85, 0.65, 0.45][index], mainColor: ring.appearance.mainColor,
+                gradient: ring.appearance.gradient, secondaryColor: ring.appearance.secondaryColor,
+                outerGlow: ring.appearance.outerGlow, innerGlow: ring.appearance.innerGlow)
+        })
+    }
+}
+
+#endif
+
 extension Color {
     init(hex: UInt, alpha: Double = 1) {
         self.init(.sRGB, red: Double((hex >> 16) & 0xff) / 255,

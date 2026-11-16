@@ -15,8 +15,20 @@ final class AppController: ObservableObject {
             !ProcessInfo.processInfo.arguments.contains("--preserve-test-settings") {
             let defaults = UserDefaults(suiteName: UserDefaultsConfigurationPersistence.suiteName) ?? .standard
             [UserDefaultsConfigurationPersistence.key, UserDefaultsConfigurationPersistence.snapshotKey,
-             UserDefaultsConfigurationPersistence.lastSyncKey,
+             UserDefaultsConfigurationPersistence.lastSyncKey, UserDefaultsConfigurationPersistence.savedConfigurationsKey,
              SimpleCache.key, SimpleCache.configurationKey, SimpleCache.readingKey].forEach { defaults.removeObject(forKey: $0) }
+            if ProcessInfo.processInfo.arguments.contains("--legacy-template-fixture") {
+                // Synthetic Config.v3 archive, not a fabricated pre-existing template library.
+                var fixture = UserDefaultsConfigurationPersistence.defaultConfig
+                fixture.global = GlobalConfiguration(days: 5, shape: .rectangular)
+                fixture.configs[0] = HealthKitProvider.Configuration(ring: .first, healthKitParams: hrConfiguration,
+                    appearance: RingAppearance(mainColor: CodableColor(.mint), outerGlow: true, innerGlow: true))
+                fixture.configs[0].minValue = 35
+                fixture.configs[0].maxValue = 60
+                fixture.configs[0].customName = "Resting"
+                let encoder = JSONEncoder(); encoder.userInfo[.legacyColorArchive] = true
+                if let data = try? encoder.encode(fixture) { defaults.set(data, forKey: UserDefaultsConfigurationPersistence.key) }
+            }
         }
         #endif
         let persistence = UserDefaultsConfigurationPersistence()

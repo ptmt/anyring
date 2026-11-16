@@ -25,6 +25,8 @@ final class AnyRingViewModel: ObservableObject {
     @Published private(set) var rings: RingWrapper<RingViewModel>?
     @Published private(set) var globalConfig: GlobalConfiguration
     @Published private(set) var config: AnyRingConfig
+    @Published private(set) var savedConfigurations: [SavedConfiguration] = []
+    @Published private(set) var savedConfigurationsError: String?
     var onConfigurationChanged: ((AnyRingConfig) -> Void)?
 
     private var permissionTask: Task<Void, Never>?
@@ -49,7 +51,53 @@ final class AnyRingViewModel: ObservableObject {
         let restored = configurationProvider?.config() ?? persistence.restore() ?? UserDefaultsConfigurationPersistence.defaultConfig
         config = restored
         globalConfig = restored.global
+        do { savedConfigurations = try persistence.restoreSavedConfigurations() }
+        catch { savedConfigurationsError = SavedConfigurationError.unreadable.localizedDescription }
         installProviders()
+    }
+
+    @discardableResult
+    func saveConfiguration(named name: String) throws -> SavedConfiguration {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { throw SavedConfigurationError.emptyName }
+        var records = try persistence.restoreSavedConfigurations()
+        let record = SavedConfiguration(id: UUID(), name: name, config: config)
+        records.append(record)
+        try persistence.persistSavedConfigurations(records)
+        savedConfigurations = try persistence.restoreSavedConfigurations()
+        return record
+    }
+
+    func renameConfiguration(id: UUID, name: String) throws {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { throw SavedConfigurationError.emptyName }
+        var records = try persistence.restoreSavedConfigurations()
+        guard let index = records.firstIndex(where: { $0.id == id }) else { throw SavedConfigurationError.missing }
+        records[index].name = name
+        try persistence.persistSavedConfigurations(records)
+        savedConfigurations = try persistence.restoreSavedConfigurations()
+    }
+
+    func deleteConfiguration(id: UUID) throws {
+        var records = try persistence.restoreSavedConfigurations()
+        guard records.contains(where: { $0.id == id }) else { throw SavedConfigurationError.missing }
+        records.removeAll { $0.id == id }
+        try persistence.persistSavedConfigurations(records)
+        savedConfigurations = try persistence.restoreSavedConfigurations()
+    }
+
+    func selectConfiguration(id: UUID) throws {
+        guard let record = try persistence.restoreSavedConfigurations().first(where: { $0.id == id }) else {
+            throw SavedConfigurationError.missing
+        }
+        guard record.config != config else { return }
+        persistence.persist(config: record.config)
+        guard let snapshot = persistence.restoreSnapshot(), snapshot.config == record.config else {
+            throw SavedConfigurationError.saveFailed
+        }
+        // Existing install path replaces source models and fences stale widget completions.
+        apply(snapshot)
+        onConfigurationChanged?(config)
     }
 
     private func installProviders() {

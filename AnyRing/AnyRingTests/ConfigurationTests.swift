@@ -216,6 +216,51 @@ final class WidgetRenderingTests: XCTestCase {
 
 @Suite @MainActor
 struct ConfigurationTests {
+    @Test func savedConfigurationsKeepCompleteLegacySettingsWithoutReplacingCurrent() throws {
+        let defaults = UserDefaults(suiteName: "AnyRingTemplates.\(UUID().uuidString)")!
+        var original = UserDefaultsConfigurationPersistence.defaultConfig
+        original.global = GlobalConfiguration(days: 5, shape: .rectangular)
+        original.configs[0].minValue = 12
+        original.configs[0].maxValue = 180
+        original.configs[0].customName = "Recovery 🌿"
+        original.configs[0].appearance.innerGlow = true
+        let encoder = JSONEncoder(); encoder.userInfo[.legacyColorArchive] = true
+        let legacy = try encoder.encode(original)
+        defaults.set(legacy, forKey: UserDefaultsConfigurationPersistence.key)
+        let store = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+        let model = AnyRingViewModel(persistence: store, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        let saved = try model.saveConfiguration(named: "Recovery")
+        #expect(saved.config == original)
+        #expect(defaults.data(forKey: UserDefaultsConfigurationPersistence.key) == legacy)
+        model.updatePeriod(days: 7)
+        var published: [AnyRingConfig] = []
+        model.onConfigurationChanged = { published.append($0) }
+        try model.selectConfiguration(id: saved.id)
+        #expect(model.config == original)
+        #expect(model.rings?.first.configuration.customName == "Recovery 🌿")
+        #expect(published == [original])
+        let cold = AnyRingViewModel(persistence: UserDefaultsConfigurationPersistence(userDefaults: defaults), dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        #expect(cold.config == original)
+        #expect(cold.savedConfigurations == [saved])
+        try cold.renameConfiguration(id: saved.id, name: "Renamed")
+        #expect(cold.savedConfigurations.first?.id == saved.id)
+        #expect(cold.savedConfigurations.first?.config == original)
+        try cold.deleteConfiguration(id: saved.id)
+        #expect(cold.savedConfigurations.isEmpty)
+        #expect(cold.config == original)
+    }
+    @Test func unreadableSavedLibraryIsNeverReplacedByDefaultsOrSave() throws {
+        let defaults = UserDefaults(suiteName: "AnyRingTemplates.\(UUID())")!
+        let bytes = Data("unknown future or damaged records".utf8)
+        defaults.set(bytes, forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey)
+        let persistence = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+        let model = AnyRingViewModel(persistence: persistence, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        #expect(model.savedConfigurationsError != nil)
+        #expect(throws: (any Error).self) { try model.saveConfiguration(named: "Do not overwrite") }
+        #expect(defaults.data(forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey) == bytes)
+        #expect(defaults.object(forKey: UserDefaultsConfigurationPersistence.key) == nil)
+    }
+
     @Test func actualHealthKitZoneConfigurationUsesZeroBasedFiveZones() throws {
         if #available(iOS 27.0, *) {
             let unit = HKUnit.count().unitDivided(by: .minute())
@@ -852,6 +897,53 @@ private final class CancellableHealthDataSource: HealthKitDataSource {
 
 @Suite @MainActor
 struct HealthRefreshTests {
+    @Test func selectingSavedSourcesRequeriesAndRejectsObsoleteWidgetResults() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        try await waitUntil { source.reads.count == 3 }
+        source.reads[0..<3].forEach { $0.complete(.success(10)) }
+        try await waitUntil { model.rings!.list.allSatisfy { !$0.isRefreshing } }
+        let original = try model.saveConfiguration(named: "Original sources")
+        var changed = model.rings!.first.configuration as! HealthKitProvider.Configuration
+        changed.healthKitParams = hrConfiguration
+        changed.minValue = 35
+        changed.maxValue = 60
+        changed.customName = "Resting"
+        model.rings!.first.update(config: changed)
+        try await waitUntil { source.reads.count == 4 }
+        model.updatePeriod(days: 5)
+        model.updateShape(.circle)
+        try await waitUntil { source.reads.count == 7 }
+        source.reads[3..<7].forEach { $0.complete(.success(20)) }
+        let alternative = try model.saveConfiguration(named: "Resting heart rate")
+        model.refreshWidgetSnapshot()
+        try await waitUntil { source.reads.count == 10 }
+        let obsoleteWidget = Array(source.reads[7..<10])
+        var published: [AnyRingConfig] = []
+        model.onConfigurationChanged = { published.append($0) }
+        try model.selectConfiguration(id: original.id)
+        try await waitUntil { source.reads.count == 13 }
+        source.reads[10..<13].forEach { $0.complete(.success(42)) }
+        obsoleteWidget.forEach { $0.complete(.success(999)) }
+        try await waitUntil { model.rings!.list.allSatisfy { !$0.isRefreshing } }
+        #expect(model.rings!.list.allSatisfy { $0.progress.absolute == 42 })
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config) == nil)
+        #expect(published == [original.config])
+        try model.selectConfiguration(id: alternative.id)
+        try await waitUntil { source.reads.count == 16 }
+        source.reads[13..<16].forEach { $0.complete(.success(50)) }
+        #expect(model.config == alternative.config)
+        #expect(model.rings!.first.configuration.hasSameReadingConfiguration(as: changed))
+        #expect(model.rings!.first.name == "Resting")
+        #expect(model.globalConfig.days == 5)
+        #expect(model.globalConfig.shape == .circle)
+        #expect(model.savedConfigurations.count == 2)
+        model.refreshWidgetSnapshot()
+        try await waitUntil { source.reads.count == 19 }
+        source.reads[16..<19].forEach { $0.complete(.success(50)) }
+        try await waitUntil { model.persistence.widgetCache.restoreReading(config: alternative.config) != nil }
+        #expect(model.persistence.widgetCache.restoreReading(config: alternative.config)?.configuration == alternative.config)
+    }
     @Test func switchingToUnavailableWorkoutMetricDoesNotShowPreviousHeartRateAsMinutes() async throws {
         let source = MockHealthKitDataSource()
         let persistence = UserDefaultsConfigurationPersistence(userDefaults: UserDefaults(suiteName: "WorkoutSwitch.\(UUID())")!)
@@ -1472,6 +1564,35 @@ struct LiveSyncReceiptTests {
 
 @Suite @MainActor
 struct RingRenderingTests {
+    @Test func glowDiagnosticMatrix() throws {
+        for shape in RingShape.allCases {
+            for dark in [false, true] {
+                let pixels = try (0..<4).map { mode -> Data in
+                    let snapshot = RingSnapshot(progress: 0.65, mainColor: CodableColor(Color(hex: 0x9DDFD3)),
+                        outerGlow: mode == 1 || mode == 3, innerGlow: mode >= 2)
+                    let renderer = ImageRenderer(content: RingDrawing(snapshot: snapshot, kind: shape,
+                        lineWidth: 16, progress: 0.65).frame(width: 160, height: 160).padding(24)
+                        .background(dark ? Color.black : Color.white))
+                    renderer.scale = 2
+                    return try #require(renderer.uiImage?.pngData())
+                }
+                #expect(Set(pixels).count == 4, "Off, outer, inner and combined effects must render differently for \(shape) on \(dark ? "dark" : "light")")
+                let sheet = HStack(spacing: 16) {
+                    ForEach(0..<4) { mode in
+                        VStack {
+                            Text(["Off", "Outer", "Inner", "Both"][mode]).font(.caption)
+                            let snapshot = RingSnapshot(progress: 0.65, mainColor: CodableColor(Color(hex: 0x9DDFD3)), outerGlow: mode == 1 || mode == 3, innerGlow: mode >= 2)
+                            RingDrawing(snapshot: snapshot, kind: shape, lineWidth: 16, progress: 0.65)
+                                .frame(width: 160, height: 160).padding(24)
+                        }
+                    }
+                }.padding(16).foregroundStyle(dark ? .white : .black).background(dark ? Color.black : Color.white)
+                let renderer = ImageRenderer(content: sheet)
+                renderer.scale = 2
+                Attachment.record(try #require(renderer.uiImage), named: "Glow diagnostic \(shape.rawValue) \(dark ? "dark" : "light")", as: .png)
+            }
+        }
+    }
     @Test func circularComplicationsKeepEveryShapeInsideTheWatchFaceMask() throws {
         let rings = RingWrapper([
             RingSnapshot(progress: 1, mainColor: CodableColor(.green)),

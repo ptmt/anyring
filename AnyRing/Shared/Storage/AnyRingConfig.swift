@@ -57,6 +57,25 @@ struct AnyRingConfig: Codable, Equatable, Sendable {
     }
 }
 
+/// A complete configuration, not a palette or a cached Health reading.
+struct SavedConfiguration: Codable, Equatable, Identifiable, Sendable {
+    let id: UUID
+    var name: String
+    let config: AnyRingConfig
+}
+
+enum SavedConfigurationError: LocalizedError {
+    case unreadable, missing, emptyName, saveFailed
+    var errorDescription: String? {
+        switch self {
+        case .unreadable: "Saved templates could not be read. Existing saved data has not been changed."
+        case .missing: "This template is no longer available."
+        case .emptyName: "Enter a name for this template."
+        case .saveFailed: "The configuration could not be saved."
+        }
+    }
+}
+
 struct GlobalConfiguration: Codable, Equatable, Sendable {
     static let Default = GlobalConfiguration(days: 3)
     var days: Int

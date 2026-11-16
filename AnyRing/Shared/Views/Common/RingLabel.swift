@@ -14,6 +14,29 @@ struct RingLabel: View {
     }
 }
 
+/// A compact semantic legend; the graphic already represents progress.
+struct RingDashboardLegend: View {
+    @ObservedObject var ring: RingViewModel
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Circle().fill(ring.configuration.appearance.mainColor.color).frame(width: 6, height: 6)
+                    .accessibilityHidden(true)
+                Text(ring.name).font(.caption).foregroundStyle(.primary)
+            }
+            Text("\(Text(ring.valueText).fontWeight(.semibold)) \(ring.units)")
+                .font(.subheadline).monospacedDigit()
+                .foregroundStyle(.primary)
+            Text("Goal \(ring.goalText)").font(.caption2).foregroundStyle(.secondary)
+            if let start = ring.startingValueText { Text(start).font(.caption2).foregroundStyle(.secondary) }
+            if let error = ring.error { Text(error.localizedDescription).font(.caption).foregroundStyle(.secondary) }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("metric.\(ring.configuration.ring.rawValue)")
+    }
+}
+
 struct RingMetricView: View {
     @ObservedObject var ring: RingViewModel
     var compact = false

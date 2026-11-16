@@ -14,6 +14,9 @@ struct MainScreen: View {
                               ring3: rings.third, days: viewModel.globalConfig.days, shape: viewModel.globalConfig.shape,
                               updatePeriod: viewModel.updatePeriod, refresh: viewModel.refresh)
                     .padding(.vertical, 8)
+                #if os(iOS)
+                SavedConfigurationsView()
+                #endif
             }
             Section("Appearance") {
                 NavigationLink {

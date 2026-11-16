@@ -22,6 +22,26 @@ final class UserDefaultsConfigurationPersistence: ConfigurationPersistence {
         self.userDefaults = userDefaults
     }
 
+    // Additive library: never repurpose Config.v3 or the Watch configuration snapshot.
+    static let savedConfigurationsKey = "SavedConfigurations.v1"
+
+    func restoreSavedConfigurations() throws -> [SavedConfiguration] {
+        guard let value = userDefaults.object(forKey: Self.savedConfigurationsKey) else { return [] }
+        guard let data = value as? Data else { throw SavedConfigurationError.unreadable }
+        let records = try JSONDecoder().decode([SavedConfiguration].self, from: data)
+        guard Set(records.map(\.id)).count == records.count else { throw SavedConfigurationError.unreadable }
+        return records
+    }
+
+    func persistSavedConfigurations(_ records: [SavedConfiguration]) throws {
+        // Refuse to replace unreadable records with an empty/default library.
+        _ = try restoreSavedConfigurations()
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let data = try encoder.encode(records)
+        userDefaults.set(data, forKey: Self.savedConfigurationsKey)
+    }
+
     func restoreLastSyncDate() -> Date? { userDefaults.object(forKey: Self.lastSyncKey) as? Date }
     func persistLastSyncDate(_ date: Date) { userDefaults.set(date, forKey: Self.lastSyncKey) }
 
