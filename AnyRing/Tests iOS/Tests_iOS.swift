@@ -77,6 +77,14 @@ final class Tests_iOS: XCTestCase {
             }
             XCTAssertGreaterThanOrEqual(period.frame.minY, 0)
             XCTAssertLessThan(week.frame.maxY, app.frame.maxY - 20)
+            if category == "UICTContentSizeCategoryAccessibilityXXXL" {
+                let save = app.buttons["saveConfiguration"]
+                let title = app.staticTexts["Saved templates"]
+                XCTAssertTrue(save.exists)
+                XCTAssertTrue(title.exists)
+                XCTAssertGreaterThanOrEqual(save.frame.minY, title.frame.maxY,
+                                            "The header must stack rather than split words at accessibility sizes")
+            }
             capture(app, name: "Neutral period \(category) synthetic")
             // Inspect the real rendered control and date strip, not Color values.
             let image = try XCTUnwrap(app.screenshot().image.cgImage)

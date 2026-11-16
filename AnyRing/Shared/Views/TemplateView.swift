@@ -104,18 +104,29 @@ struct SavedConfigurationsView: View {
     @State private var deleting: SavedConfiguration?
     @State private var confirmDelete = false
     @State private var error: String?
+    @ScaledMetric(relativeTo: .caption2) private var thumbnailWidth: CGFloat = 72
+
+    private var saveButton: some View {
+        Button("Save current", systemImage: "plus") {
+            name = ""; renaming = nil; naming = true
+        }
+        .font(.caption).frame(minHeight: 44)
+        .accessibilityIdentifier("saveConfiguration")
+        .disabled(model.savedConfigurationsError != nil)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Saved templates").font(.caption).foregroundStyle(.secondary)
-                Spacer()
-                Button("Save current", systemImage: "plus") {
-                    name = ""; renaming = nil; naming = true
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text("Saved templates").font(.caption).foregroundStyle(.secondary).fixedSize()
+                    Spacer(minLength: 12)
+                    saveButton.fixedSize()
                 }
-                .font(.caption).frame(minHeight: 44)
-                .accessibilityIdentifier("saveConfiguration")
-                .disabled(model.savedConfigurationsError != nil)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Saved templates").font(.caption).foregroundStyle(.secondary)
+                    saveButton
+                }.fixedSize(horizontal: false, vertical: true)
             }
             if let message = model.savedConfigurationsError {
                 Text(message).font(.caption).foregroundStyle(.secondary)
@@ -140,7 +151,7 @@ struct SavedConfigurationsView: View {
                                     if record.config == model.config {
                                         Image(systemName: "checkmark").font(.caption2)
                                     }
-                                }.frame(width: 72, alignment: .top)
+                                }.frame(width: thumbnailWidth, alignment: .top)
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel(record.name)

@@ -18,7 +18,11 @@ An additive `SavedConfigurations.v1` library stores complete `AnyRingConfig` val
 
 The compact near-graph row has Save current and small configuration thumbnails. Selection indicates full configuration equality, not palette equality. Rename preserves the record ID and configuration. Delete requires confirmation and never alters active settings. Unsaved current settings require Save current / Use template / Cancel before switching. Malformed library bytes block writes and are left untouched; there is no destructive migration or default replacement.
 
-The iPhone dashboard uses a 140-point graph left and semantic values/goals right when width and Dynamic Type permit. At larger text/small widths it stacks without progress-bar duplication. The calendar week/period implementation, midnight refresh, data queries and 37.1 date-boundary fix are untouched. Parallel neutral-period styling/label work is not included.
+The iPhone dashboard uses a 140-point graph left and semantic values/goals right when width and Dynamic Type permit. At larger text/small widths it stacks without progress-bar duplication. Values use primary text color with a small ring-color marker so light yellow palettes do not make values unreadable on white. The calendar arithmetic, midnight refresh, data queries and 37.1 date-boundary fix are untouched.
+
+## Combined period integration
+
+At parent request, the reviewed neutral-period commit `080c3b73b6fb76bae3399c42031762d4862ed225` was cherry-picked as `be9ab62` after the standalone candidate commit `4fe9719`. The only conflict was adjacent UI test insertion; both tests were retained. The saved-template UI assertion now reads the period's accessibility value, matching the delegate's separate label/value semantics. Its pixel test scrolls both measured regions fully on-screen at large text before cropping, because the adaptive legend now precedes the period. Production Period styling is the delegate's unchanged implementation: neutral label/value/chevrons/included cells, 44-point minimum target; midnight logic is unchanged. This is one combined candidate, not a separate period release.
 
 ## Glow findings (do not confuse characterization with a fix)
 
@@ -57,6 +61,17 @@ Evidence root: `/Users/tinyserve/.hermes/cache/scratch/templates-final-attachmen
 - `BE9B5824-6376-44F8-A11A-0BFAB302287F.png` / `EE2F83EF-F3B1-4725-BFFA-9C8429EEFC86.png`: same rounded-square matrix.
 
 Owned simulator `734CD13C-DBAC-43D3-8738-7AC41B7A6A6B` was shut down and read back as Shutdown after exporting evidence. No other devices/processes were stopped.
+
+## Final combined evidence
+
+- `templates-combined-light.xcresult`: **87 methods / 95 executions passed**, including all unit suites and four native UI flows.
+- `templates-combined-dark.xcresult`: **2/2 native UI methods passed**, complete legacy-active-config save/select/cold launch and neutral Period normal/maximum text.
+- Visual review then caught the saved-header words splitting at maximum accessibility text. The header now uses a horizontal-or-stacked `ViewThatFits`, and saved thumbnail label widths scale with Dynamic Type. Normal-size thumbnails remain compact.
+- `templates-accessibility-final.xcresult` exercised this final production code: **84 methods / 92 executions passed**; one new probe failed because it incorrectly demanded matching horizontal AX bounds for the caption and native inset button. The actual screenshot showed correct full words and stacked placement. The probe now checks the meaningful vertical relation instead; no production code changed after that run.
+- Corrected probe: `templates-header-verified.xcresult`, **1/1 passed** at normal and maximum Dynamic Type. Screenshot reviewed for the final stacked header: `/Users/tinyserve/.hermes/cache/scratch/templates-header-verified-attachments/25793DE1-2354-496A-9E77-8D9262E05878.png`.
+- Combined normal native screens: `/Users/tinyserve/.hermes/cache/scratch/templates-combined-light-attachments/EB2668AB-62EF-4BA7-ABF4-A6A05602C7D8.png` and `/Users/tinyserve/.hermes/cache/scratch/templates-combined-dark-attachments/F5B5CAF1-F3DB-44A6-8A3C-941BB5367826.png`.
+
+All runs were serial on the task-owned simulator. After the final targeted run, `734CD13C-DBAC-43D3-8738-7AC41B7A6A6B` was again explicitly read back as **Shutdown**. No more simulator work is pending.
 
 ## Remaining acceptance boundaries
 
