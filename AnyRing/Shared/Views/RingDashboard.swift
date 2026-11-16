@@ -26,6 +26,13 @@ struct TrackingWeekView: View {
     var refresh: () -> Void = {}
     @Environment(\.calendar) private var calendar
     @Environment(\.locale) private var locale
+    @Environment(\.colorScheme) private var colorScheme
+
+    // Explicit neutral colors avoid Menu's inherited accent tint. Keep these
+    // local: ring colors and the rest of the app retain their selected palette.
+    private var periodPrimary: Color { Color(uiColor: .label) }
+    private var periodSecondary: Color { Color(white: colorScheme == .dark ? 0.65 : 0.40) }
+    private var includedBackground: Color { Color(white: colorScheme == .dark ? 0.18 : 0.92) }
 
     var body: some View {
         // Align ticks with calendar minutes, including midnight. Refresh readings
@@ -34,7 +41,7 @@ struct TrackingWeekView: View {
             let now = referenceDate ?? context.date
             VStack(spacing: 6) {
                 Menu {
-                    Picker("Tracking period", selection: Binding(get: { days }, set: { updatePeriod($0) })) {
+                    Picker("Period", selection: Binding(get: { days }, set: { updatePeriod($0) })) {
                         ForEach(Array(Set([1, 2, 3, 5, 7, days])).sorted(), id: \.self) { count in
                             Text(count == 1 ? "1 day" : "\(count) days").tag(count)
                         }
@@ -42,21 +49,23 @@ struct TrackingWeekView: View {
                 } label: {
                     ViewThatFits(in: .horizontal) {
                         HStack {
-                            Text("Tracking period").foregroundStyle(.secondary).fixedSize()
+                            Text("Period").foregroundStyle(periodSecondary).fixedSize()
                             Spacer(minLength: 8)
                             periodValue.fixedSize()
                         }
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Tracking period").foregroundStyle(.secondary)
+                            Text("Period").foregroundStyle(periodSecondary)
                             periodValue
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(periodPrimary)
                     .frame(minHeight: 44)
                     .contentShape(Rectangle())
                 }
-                .accessibilityLabel("Tracking period, \(days) days")
+                .tint(periodPrimary)
+                .accessibilityLabel("Period")
+                .accessibilityValue(days == 1 ? "1 day" : "\(days) days")
                 .accessibilityHint("Changes the number of calendar days included through today")
                 .accessibilityIdentifier("trackingPeriod")
                 HStack(spacing: 0) {
@@ -75,10 +84,10 @@ struct TrackingWeekView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity).padding(.vertical, 5)
-                        .foregroundStyle(day.included ? Color.primary : Color.secondary)
-                        .background(day.included ? Color.accentColor.opacity(0.10) : .clear)
+                        .foregroundStyle(day.included ? periodPrimary : periodSecondary)
+                        .background(day.included ? includedBackground : .clear)
                         .overlay(alignment: .bottom) {
-                            Rectangle().fill(day.included ? Color.accentColor : .clear).frame(height: 2)
+                            Rectangle().fill(day.included ? periodSecondary : .clear).frame(height: 2)
                         }
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel(day.date.formatted(.dateTime.weekday(.wide).month(.wide).day().year().locale(locale)))
@@ -94,7 +103,9 @@ struct TrackingWeekView: View {
     private var periodValue: some View {
         HStack(spacing: 5) {
             Text(days == 1 ? "1 day" : "\(days) days")
+                .foregroundStyle(periodPrimary)
             Image(systemName: "chevron.up.chevron.down").font(.caption2)
+                .foregroundStyle(periodSecondary)
         }
     }
 }

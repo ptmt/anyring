@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 final class Tests_iOS: XCTestCase {
     @MainActor
@@ -35,7 +36,7 @@ final class Tests_iOS: XCTestCase {
         preset.tap()
         app.alerts.buttons["Use template"].tap()
         for _ in 0..<8 { if app.buttons["trackingPeriod"].isHittable { break }; app.swipeDown() }
-        XCTAssertTrue(app.buttons["trackingPeriod"].label.contains("5 days"))
+        XCTAssertEqual(app.buttons["trackingPeriod"].value as? String, "5 days")
         XCTAssertTrue(preset.isSelected)
         app.terminate()
         app.launchArguments += ["--preserve-test-settings"]
@@ -56,6 +57,53 @@ final class Tests_iOS: XCTestCase {
         capture(app, name: "Restored saved source goal baseline name synthetic")
     }
     @MainActor
+    func testNeutralPeriodLabelAndRenderedColors() throws {
+        let app = XCUIApplication()
+        for category in ["UICTContentSizeCategoryL", "UICTContentSizeCategoryAccessibilityXXXL"] {
+            app.launchArguments = ["--ui-testing", "-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-UIPreferredContentSizeCategoryName", category]
+            app.launch()
+            let period = app.buttons["trackingPeriod"]
+            XCTAssertTrue(period.waitForExistence(timeout: 10))
+            XCTAssertEqual(period.label, "Period")
+            XCTAssertEqual(period.value as? String, "3 days")
+            XCTAssertGreaterThanOrEqual(period.frame.height, 44)
+            let week = app.descendants(matching: .any)["trackingWeek"].firstMatch
+            XCTAssertTrue(week.exists)
+            // The adaptive dashboard stacks metrics above this control at large text.
+            // Bring both measured regions on-screen before inspecting screenshot pixels.
+            for _ in 0..<8 {
+                if period.isHittable && period.frame.minY >= 0 && week.frame.maxY < app.frame.maxY - 20 { break }
+                app.swipeUp()
+            }
+            XCTAssertGreaterThanOrEqual(period.frame.minY, 0)
+            XCTAssertLessThan(week.frame.maxY, app.frame.maxY - 20)
+            capture(app, name: "Neutral period \(category) synthetic")
+            // Inspect the real rendered control and date strip, not Color values.
+            let image = try XCTUnwrap(app.screenshot().image.cgImage)
+            let scale = CGFloat(image.width) / app.frame.width
+            let weekRect = CGRect(x: period.frame.minX, y: week.frame.minY, width: period.frame.width, height: week.frame.height)
+            XCTAssertGreaterThan(weekRect.height, 40)
+            for (name, rect) in [("period", period.frame), ("week", weekRect)] {
+                let crop = try XCTUnwrap(image.cropping(to: CGRect(x: rect.minX * scale, y: rect.minY * scale, width: rect.width * scale, height: rect.height * scale)))
+                var bytes = [UInt8](repeating: 0, count: crop.width * crop.height * 4)
+                let context = try XCTUnwrap(CGContext(data: &bytes, width: crop.width, height: crop.height, bitsPerComponent: 8, bytesPerRow: crop.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+                context.draw(crop, in: CGRect(x: 0, y: 0, width: crop.width, height: crop.height))
+                let chromatic = stride(from: 0, to: bytes.count, by: 4).filter { i in
+                    Int(max(bytes[i], bytes[i + 1], bytes[i + 2])) - Int(min(bytes[i], bytes[i + 1], bytes[i + 2])) > 8
+                }.count
+                XCTAssertEqual(chromatic, 0, "\(name) must use neutral rendered pixels")
+            }
+            period.tap()
+            XCTAssertTrue(app.buttons["3 days"].waitForExistence(timeout: 5))
+            sleep(1) // Capture the settled native menu, not its opening transition.
+            capture(app, name: "Neutral period checked menu \(category) synthetic")
+            app.buttons["5 days"].tap()
+            XCTAssertEqual(period.value as? String, "5 days")
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testCompactDashboardInlinePeriodAndAppearance() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--refresh-probe", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -75,7 +123,7 @@ final class Tests_iOS: XCTestCase {
         app.buttons["5 days"].tap()
         let queried = NSPredicate { _, _ in readCount() == before + 6 }
         XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: queried, object: nil)], timeout: 10) == .completed)
-        XCTAssertTrue(period.label.contains("5 days"))
+        XCTAssertEqual(period.value as? String, "5 days")
         capture(app, name: "Compact dashboard five days synthetic")
         let beforeForeground = readCount()
         XCUIDevice.shared.press(.home)
@@ -83,12 +131,12 @@ final class Tests_iOS: XCTestCase {
         XCTAssertTrue(period.waitForExistence(timeout: 10))
         let foregroundQueried = NSPredicate { _, _ in readCount() >= beforeForeground + 6 }
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: foregroundQueried, object: nil)], timeout: 10), .completed)
-        XCTAssertTrue(period.label.contains("5 days"))
+        XCTAssertEqual(period.value as? String, "5 days")
         app.terminate()
         app.launchArguments += ["--preserve-test-settings"]
         app.launch()
         XCTAssertTrue(period.waitForExistence(timeout: 10))
-        XCTAssertTrue(period.label.contains("5 days"))
+        XCTAssertEqual(period.value as? String, "5 days")
         let shape = app.buttons["visualizationShape"]
         for _ in 0..<8 { if shape.isHittable { break }; app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Appearance"].exists)
@@ -106,7 +154,7 @@ final class Tests_iOS: XCTestCase {
         app.terminate()
         app.launch()
         XCTAssertTrue(period.waitForExistence(timeout: 10))
-        XCTAssertTrue(period.label.contains("5 days"))
+        XCTAssertEqual(period.value as? String, "5 days")
         for _ in 0..<8 { if palette.isHittable { break }; app.swipeUp() }
         XCTAssertTrue(palette.isSelected, "Palette must survive a cold relaunch")
         shape.tap()
@@ -274,7 +322,7 @@ final class Tests_iOS: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(period.waitForExistence(timeout: 5))
-        XCTAssertTrue(period.label.contains("7 days"))
+        XCTAssertEqual(period.value as? String, "7 days")
     }
 
     @MainActor
