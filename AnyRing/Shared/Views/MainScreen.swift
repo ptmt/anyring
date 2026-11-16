@@ -10,11 +10,12 @@ struct MainScreen: View {
     var body: some View {
         Form {
             Section {
-                RingDashboard(size: 210, ring1: rings.first, ring2: rings.second,
-                              ring3: rings.third, days: viewModel.globalConfig.days, shape: viewModel.globalConfig.shape)
-                    .padding(.vertical, 16)
+                RingDashboard(size: 250, ring1: rings.first, ring2: rings.second,
+                              ring3: rings.third, days: viewModel.globalConfig.days, shape: viewModel.globalConfig.shape,
+                              updatePeriod: viewModel.updatePeriod, refresh: viewModel.refresh)
+                    .padding(.vertical, 8)
             }
-            Section("Visualization") {
+            Section("Appearance") {
                 NavigationLink {
                     ShapeSelectionView(selection: Binding(get: { viewModel.globalConfig.shape }, set: viewModel.updateShape),
                                        snapshots: RingWrapper(rings.list.map { $0.snapshot() }))
@@ -22,7 +23,14 @@ struct MainScreen: View {
                     LabeledContent("Shape", value: viewModel.globalConfig.shape.name)
                 }
                 .accessibilityIdentifier("visualizationShape")
+                TemplatesView(shape: viewModel.globalConfig.shape, current: RingWrapper(rings.list.map { $0.snapshot() })) { snapshots in
+                    rings.first.updateFromSnapshot(snapshot: snapshots.first)
+                    rings.second.updateFromSnapshot(snapshot: snapshots.second)
+                    rings.third.updateFromSnapshot(snapshot: snapshots.third)
+                }
+                .padding(.vertical, 8)
             }
+            #if !os(iOS)
             Section("Tracking Period") {
                 Picker("Days", selection: Binding(get: { viewModel.globalConfig.days }, set: viewModel.updatePeriod)) {
                     ForEach(Array(Set([1, 2, 3, 5, 7, viewModel.globalConfig.days])).sorted(), id: \.self) { days in
@@ -34,19 +42,13 @@ struct MainScreen: View {
                 Text("Track progress from the start of the first day through today.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
+            #endif
             Section("Your Rings") {
                 ringLink(rings.first, number: 1)
                 ringLink(rings.second, number: 2)
                 ringLink(rings.third, number: 3)
             }
-            Section("Color Palettes") {
-                TemplatesView(shape: viewModel.globalConfig.shape) { snapshots in
-                    rings.first.updateFromSnapshot(snapshot: snapshots.first)
-                    rings.second.updateFromSnapshot(snapshot: snapshots.second)
-                    rings.third.updateFromSnapshot(snapshot: snapshots.third)
-                }
-                .padding(.vertical, 8)
-            }
+
             #if os(iOS)
             if !["Connecting", "Ready for Apple Watch", "Settings synced"].contains(connectivity.status) {
                 Section("Apple Watch") {

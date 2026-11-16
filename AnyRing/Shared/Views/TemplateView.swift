@@ -39,7 +39,21 @@ struct RingPalette: Identifiable, Sendable {
 
 struct TemplatesView: View {
     var shape: RingShape = .roundedSquare
+    var current: RingWrapper<RingSnapshot>?
     var onSelect: ((RingWrapper<RingSnapshot>) -> Void)?
+
+    private func selected(_ palette: RingPalette) -> Bool {
+        guard let current else { return false }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        return zip(current.list, palette.snapshots.list).allSatisfy { lhs, rhs in
+            var appearance = lhs
+            appearance = RingSnapshot(progress: rhs.progress, mainColor: appearance.mainColor,
+                gradient: appearance.gradient, secondaryColor: appearance.secondaryColor,
+                outerGlow: appearance.outerGlow, innerGlow: appearance.innerGlow)
+            return (try? encoder.encode(appearance)) == (try? encoder.encode(rhs))
+        }
+    }
 
     var body: some View {
         ScrollView(.horizontal) {
@@ -49,12 +63,16 @@ struct TemplatesView: View {
                         VStack(spacing: 8) {
                             TripleRingView(size: 62, ring1: palette.snapshots.first, ring2: palette.snapshots.second,
                                            ring3: palette.snapshots.third, simplified: true, shape: shape)
-                            Text(palette.name).font(.caption).foregroundStyle(.primary)
+                            HStack(spacing: 3) {
+                                Text(palette.name)
+                                if selected(palette) { Image(systemName: "checkmark.circle.fill") }
+                            }.font(.caption).foregroundStyle(.primary)
                         }
                         .frame(width: 86).padding(.vertical, 8)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("\(palette.name) palette")
+                    .accessibilityAddTraits(selected(palette) ? .isSelected : [])
                     .accessibilityIdentifier("palette.\(palette.id)")
                 }
             }

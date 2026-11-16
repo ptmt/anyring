@@ -2,6 +2,89 @@ import XCTest
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testCompactDashboardInlinePeriodAndAppearance() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--refresh-probe", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let period = app.buttons["trackingPeriod"]
+        XCTAssertTrue(period.waitForExistence(timeout: 10))
+        guard period.exists else { return }
+        XCTAssertFalse(app.staticTexts["AnyProgress"].exists)
+        XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'is better'")).firstMatch.exists)
+        XCTAssertGreaterThanOrEqual(period.frame.height, 44)
+        capture(app, name: "Compact dashboard three days synthetic")
+        let probe = app.descendants(matching: .any)["refreshVerification"]
+        func readCount() -> Double { Double((probe.value as? String ?? "").split(separator: ",").first ?? "") ?? 0 }
+        sleep(2)
+        let before = readCount()
+        period.tap()
+        app.buttons["5 days"].tap()
+        let queried = NSPredicate { _, _ in readCount() == before + 6 }
+        XCTAssertTrue(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: queried, object: nil)], timeout: 10) == .completed)
+        XCTAssertTrue(period.label.contains("5 days"))
+        capture(app, name: "Compact dashboard five days synthetic")
+        let beforeForeground = readCount()
+        XCUIDevice.shared.press(.home)
+        app.activate()
+        XCTAssertTrue(period.waitForExistence(timeout: 10))
+        let foregroundQueried = NSPredicate { _, _ in readCount() >= beforeForeground + 6 }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: foregroundQueried, object: nil)], timeout: 10), .completed)
+        XCTAssertTrue(period.label.contains("5 days"))
+        app.terminate()
+        app.launchArguments += ["--preserve-test-settings"]
+        app.launch()
+        XCTAssertTrue(period.waitForExistence(timeout: 10))
+        XCTAssertTrue(period.label.contains("5 days"))
+        let shape = app.buttons["visualizationShape"]
+        for _ in 0..<8 { if shape.isHittable { break }; app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Appearance"].exists)
+        XCTAssertFalse(app.staticTexts["Visualization"].exists)
+        XCTAssertFalse(app.staticTexts["Color Palettes"].exists)
+        capture(app, name: "Unified appearance synthetic")
+        shape.tap()
+        app.buttons["shape.circle"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        let palette = app.buttons["palette.Aurora"]
+        for _ in 0..<6 { if palette.isHittable { break }; app.swipeUp() }
+        palette.tap()
+        XCTAssertTrue(palette.isSelected)
+        capture(app, name: "Selected appearance synthetic")
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(period.waitForExistence(timeout: 10))
+        XCTAssertTrue(period.label.contains("5 days"))
+        for _ in 0..<8 { if palette.isHittable { break }; app.swipeUp() }
+        XCTAssertTrue(palette.isSelected, "Palette must survive a cold relaunch")
+        shape.tap()
+        XCTAssertTrue(app.buttons["shape.circle"].isSelected, "Shape must survive a cold relaunch")
+        capture(app, name: "Persisted appearance after cold relaunch synthetic")
+    }
+
+    @MainActor
+    func testCompactDashboardFrenchLargeTypeAndKeyboard() {
+        let app = XCUIApplication()
+        for category in ["UICTContentSizeCategoryL", "UICTContentSizeCategoryAccessibilityXXXL"] {
+            app.launchArguments = ["--ui-testing", "-AppleLanguages", "(fr)", "-AppleLocale", "fr_FR", "-UIPreferredContentSizeCategoryName", category]
+            app.launch()
+            let period = app.buttons["trackingPeriod"]
+            XCTAssertTrue(period.waitForExistence(timeout: 10))
+            capture(app, name: "Compact French \(category)")
+            let metric = app.descendants(matching: .any)["metric.2"]
+            for _ in 0..<8 { if metric.isHittable { break }; app.swipeUp() }
+            XCTAssertTrue(metric.isHittable)
+            XCTAssertTrue(metric.label.contains("Goal ≥"))
+            capture(app, name: "Metrics French \(category)")
+            app.open(URL(string: "anyprogress://ring/0")!)
+            let field = app.textFields["ringName"]
+            XCTAssertTrue(field.waitForExistence(timeout: 5))
+            field.tap()
+            field.typeText("Récupération")
+            capture(app, name: "Keyboard French \(category)")
+            app.terminate()
+        }
+    }
+
+    @MainActor
     func testWorkoutZoneMetricsSelectionMinutesNamesAndRelaunch() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--workout-zone-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -38,9 +121,10 @@ final class Tests_iOS: XCTestCase {
             capture(app, name: name + " editor minutes")
             app.navigationBars.buttons.firstMatch.tap()
         }
-        let period = app.segmentedControls["trackingPeriod"]
+        let period = app.buttons["trackingPeriod"]
         for _ in 0..<8 { if period.isHittable { break }; app.swipeUp() }
-        period.buttons["5"].tap()
+        period.tap()
+        app.buttons["5 days"].tap()
         for _ in 0..<8 { if app.buttons["ring1"].isHittable { break }; app.swipeDown() }
         capture(app, name: "Workout zone dashboard synthetic")
         app.terminate()
@@ -62,9 +146,9 @@ final class Tests_iOS: XCTestCase {
         XCTAssertTrue(app.textFields["goal"].exists)
         // XCTest opens URLs via a new launch, so invalid links must stay at the overview.
         app.open(URL(string: "anyprogress://ring/999")!)
-        XCTAssertTrue(app.navigationBars["AnyProgress"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["trackingPeriod"].waitForExistence(timeout: 5))
         app.open(URL(string: "anyprogress://rings")!)
-        XCTAssertTrue(app.navigationBars["AnyProgress"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["trackingPeriod"].waitForExistence(timeout: 5))
     }
 
     @MainActor
@@ -72,7 +156,7 @@ final class Tests_iOS: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
         app.launch()
-        XCTAssertTrue(app.navigationBars["AnyProgress"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["trackingPeriod"].waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["refresh"].exists)
         XCTAssertFalse(app.buttons["Refresh"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["lastSync"].exists)
@@ -119,13 +203,14 @@ final class Tests_iOS: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
         app.launch()
-        let period = app.segmentedControls["trackingPeriod"]
+        let period = app.buttons["trackingPeriod"]
         for _ in 0..<6 {
             if period.isHittable { break }
             app.swipeUp()
         }
         XCTAssertTrue(period.waitForExistence(timeout: 5))
-        period.buttons["7"].tap()
+        period.tap()
+        app.buttons["7 days"].tap()
         app.terminate()
         // Keep fixtures explicit on relaunch without clearing persisted settings.
         app.launchArguments = ["--ui-testing", "--preserve-test-settings"]
@@ -135,7 +220,7 @@ final class Tests_iOS: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(period.waitForExistence(timeout: 5))
-        XCTAssertTrue(period.buttons["7"].isSelected)
+        XCTAssertTrue(period.label.contains("7 days"))
     }
 
     @MainActor

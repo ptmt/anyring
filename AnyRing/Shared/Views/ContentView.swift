@@ -50,8 +50,10 @@ struct ContentView: View {
                 case .ring(let id): path = [id]
                 }
             }
+            #if os(iOS)
+            .toolbar(path.isEmpty ? .hidden : .visible, for: .navigationBar)
+            #else
             .navigationTitle("AnyProgress")
-            #if !os(iOS)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Refresh", systemImage: "arrow.clockwise") {

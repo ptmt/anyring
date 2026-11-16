@@ -8,8 +8,92 @@ import UIKit
 import SwiftUI
 @testable import AnyProgress
 
+@Suite struct RollingWeekTests {
+    @Test func midnightAndTimeZoneChangesKeepIncludedRangeAligned() throws {
+        for zone in ["UTC", "America/Los_Angeles", "Europe/Berlin", "Asia/Kathmandu", "Pacific/Kiritimati"] {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try #require(TimeZone(identifier: zone))
+            let midnight = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 16)))
+            for now in [midnight.addingTimeInterval(-1), midnight, midnight.addingTimeInterval(1)] {
+                for count in [1, 2, 3, 5, 7] {
+                    let week = RollingWeek.days(count: count, now: now, calendar: calendar)
+                    #expect(week.filter(\.included).count == count)
+                    #expect(week.filter(\.isToday).count == 1)
+                    #expect(week.last?.date == calendar.startOfDay(for: now))
+                    #expect(week.first(where: \.included)?.date == WorkoutZoneTotals.period(days: count, now: now, calendar: calendar).start)
+                    #expect(week.filter { !$0.included }.allSatisfy { $0.date < week.first(where: \.included)!.date })
+                }
+            }
+        }
+    }
+
+    @Test func lastSevenCalendarDaysIncludeOnlyContiguousCountedDays() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
+        calendar.locale = Locale(identifier: "fr_FR")
+        calendar.firstWeekday = 2
+        for (month, day) in [(3, 30), (10, 26), (11, 16)] {
+            let now = calendar.date(from: DateComponents(year: 2026, month: month, day: day, hour: 12))!
+            for count in [1, 2, 3, 5, 7] {
+                let week = RollingWeek.days(count: count, now: now, calendar: calendar)
+                #expect(week.count == 7)
+                #expect(Set(week.map(\.date)).count == 7)
+                #expect(week.map(\.included) == (0..<7).map { $0 >= 7 - count })
+                #expect(week.last?.isToday == true)
+                for (index, item) in week.enumerated() {
+                    #expect(item.date == calendar.date(byAdding: .day, value: index - 6, to: calendar.startOfDay(for: now)))
+                    #expect(item.date <= now)
+                }
+                let tomorrow = calendar.date(byAdding: .day, value: 1, to: now)!
+                #expect(RollingWeek.days(count: count, now: tomorrow, calendar: calendar).last?.date == calendar.startOfDay(for: tomorrow))
+                #expect(week.first(where: \.included)?.date == WorkoutZoneTotals.period(days: count, now: now, calendar: calendar).start)
+            }
+        }
+    }
+}
+
 /// Render the production widget view, not a reimplementation, at accessory sizes.
 final class WidgetRenderingTests: XCTestCase {
+    @MainActor
+    func testTrackingWeekRolloverRefreshesReadingsAndTimeZoneChanges() async throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Berlin")!
+        let midnight = calendar.date(from: DateComponents(year: 2026, month: 11, day: 16))!
+        var refreshes = 0
+        let appeared = expectation(description: "Calendar strip mounted")
+        @MainActor
+        func waitForRefreshes(_ count: Int) async throws {
+            let deadline = Date().addingTimeInterval(30)
+            while refreshes < count && Date() < deadline { try await Task.sleep(for: .milliseconds(20)) }
+            XCTAssertEqual(refreshes, count)
+        }
+        func content(_ date: Date, _ zone: Calendar) -> some View {
+            TrackingWeekView(days: 1, updatePeriod: { _ in }, referenceDate: date, refresh: { refreshes += 1 })
+                .environment(\.calendar, zone)
+                .onAppear { appeared.fulfill() }
+        }
+        let host = UIHostingController(rootView: content(midnight.addingTimeInterval(-1), calendar))
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 375, height: 812)
+        window.rootViewController = host
+        window.isHidden = false
+        defer { window.isHidden = true; window.rootViewController = nil }
+        host.view.layoutIfNeeded()
+        await fulfillment(of: [appeared], timeout: 30)
+        XCTAssertEqual(refreshes, 0, "Initial rendering must not duplicate startup queries")
+        host.rootView = content(midnight, calendar)
+        try await waitForRefreshes(1)
+        XCTAssertEqual(refreshes, 1, "Midnight must refresh readings with the included-day strip")
+        host.rootView = content(midnight.addingTimeInterval(60), calendar)
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertEqual(refreshes, 1, "Ordinary minute ticks must not query HealthKit")
+        calendar.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        host.rootView = content(midnight.addingTimeInterval(60), calendar)
+        try await waitForRefreshes(2)
+        XCTAssertEqual(refreshes, 2, "Changed calendar timezone must refresh the period")
+    }
+
     @MainActor
     func testWorkoutZoneNamesMinutesInCompactWatchAndWidgets() throws {
         var config = UserDefaultsConfigurationPersistence.defaultConfig
@@ -795,6 +879,50 @@ struct HealthRefreshTests {
         let deadline = ContinuousClock.now.advanced(by: .seconds(30))
         while !ready() && ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(10)) }
         try #require(ready())
+    }
+
+    @Test func periodChangeQueriesExactCalendarRangeOnceAndRejectsObsoleteResults() async throws {
+        let source = ControlledHealthDataSource()
+        let model = model(source)
+        try await waitUntil { source.reads.count == 3 }
+        source.reads[0..<3].forEach { $0.complete(.success(10)) }
+        try await waitUntil { model.rings!.list.allSatisfy { !$0.isRefreshing } }
+        var published: [Int] = []
+        model.onConfigurationChanged = { published.append($0.global.days) }
+        model.updatePeriod(days: 5)
+        try await waitUntil { source.reads.count == 6 }
+        let obsolete = Array(source.reads[3..<6])
+        model.updatePeriod(days: 7)
+        try await waitUntil { source.reads.count == 9 }
+        model.updatePeriod(days: 7)
+        try await settle()
+        #expect(source.reads.count == 9)
+        #expect(published == [5, 7])
+        #expect(model.persistence.restore()?.global.days == 7)
+        for read in source.reads[3..<9] {
+            let count = source.reads[3..<6].contains(where: { $0.start == read.start }) ? 5 : 7
+            let calendar = Calendar.current
+            #expect(read.start == calendar.startOfDay(for: calendar.date(byAdding: .day, value: -(count - 1), to: read.end)!))
+        }
+        source.reads[6..<9].forEach { $0.complete(.success(42)) }
+        try await waitUntil { model.rings!.list.allSatisfy { !$0.isRefreshing } }
+        obsolete.forEach { $0.complete(.success(999)) }
+        try await settle()
+        #expect(model.rings!.list.allSatisfy { $0.progress.absolute == 42 })
+        model.refreshWidgetSnapshot()
+        try await waitUntil { source.reads.count == 12 }
+        let staleWidget = Array(source.reads[9..<12])
+        model.updatePeriod(days: 2)
+        try await waitUntil { source.reads.count == 15 }
+        staleWidget.forEach { $0.complete(.success(999)) }
+        source.reads[12..<15].forEach { $0.complete(.success(12)) }
+        try await settle()
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config) == nil)
+        model.refreshWidgetSnapshot()
+        try await waitUntil { source.reads.count == 18 }
+        source.reads[15..<18].forEach { $0.complete(.success(12)) }
+        try await waitUntil { model.persistence.widgetCache.restoreReading(config: model.config) != nil }
+        #expect(model.persistence.widgetCache.restoreReading(config: model.config)?.configuration.global.days == 2)
     }
 
     @Test func renameWhileAppReadingIsPendingPreservesResultAndQueryCount() async throws {

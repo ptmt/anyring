@@ -35,12 +35,20 @@ struct RingMetricView: View {
             ProgressView(value: min(1, max(0, ring.progress.normalized)))
                 .tint(ring.configuration.appearance.mainColor.color)
                 .accessibilityHidden(true)
+            #if os(iOS)
+            if compact {
+                Label(ring.direction, systemImage: ring.isReversed ? "arrow.down.right" : "arrow.up.right")
+                    .font(.caption2).foregroundStyle(.secondary)
+                if let start = ring.startingValueText { Text(start).font(.caption2).foregroundStyle(.secondary) }
+            }
+            #else
             HStack(alignment: .top, spacing: 8) {
                 Label(ring.direction, systemImage: ring.isReversed ? "arrow.down.right" : "arrow.up.right")
                 if let start = ring.startingValueText { Spacer(minLength: 4); Text(start) }
             }
             .font(compact ? .caption2 : .caption)
             .foregroundStyle(.secondary)
+            #endif
             if let error = ring.error { Text(error.localizedDescription).font(.caption).foregroundStyle(.secondary) }
         }
         .padding(.vertical, compact ? 4 : 6)
