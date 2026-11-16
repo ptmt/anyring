@@ -53,6 +53,12 @@ Inspected with vision: baseline, ordinary 3/5-day, unified Appearance, XXXL Fren
 - Final Watch Release build **BUILD SUCCEEDED**, including Watch widget (`compact-release-watch.log`); 23 offline CI/signing checks pass (`compact-release-offline.log`). Shell syntax, shellcheck/actionlint and `git diff --check` clean.
 - Read-only code-review PASS and real retained/fresh screenshots inspected. Evidence lives under the scratch prefix above, with exported small-phone attachments in `compact-release-small-images/`.
 
+## Publication
+
+**2.0 (37.1) uploaded successfully on 2026-11-16.** Release source `34142b2f3bfe42e3ba602cf81f522cc8095ce78d`; [run 43939623194](https://github.com/ptmt/anyring/actions/runs/43939623194), validation job `133553353875`, upload job `133575831719`, all success. Apple explicitly reported **Upload succeeded** and processing at `2026-11-16T20:11:53Z`, followed by **EXPORT SUCCEEDED**. All four original targets signed and all profiles validated; cleanup succeeded, no GitHub artifacts. Hosted complete Debug and separate Release suites passed. Push-only run `43939605661` succeeded without uploading.
+
+Original worktree HEAD/status and all 13 dirty-file hashes preserved. Only this task's three regenerable DerivedData directories were removed after upload (1688162304 allocated file bytes); all xcresults, screenshots, summaries, reviews and CI logs retained. See `ci/RELEASE.md` and `compact-release-cleanup.json` for details. Apple processing completion/tester availability are not verified; no App Review submission.
+
 ## Limits
 
 No physical iPhone/Watch/paired sync or live Health coverage tested. App stays English as requested; French locale verifies numeric/keyboard/calendar behavior, not a new localization. Small screens/XXXL require normal whole-page scrolling; all metrics are reachable. Date strip alone caps Dynamic Type to keep seven dates intact, with full spoken dates retained. Midnight/timezone lifecycle is tested by injected dates/calendar on the actual hosted view, not an overnight run or a real OS timezone-settings change. Existing Watch snapshot tests cover configuration publication/decoding, not physical delivery. No real Health samples used.
