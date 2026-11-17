@@ -3,6 +3,74 @@ import UIKit
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testIncludedWeekRangeBackgroundPresets() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let period = app.buttons["trackingPeriod"]
+        XCTAssertTrue(period.waitForExistence(timeout: 10))
+        var initialWeek: CGRect?
+        for count in [3, 1, 2, 5, 7] {
+            period.tap()
+            let choice = app.buttons[count == 1 ? "1 day" : "\(count) days"]
+            XCTAssertTrue(choice.waitForExistence(timeout: 5))
+            choice.tap()
+            XCTAssertEqual(period.value as? String, count == 1 ? "1 day" : "\(count) days")
+            let cells = app.descendants(matching: .any).matching(NSPredicate(format: "value IN %@", ["Included", "Not included", "Today, Included"]))
+                .allElementsBoundByIndex.sorted { $0.frame.minX < $1.frame.minX }
+            XCTAssertEqual(cells.count, 7)
+            guard cells.count == 7 else { return }
+            let contentFrames = cells.map(\.frame)
+            // SwiftUI exposes each ignored-child AX element's text bounds, not
+            // its equal-width padded calendar cell. Recover the rendered grid
+            // from the native Period width and the existing 5pt vertical padding.
+            let week = CGRect(x: period.frame.minX, y: contentFrames[0].minY - 5,
+                              width: period.frame.width, height: contentFrames[0].height + 10)
+            let frames = (0..<7).map { index in
+                CGRect(x: week.minX + CGFloat(index) * week.width / 7, y: week.minY,
+                       width: week.width / 7, height: week.height)
+            }
+            if let initialWeek {
+                XCTAssertEqual(week.minY, initialWeek.minY, accuracy: 0.01)
+                XCTAssertEqual(week.width, initialWeek.width, accuracy: 0.01)
+                XCTAssertEqual(week.height, initialWeek.height, accuracy: 0.01, "Changing the range must not change layout")
+            } else { initialWeek = week }
+            XCTAssertTrue((cells[6].value as? String)?.contains("Today, Included") == true)
+            XCTAssertLessThan(week.maxY, app.frame.maxY - 20)
+            capture(app, name: "Included range \(count) days synthetic")
+            let image = try XCTUnwrap(app.screenshot().image.cgImage)
+            let scale = CGFloat(image.width) / app.frame.width
+            var bytes = [UInt8](repeating: 0, count: image.width * image.height * 4)
+            let context = try XCTUnwrap(CGContext(data: &bytes, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+            context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+            func gray(_ x: CGFloat, _ y: CGFloat) -> Int {
+                let i = (Int(y * scale) * image.width + Int(x * scale)) * 4
+                XCTAssertLessThanOrEqual(Int(max(bytes[i], bytes[i+1], bytes[i+2])) - Int(min(bytes[i], bytes[i+1], bytes[i+2])), 2)
+                return Int(bytes[i])
+            }
+            let outside = gray(week.midX, week.minY - 2)
+            let fill = gray(frames[6].midX, week.minY + 2)
+            XCTAssertGreaterThan(abs(fill - outside), 8, "Included dates need a visible neutral background")
+            XCTAssertLessThan(abs(fill - outside), 50, "Range background must stay low emphasis")
+            for (index, frame) in frames.enumerated() {
+                let included = index >= 7 - count
+                XCTAssertTrue(frame.insetBy(dx: -0.01, dy: -0.01).contains(contentFrames[index]), "The complete date and Today label must fit inside their cell")
+                XCTAssertEqual(cells[index].value as? String, index == 6 ? "Today, Included" : (included ? "Included" : "Not included"))
+                XCTAssertEqual(gray(frame.midX, week.minY + 2), included ? fill : outside, accuracy: 2)
+                if index > 7 - count {
+                    XCTAssertEqual(gray(frame.minX, week.minY + 2), fill, accuracy: 2, "No gap or rounded internal seam")
+                }
+            }
+            for x in [frames[7-count].minX + 1, week.maxX - 1] {
+                XCTAssertEqual(gray(x, week.minY + 1), outside, accuracy: 2, "Only the range ends are rounded")
+                XCTAssertEqual(gray(x, week.maxY - 1), outside, accuracy: 2)
+            }
+            let evidence = XCTAttachment(string: "count=\(count) week=\(week) cells=\(frames) fill=\(fill) outside=\(outside)")
+            evidence.name = "Included range geometry \(count)"; evidence.lifetime = .keepAlways; add(evidence)
+        }
+    }
+
+    @MainActor
     func testDashboardDensityEmptyAndSavedRows() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

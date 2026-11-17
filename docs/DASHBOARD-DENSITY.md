@@ -1,6 +1,49 @@
-# Dashboard density — compact labels verified natively, visual approval pending
+# Dashboard density — native candidate verified, visual approval pending
 
-## Latest user requirement: inline current / configured target
+## Latest: subtle background behind the included calendar range
+
+The user's supplied crop shows **November 15, 16 and 17: three included days**. On clean base `1fde467fb0f4a29b80155923d1c02df788da41e2`, the only production change adds one continuous rounded background behind the last N calendar cells. It does not shade all seven unless seven days are selected. The existing quiet dots, full-date/Included accessibility, Today, inline current/configured-target labels and compact Save row remain unchanged. No underline, internal rounded seams, extra height, blue tint, formula/query/persistence/cache/Watch/identifier changes.
+
+- `TrackingWeekView` uses a background-only GeometryReader and one continuous 10pt RoundedRectangle, logical trailing alignment, with a clamped 1…7 fraction of the existing row width. Light fill is neutral 0.94, dark graphite 0.18. The background is accessibility-hidden and cannot propose a new foreground height.
+- Tested production file SHA-256 (`AnyRing/Shared/Views/RingDashboard.swift`): `e5ab5127faa4bef3f7429fe87420cb394b8308a49b2870b06cc741c09e1ff8d5`.
+- Final UI-test file SHA-256: `8e30d83b4868c540b09246edabe955c65888bd919664c3c88f127261b318be2b`.
+
+### Native verification — November 17, 2026
+
+Xcode 27.2 / iOS 27.2, actual Release app, iPhone 13 (390×844pt; 1170×2532 native PNG), ad-hoc signing, two compiler jobs, parallel testing disabled. One task-owned simulator `BE166CC8-6579-4602-99FC-4CADA212D38B`, serial runs only. Explicit synthetic fixtures; no real Health records or provider calls.
+
+Evidence: `/Users/tinyserve/.hermes/cache/scratch/week-range-proof/`.
+
+| Result | Passed / executed identities | Result and scope |
+|---|---:|---|
+| `red.xcresult` | 0 / 1 | Expected native RED: all five presets have zero background/fill difference on the original source |
+| `light.xcresult` | 87 / 88 | All 84 unit/widget identities and three existing UI tests passed; new pixel test exposed an AX-frame assumption, corrected below. 95/96 parameter-expanded executions. |
+| `final-light.xcresult` | 3 / 3 | All 1/2/3/5/7 presets, empty/populated library lifecycle, neutral pixels/menu, normal and maximum accessibility text |
+| `final-dark.xcresult` | 4 / 4 | Same, plus complete individual metric/footer viewport assertions at accessibility XXXL |
+
+All final runs have zero failures/skips. The mixed intermediate run is **not** represented as a wholly passing suite. Its source is production-identical to final: SwiftUI exposes text-content AX bounds, excluding equal-width cells and vertical padding. The test now reconstructs the rendered grid from the native Period bounds and existing 5pt vertical padding; it checks solid background pixels, unselected cells, uninterrupted internal seams, four rounded outer corners, complete content containment, Included/Today values and constant geometry. No production correction or weakened background assertion was needed after this instrumentation fix.
+
+Final ordinary week grid: `(36,311,318,67.6667)` pt for every preset in both themes. Dashboard remains `(16,82,358,319.6667)`; empty saved row remains **74pt**, populated **176.6667pt**, populated Save **44pt**. Appearance remains visible initially. The 204pt blank row has not returned. Maximum-text screenshots show the complete Today label inside the selected range; the pre-existing calendar-only Dynamic Type limit is unchanged.
+
+Measured solid RGB grayscale values: light range **240** on card **255**, dark **46** on **28**. Primary labels are 0/255, secondary/dots 102/166. Computed contrast against the selected fill: primary **18.43:1 / 13.58:1**, secondary **5.04:1 / 5.58:1** (light/dark). Actual rendered neutral-pixel checks pass. These measurements are not a claim that a subtle decorative fill alone meets a non-text contrast threshold: dots and complete AX state are retained.
+
+Python CI: **28/28 passed**; `git diff --check` passed. Existing native tests also verified save/rename/cancel+confirm delete, complete settings restore/cold relaunch, configured goal versus baseline, midnight/calendar/cache/provider/widget regressions. Actual VoiceOver spoken traversal and a fresh small-phone run were not performed in this background-only change.
+
+### Actual final PNGs for the parent to share
+
+Under `/Users/tinyserve/.hermes/cache/documents/week-range-proof/`, in both `final-light/` and `final-dark/`:
+
+- `Included range 3 days synthetic.png` — full unedited native screen.
+- `included-3-crop.png` — exact native-pixel crop of 15/16/17; no resize or repainting.
+- `week-crop.png` — full seven-day strip crop, showing the unselected cells too.
+- `Included range 1 days synthetic.png`, `Included range 2 days synthetic.png`, `Included range 5 days synthetic.png`, `Included range 7 days synthetic.png` — all other presets.
+- `Neutral period UICTContentSizeCategoryAccessibilityXXXL synthetic.png` — maximum Dynamic Type calendar/Today evidence.
+
+Final light/dark full screens, three-day crop and maximum-text screens were visually inspected. Synthetic readings/default palette, not the user's personal data. **Native candidate only; no push, upload or release. Parent must show the actual PNGs for approval.**
+
+Resource/preservation read-back: the original `/Users/tinyserve/Projects/anyring` retains all **13 dirty file hashes**, exact HEAD, index and status (`original-before.json` / `original-after.json`). Other workers' simulators and KeineMagie worktrees were untouched. The owned device was restored to light, verified Shutdown and deleted; its absence was read back. Only the task-owned 685MB DerivedData and duplicate intermediate attachment exports were removed. All result bundles, logs, summaries and final native PNGs remain. The heavy simulator slot is released.
+
+## Earlier: inline current / configured target
 
 The user approved the concept “можно даже без больше или равно просто таргет /80 или /15000”: no visible `Goal`, ≥/≤ or baseline row in the **overview**. The number 80 was an example, **not** authorization to change the heart-rate goal from 42 to its starting baseline of 80.
 

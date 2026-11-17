@@ -93,6 +93,18 @@ struct TrackingWeekView: View {
                         .accessibilityValue((day.isToday ? "Today, " : "") + (day.included ? "Included" : "Not included"))
                     }
                 }
+                .background {
+                    // One continuous range, not seven separately rounded tiles.
+                    // Background geometry cannot change the calendar's intrinsic height.
+                    GeometryReader { geometry in
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color(white: colorScheme == .dark ? 0.18 : 0.94))
+                            .frame(width: geometry.size.width * CGFloat(min(max(days, 1), 7)) / 7,
+                                   height: geometry.size.height)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+                    .accessibilityHidden(true)
+                }
                 .accessibilityIdentifier("trackingWeek")
             }
             .onChange(of: calendar.startOfDay(for: now)) { _, _ in refresh() }
