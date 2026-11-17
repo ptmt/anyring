@@ -32,7 +32,6 @@ struct TrackingWeekView: View {
     // local: ring colors and the rest of the app retain their selected palette.
     private var periodPrimary: Color { Color(uiColor: .label) }
     private var periodSecondary: Color { Color(white: colorScheme == .dark ? 0.65 : 0.40) }
-    private var includedBackground: Color { Color(white: colorScheme == .dark ? 0.18 : 0.92) }
 
     var body: some View {
         // Align ticks with calendar minutes, including midnight. Refresh readings
@@ -70,12 +69,15 @@ struct TrackingWeekView: View {
                 .accessibilityIdentifier("trackingPeriod")
                 HStack(spacing: 0) {
                     ForEach(RollingWeek.days(count: days, now: now, calendar: calendar)) { day in
-                        VStack(spacing: 4) {
+                        VStack(spacing: 3) {
                             Text(day.date.formatted(.dateTime.weekday(.narrow).locale(locale)))
                                 .font(.caption2)
                             Text(day.date.formatted(.dateTime.day().locale(locale)))
                                 .font(.subheadline.weight(day.included ? .semibold : .regular))
                                 .monospacedDigit()
+                            Circle().fill(day.included ? periodSecondary : .clear)
+                                .frame(width: 4, height: 4)
+                                .accessibilityHidden(true)
                             Text(day.isToday ? "Today" : " ").font(.caption2.weight(.medium))
                         }
                         // Keep all seven calendar dates legible in this overview;
@@ -85,10 +87,7 @@ struct TrackingWeekView: View {
                         .minimumScaleFactor(0.8)
                         .frame(maxWidth: .infinity).padding(.vertical, 5)
                         .foregroundStyle(day.included ? periodPrimary : periodSecondary)
-                        .background(day.included ? includedBackground : .clear)
-                        .overlay(alignment: .bottom) {
-                            Rectangle().fill(day.included ? periodSecondary : .clear).frame(height: 2)
-                        }
+
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel(day.date.formatted(.dateTime.weekday(.wide).month(.wide).day().year().locale(locale)))
                         .accessibilityValue((day.isToday ? "Today, " : "") + (day.included ? "Included" : "Not included"))

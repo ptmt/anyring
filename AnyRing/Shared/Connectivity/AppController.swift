@@ -17,6 +17,20 @@ final class AppController: ObservableObject {
             [UserDefaultsConfigurationPersistence.key, UserDefaultsConfigurationPersistence.snapshotKey,
              UserDefaultsConfigurationPersistence.lastSyncKey, UserDefaultsConfigurationPersistence.savedConfigurationsKey,
              SimpleCache.key, SimpleCache.configurationKey, SimpleCache.readingKey].forEach { defaults.removeObject(forKey: $0) }
+            if ProcessInfo.processInfo.arguments.contains("--dashboard-density-fixture") {
+                // Synthetic layout fixture: same three metrics/goals as the reported
+                // screen, existing mock readings, and an intentionally EMPTY library.
+                var fixture = UserDefaultsConfigurationPersistence.defaultConfig
+                fixture.global = GlobalConfiguration(days: 3, shape: .squircle)
+                fixture.configs[2] = HealthKitProvider.Configuration(ring: .third, healthKitParams: hrConfiguration,
+                    appearance: fixture.configs[2].appearance)
+                fixture.configs[1].maxValue = 15_000
+                fixture.configs[2].minValue = 42
+                fixture.configs[2].maxValue = 80
+                if let data = try? JSONEncoder().encode(fixture) {
+                    defaults.set(data, forKey: UserDefaultsConfigurationPersistence.key)
+                }
+            }
             if ProcessInfo.processInfo.arguments.contains("--legacy-template-fixture") {
                 // Synthetic Config.v3 archive, not a fabricated pre-existing template library.
                 var fixture = UserDefaultsConfigurationPersistence.defaultConfig

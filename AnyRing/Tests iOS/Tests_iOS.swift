@@ -3,6 +3,87 @@ import UIKit
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testDashboardDensityEmptyAndSavedRows() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let save = app.buttons["saveConfiguration"]
+        XCTAssertTrue(save.waitForExistence(timeout: 10))
+        guard save.exists else { return }
+        let emptyRow = app.cells.containing(.button, identifier: "saveConfiguration").firstMatch
+        let dashboard = app.cells.containing(.button, identifier: "trackingPeriod").firstMatch
+        XCTAssertTrue(emptyRow.exists)
+        XCTAssertTrue(dashboard.exists)
+        guard emptyRow.exists, dashboard.exists else { return }
+        capture(app, name: "Density empty library synthetic")
+        func record(_ state: String, _ row: XCUIElement) {
+            let evidence = XCTAttachment(string: "state=\(state) viewport=\(app.frame) dashboard=\(dashboard.frame) savedRow=\(row.frame) save=\(save.frame)")
+            evidence.name = "Density geometry \(state)"
+            evidence.lifetime = .keepAlways
+            add(evidence)
+        }
+        record("empty", emptyRow)
+        XCTAssertGreaterThanOrEqual(save.frame.height, 44)
+        XCTAssertLessThanOrEqual(emptyRow.frame.height, 80, "Empty library must be one intrinsic save row, not a reserved carousel")
+        XCTAssertTrue(app.buttons["visualizationShape"].isHittable, "Appearance must be visible on the first ordinary-size screen")
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'savedConfiguration.'")).count, 0)
+        save.tap()
+        app.textFields["Template name"].typeText("Daily setup")
+        app.alerts.buttons["Save"].tap()
+        let preset = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'savedConfiguration.'")).firstMatch
+        XCTAssertTrue(preset.waitForExistence(timeout: 5))
+        XCTAssertTrue(preset.isSelected)
+        let filledRow = app.cells.containing(.button, identifier: "saveConfiguration").firstMatch
+        record("filled", filledRow)
+        capture(app, name: "Density saved library synthetic")
+        XCTAssertLessThanOrEqual(filledRow.frame.height, 200, "The populated strip must fit its real thumbnails")
+        preset.press(forDuration: 1)
+        app.buttons["Rename"].tap()
+        let name = app.textFields["Template name"]
+        name.tap()
+        name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Daily setup".count) + "Recovery")
+        app.alerts.buttons["Save"].tap()
+        XCTAssertEqual(preset.label, "Recovery")
+        preset.press(forDuration: 1)
+        app.buttons["Delete"].tap()
+        XCTAssertTrue(app.alerts["Delete template?"].exists)
+        app.alerts.buttons["Cancel"].tap()
+        XCTAssertTrue(preset.exists)
+        preset.press(forDuration: 1)
+        app.buttons["Delete"].tap()
+        app.alerts.buttons["Delete"].tap()
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'savedConfiguration.'")).count, 0)
+        XCTAssertLessThanOrEqual(emptyRow.frame.height, 80)
+        capture(app, name: "Density empty after confirmed deletion synthetic")
+    }
+
+    @MainActor
+    func testDashboardDensityAccessibilityContent() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        for (index, expected) in [(0, "HRV"), (1, "Step count"), (2, "Heart-rate")] {
+            let metric = app.descendants(matching: .any)["metric.\(index)"]
+            XCTAssertTrue(metric.waitForExistence(timeout: 10))
+            for _ in 0..<8 { if metric.isHittable { break }; app.swipeUp() }
+            XCTAssertTrue(metric.isHittable)
+            XCTAssertTrue(metric.label.contains(expected))
+            XCTAssertTrue(metric.label.contains("Goal"))
+            XCTAssertGreaterThanOrEqual(metric.frame.minX, 0)
+            XCTAssertLessThanOrEqual(metric.frame.maxX, app.frame.maxX)
+            capture(app, name: "Density accessibility metric \(index) synthetic")
+        }
+        let save = app.buttons["saveConfiguration"]
+        for _ in 0..<8 { if save.isHittable { break }; app.swipeUp() }
+        XCTAssertTrue(save.isHittable)
+        XCTAssertEqual(save.label, "Save current setup")
+        XCTAssertGreaterThanOrEqual(save.frame.height, 44)
+        XCTAssertLessThanOrEqual(save.frame.maxX, app.frame.maxX)
+        capture(app, name: "Density accessibility empty footer synthetic")
+    }
+
+    @MainActor
     func testSavedConfigurationStripRestoresCompleteSettings() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--legacy-template-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -79,11 +160,11 @@ final class Tests_iOS: XCTestCase {
             XCTAssertLessThan(week.frame.maxY, app.frame.maxY - 20)
             if category == "UICTContentSizeCategoryAccessibilityXXXL" {
                 let save = app.buttons["saveConfiguration"]
-                let title = app.staticTexts["Saved templates"]
                 XCTAssertTrue(save.exists)
-                XCTAssertTrue(title.exists)
-                XCTAssertGreaterThanOrEqual(save.frame.minY, title.frame.maxY,
-                                            "The header must stack rather than split words at accessibility sizes")
+                XCTAssertEqual(save.label, "Save current setup")
+                XCTAssertGreaterThanOrEqual(save.frame.height, 44)
+                XCTAssertLessThanOrEqual(save.frame.maxX, app.frame.maxX,
+                                         "The empty-state action must wrap without clipping at accessibility sizes")
             }
             capture(app, name: "Neutral period \(category) synthetic")
             // Inspect the real rendered control and date strip, not Color values.

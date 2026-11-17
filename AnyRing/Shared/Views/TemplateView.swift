@@ -107,26 +107,38 @@ struct SavedConfigurationsView: View {
     @ScaledMetric(relativeTo: .caption2) private var thumbnailWidth: CGFloat = 72
 
     private var saveButton: some View {
-        Button("Save current", systemImage: "plus") {
+        Button {
             name = ""; renaming = nil; naming = true
+        } label: {
+            Label(model.savedConfigurations.isEmpty ? "Save current setup" : "Save current", systemImage: "plus")
+                .labelStyle(.titleAndIcon)
+                .font(.subheadline)
+                .frame(minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
         }
-        .font(.caption).frame(minHeight: 44)
+        .buttonStyle(.plain)
+        .foregroundStyle(.primary)
         .accessibilityIdentifier("saveConfiguration")
         .disabled(model.savedConfigurationsError != nil)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ViewThatFits(in: .horizontal) {
-                HStack {
-                    Text("Saved templates").font(.caption).foregroundStyle(.secondary).fixedSize()
-                    Spacer(minLength: 12)
-                    saveButton.fixedSize()
+            if model.savedConfigurations.isEmpty {
+                saveButton
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        Text("Saved templates").font(.caption).foregroundStyle(.secondary).fixedSize()
+                        Spacer(minLength: 12)
+                        saveButton.fixedSize()
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Saved templates").font(.caption).foregroundStyle(.secondary)
+                        saveButton
+                    }.fixedSize(horizontal: false, vertical: true)
                 }
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Saved templates").font(.caption).foregroundStyle(.secondary)
-                    saveButton
-                }.fixedSize(horizontal: false, vertical: true)
+                .fixedSize(horizontal: false, vertical: true)
             }
             if let message = model.savedConfigurationsError {
                 Text(message).font(.caption).foregroundStyle(.secondary)
@@ -169,8 +181,10 @@ struct SavedConfigurationsView: View {
                         }
                     }.padding(.vertical, 4)
                 }.scrollIndicators(.hidden)
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
         .alert(renaming == nil ? "Save template" : "Rename template", isPresented: $naming) {
             TextField("Template name", text: $name)
             Button("Cancel", role: .cancel) { pending = nil }
