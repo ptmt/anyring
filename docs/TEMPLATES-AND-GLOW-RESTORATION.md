@@ -2,7 +2,7 @@
 
 ## Scope and provenance
 
-Isolated worktree `/Users/tinyserve/Projects/anyring-templates-glow`, branch `fix/templates-glow-restoration`, based on verified `origin/main` `7b77fad87a0afda4c362eea628ba1c2820d42515`. Its app-source parent is `34142b2f3bfe42e3ba602cf81f522cc8095ce78d` (37.1). Original `/Users/tinyserve/Projects/anyring` had 13 dirty entries; only relevant diff/history was read. No original files, other worktrees, project identifiers, capabilities, release numbers or icon assets are changed. No push/upload.
+Isolated worktree `/Users/tinyserve/Projects/anyring-templates-glow`, branch `fix/templates-glow-restoration`, based on verified `origin/main` `7b77fad87a0afda4c362eea628ba1c2820d42515`. Its app-source parent is `34142b2f3bfe42e3ba602cf81f522cc8095ce78d` (37.1). Original `/Users/tinyserve/Projects/anyring` had 13 dirty entries; only relevant diff/history was read. No original files, other worktrees, project identifiers, capabilities, release numbers or icon assets were changed during candidate implementation. Subsequently released as **2.0 (41.2)** from `b916eaa7909f1929c6cafe213e419cda669a2ad5` (production source unchanged from `83b7da7`); Apple upload succeeded **2026-11-17T07:43:05Z**. See `ci/RELEASE.md` for exact run/jobs and limits.
 
 ## What history actually establishes
 

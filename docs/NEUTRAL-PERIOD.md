@@ -1,4 +1,6 @@
-# Neutral period control — local candidate
+# Neutral period control — combined release
+
+The local candidate below was subsequently integrated with saved configurations and the compact legend, then uploaded in **AnyProgress 2.0 (41.2)** on **2026-11-17T07:43:05Z**, source `b916eaa7909f1929c6cafe213e419cda669a2ad5`. Full release evidence is in `ci/RELEASE.md`; the following verification record describes the earlier isolated candidate, not the final publication status.
 
 Based on fetched origin/main `7b77fad87a0afda4c362eea628ba1c2820d42515` (release source `34142b2f3bfe42e3ba602cf81f522cc8095ce78d`, AnyProgress 2.0 (37.1)). Not pushed or uploaded.
 
