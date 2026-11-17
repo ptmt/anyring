@@ -73,6 +73,10 @@ Owned simulator `734CD13C-DBAC-43D3-8738-7AC41B7A6A6B` was shut down and read ba
 
 All runs were serial on the task-owned simulator. After the final targeted run, `734CD13C-DBAC-43D3-8738-7AC41B7A6A6B` was again explicitly read back as **Shutdown**. No more simulator work is pending.
 
+## Release-gate follow-up
+
+The authorized publication of `83b7da7` reached hosted validation in run `44030432969` but did not upload. Its full Debug suite exposed an old workout UI navigation assumption (`Tests_iOS.swift:236`): after returning from lower metric editors, eight upward swipes moved farther away from Period. The accessibility failure listed the lower Appearance/metric rows, not the period. Corrected only that test's scroll directions, added explicit hittability and selected-period assertions; no production change or weakened assertion. The focused Release workout flow then passed on the task-owned SE (`anyring-release-83b7/workout-navigation-green.xcresult`); simulator shut down afterward. Final hosted validation/upload evidence is recorded in `ci/RELEASE.md`.
+
 ## Remaining acceptance boundaries
 
 Physical-device HealthKit/Watch delivery and actual widget-host interaction are not established by fake-source tests. No claim of recovery of an undiscovered historical full-template database. Glow appearance correction remains unresolved rather than silently replacing old settings or inventing a new glow style.

@@ -232,10 +232,14 @@ final class Tests_iOS: XCTestCase {
             app.navigationBars.buttons.firstMatch.tap()
         }
         let period = app.buttons["trackingPeriod"]
-        for _ in 0..<8 { if period.isHittable { break }; app.swipeUp() }
+        // Returning from the lower metric editors retains the list offset.
+        // Period is above those rows; scrolling farther down virtualizes it away.
+        for _ in 0..<8 { if period.isHittable { break }; app.swipeDown() }
+        XCTAssertTrue(period.isHittable)
         period.tap()
         app.buttons["5 days"].tap()
-        for _ in 0..<8 { if app.buttons["ring1"].isHittable { break }; app.swipeDown() }
+        XCTAssertEqual(period.value as? String, "5 days")
+        for _ in 0..<8 { if app.buttons["ring1"].isHittable { break }; app.swipeUp() }
         capture(app, name: "Workout zone dashboard synthetic")
         app.terminate()
         app.launchArguments += ["--preserve-test-settings"]
