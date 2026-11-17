@@ -76,6 +76,13 @@ final class Tests_iOS: XCTestCase {
             XCTAssertLessThanOrEqual(metric.frame.maxY, app.frame.maxY - 20)
             XCTAssertTrue(metric.label.contains(expected))
             XCTAssertTrue(metric.label.contains("Goal"))
+            if index == 2 {
+                XCTAssertTrue(metric.label.contains("55 bpm"))
+                XCTAssertTrue(metric.label.contains("Goal ≤ 42 bpm"))
+                XCTAssertTrue(metric.label.contains("Lower is better"))
+                XCTAssertTrue(metric.label.contains("From 80 bpm"))
+                XCTAssertFalse(metric.label.contains("Goal ≤ 80 bpm"))
+            }
             XCTAssertGreaterThanOrEqual(metric.frame.minX, 0)
             XCTAssertLessThanOrEqual(metric.frame.maxX, app.frame.maxX)
             capture(app, name: "Density accessibility metric \(index) synthetic")

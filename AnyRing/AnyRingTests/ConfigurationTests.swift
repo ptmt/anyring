@@ -1479,6 +1479,35 @@ struct VisualizationAndSyncReceiptTests {
         }
     }
 
+    @Test func compactOverviewKeepsConfiguredGoalAndBaselineDistinct() async throws {
+        var config = HealthKitProvider.Configuration(ring: .first, healthKitParams: hrConfiguration,
+            appearance: RingAppearance(mainColor: .init(.red)), customName: "Пульс 🫀")
+        config.minValue = 42
+        config.maxValue = 80
+        let ring = HealthKitProvider(dataSource: MockHealthKitDataSource(), config: config,
+            configPersistence: store()).viewModel(globalConfig: .Default)
+        for _ in 0..<100 where ring.isRefreshing { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(!ring.isRefreshing)
+        #expect(ring.name == "Пульс 🫀")
+        #expect("\(ring.valueText) / \(ring.targetText) \(ring.units)" == "55 / 42 bpm")
+        #expect(ring.overviewAccessibilityValue.contains("Goal ≤ 42 bpm"))
+        #expect(ring.overviewAccessibilityValue.contains("Lower is better"))
+        #expect(ring.overviewAccessibilityValue.contains("From 80 bpm"))
+        #expect(ring.configuration.minValue == 42)
+        #expect(ring.configuration.maxValue == 80)
+
+        for metric in WorkoutZoneMetric.allCases {
+            config.selectWorkoutMetric(metric)
+            config.maxValue = 45.75
+            let workout = HealthKitProvider(dataSource: MockHealthKitDataSource(), config: config,
+                configPersistence: store()).viewModel(globalConfig: .Default)
+            #expect(workout.targetText == 45.75.formatted(.number.precision(.fractionLength(0...1))))
+            #expect(workout.units == "min")
+            #expect(!workout.isReversed)
+            #expect(workout.overviewAccessibilityValue.contains("Higher is better"))
+        }
+    }
+
     @Test func reversedGoalsAndUnitsUseReadableLabels() {
         let persistence = store()
         let source = MockHealthKitDataSource()

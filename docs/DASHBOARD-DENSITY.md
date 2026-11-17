@@ -1,4 +1,24 @@
-# Dashboard density — native Release proof, visual approval pending
+# Dashboard density — compact labels pending native preview
+
+## Latest user requirement: inline current / configured target
+
+The user approved the concept “можно даже без больше или равно просто таргет /80 или /15000”: no visible `Goal`, ≥/≤ or baseline row in the **overview**. The number 80 was an example, **not** authorization to change the heart-rate goal from 42 to its starting baseline of 80.
+
+- Keep the custom metric name above the value and its colored marker. Show the actual current reading followed inline by muted `/ target`, with the shared unit once: `110 / 100 ms`, locale-formatted `5,100 / 15,000 steps`, `55 / 42 bpm` for the existing synthetic density fixture. No reading or saved setting is rewritten.
+- `RingViewModel.targetText` reuses the existing finite-value/locale-aware 0…1 decimal formatter and the existing reversed-goal choice. Mean steps and other decimals are **not** newly rounded to integers. Workout zones 2–3 / 4–5 use the same overview renderer and their configured minute goal.
+- Direction, comparison, configured target, applicable baseline and errors remain in the overview's full accessibility label. Settings retain their goal/baseline controls. Names, source, aggregation, formulas, Health queries, cache, Watch synchronization, persistence, renderer/glow and all saved configuration features are untouched.
+- Only `RingDashboardLegend` changes visually. Watch uses `RingMetricView`, whose typography, progress bar and explanatory rows remain unchanged. Existing `goalText` output remains unchanged. The overview keeps Dynamic Type, a wrapping single Text and intrinsic vertical sizing; no forced single line, font-size cap or shrink factor is added.
+- Neutral Period/week dots and the fixed intrinsic empty-library Save row remain unchanged.
+
+### Current local verification (not pixel acceptance)
+
+Started from clean `bf70afe7b66f864b5e99ec9c17e3563789cec8d5` in this isolated candidate. Two new lightweight tests failed first (missing target property and old visible Goal/baseline rows), then passed after implementation. `python3 -m unittest discover -s ci/tests -v`: **28/28 passed**. The test executes the actual presentation-property slice with Foundation in `en_US`, `fr_FR`, `ru_RU` and `ar_EG`, checking decimal precision, Unicode units/digits/grouping, configured target versus baseline, reverse/higher direction and loading/error accessibility. This is a presentation harness with input adapters, **not** execution of HealthKit or the full model. Swift frontend parsing and `git diff --check` pass.
+
+Prepared native `compactOverviewKeepsConfiguredGoalAndBaselineDistinct` coverage for the real model (55 / 42, baseline 80, custom Unicode name, both workout metrics). Strengthened the existing accessibility XXXL test to assert reverse target 42 and baseline 80 separately. These native tests have **not** run for this revision. Existing French/large-type and density screenshot tests are ready for the later serial native run; actual wrapping, RTL layout and full-platform typechecking remain unverified.
+
+**No Xcode build, simulator boot or screenshot was attempted:** KeineMagie integrator `sa-0-374f8e76` owns the sole heavy slot until the parent grants it. After that handoff, capture the actual updated Release overview (existing `--dashboard-density-fixture`, `testDashboardDensityEmptyAndSavedRows`) and inspect the large-type/locale cases. Show the new real capture to the user before any publication. The prior screenshots/measurements below predate the compact-label change and are **not proof of this revision**. No push, release or edit to the original dirty worktree is authorized.
+
+## Earlier density proof (before inline labels)
 
 ## Scope and provenance
 

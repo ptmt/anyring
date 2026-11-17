@@ -24,15 +24,15 @@ struct RingDashboardLegend: View {
                     .accessibilityHidden(true)
                 Text(ring.name).font(.caption).foregroundStyle(.primary)
             }
-            Text("\(Text(ring.valueText).fontWeight(.semibold)) \(ring.units)")
+            // One wrapping Text keeps the shared unit once without shrinking type.
+            Text("\(Text(ring.valueText).fontWeight(.semibold))\(Text(" / \(ring.targetText) \(ring.units)").foregroundColor(.secondary))")
                 .font(.subheadline).monospacedDigit()
                 .foregroundStyle(.primary)
-            Text("Goal \(ring.goalText)").font(.caption2).foregroundStyle(.secondary)
-            if let start = ring.startingValueText { Text(start).font(.caption2).foregroundStyle(.secondary) }
             if let error = ring.error { Text(error.localizedDescription).font(.caption).foregroundStyle(.secondary) }
         }
         .fixedSize(horizontal: false, vertical: true)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(ring.name), \(ring.overviewAccessibilityValue)"))
         .accessibilityIdentifier("metric.\(ring.configuration.ring.rawValue)")
     }
 }

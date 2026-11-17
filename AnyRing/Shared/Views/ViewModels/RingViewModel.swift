@@ -15,7 +15,13 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
     var direction: String { isReversed ? "Lower is better" : "Higher is better" }
     var comparison: String { isReversed ? "≤" : "≥" }
     var valueText: String { progress.empty && (isRefreshing || error != nil) ? "—" : format(progress.absolute) }
-    var goalText: String { "\(comparison) \(format(isReversed ? configuration.minValue : configuration.maxValue)) \(units)" }
+    /// The configured goal, never the reverse metric's starting baseline.
+    var targetText: String { format(isReversed ? configuration.minValue : configuration.maxValue) }
+    var goalText: String { "\(comparison) \(targetText) \(units)" }
+    var overviewAccessibilityValue: String {
+        ["\(valueText) \(units)", "Goal \(goalText)", direction, startingValueText,
+         error?.localizedDescription].compactMap { $0 }.joined(separator: ", ")
+    }
     var startingValueText: String? {
         guard isReversed || configuration.minValue != 0 else { return nil }
         return "From \(format(isReversed ? configuration.maxValue : configuration.minValue)) \(units)"
