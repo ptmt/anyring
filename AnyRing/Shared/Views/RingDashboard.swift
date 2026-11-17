@@ -145,7 +145,8 @@ struct RingDashboard: View {
                 ViewThatFits(in: .horizontal) {
                     HStack(alignment: .center, spacing: 16) {
                         graphic(min(size, 140))
-                        legend.frame(minWidth: 140)
+                        // Let the compact value wrap before abandoning the side-by-side layout.
+                        legend.frame(minWidth: 140, idealWidth: 140)
                     }
                     VStack(spacing: 16) { graphic(min(size, 180)); legend }
                 }

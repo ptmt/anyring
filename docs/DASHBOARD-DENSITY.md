@@ -1,4 +1,4 @@
-# Dashboard density — compact labels pending native preview
+# Dashboard density — compact labels verified natively, visual approval pending
 
 ## Latest user requirement: inline current / configured target
 
@@ -7,16 +7,55 @@ The user approved the concept “можно даже без больше или 
 - Keep the custom metric name above the value and its colored marker. Show the actual current reading followed inline by muted `/ target`, with the shared unit once: `110 / 100 ms`, locale-formatted `5,100 / 15,000 steps`, `55 / 42 bpm` for the existing synthetic density fixture. No reading or saved setting is rewritten.
 - `RingViewModel.targetText` reuses the existing finite-value/locale-aware 0…1 decimal formatter and the existing reversed-goal choice. Mean steps and other decimals are **not** newly rounded to integers. Workout zones 2–3 / 4–5 use the same overview renderer and their configured minute goal.
 - Direction, comparison, configured target, applicable baseline and errors remain in the overview's full accessibility label. Settings retain their goal/baseline controls. Names, source, aggregation, formulas, Health queries, cache, Watch synchronization, persistence, renderer/glow and all saved configuration features are untouched.
-- Only `RingDashboardLegend` changes visually. Watch uses `RingMetricView`, whose typography, progress bar and explanatory rows remain unchanged. Existing `goalText` output remains unchanged. The overview keeps Dynamic Type, a wrapping single Text and intrinsic vertical sizing; no forced single line, font-size cap or shrink factor is added.
+- Compact value presentation changes in `RingDashboardLegend`, with the native-verified ideal-width correction in its parent layout described below. Watch uses `RingMetricView`, whose typography, progress bar and explanatory rows remain unchanged. Existing `goalText` output remains unchanged. The overview keeps Dynamic Type, a wrapping single Text and intrinsic vertical sizing; no forced single line, font-size cap or shrink factor is added.
 - Neutral Period/week dots and the fixed intrinsic empty-library Save row remain unchanged.
 
-### Current local verification (not pixel acceptance)
+### Final native verification — November 17, 2026
 
-Started from clean `bf70afe7b66f864b5e99ec9c17e3563789cec8d5` in this isolated candidate. Two new lightweight tests failed first (missing target property and old visible Goal/baseline rows), then passed after implementation. `python3 -m unittest discover -s ci/tests -v`: **28/28 passed**. The test executes the actual presentation-property slice with Foundation in `en_US`, `fr_FR`, `ru_RU` and `ar_EG`, checking decimal precision, Unicode units/digits/grouping, configured target versus baseline, reverse/higher direction and loading/error accessibility. This is a presentation harness with input adapters, **not** execution of HealthKit or the full model. Swift frontend parsing and `git diff --check` pass.
+Started this acceptance run from clean `ad8279a16b38d59ddbedcb4e64d59b36a397c00f` (includes density `bf70afe`). Xcode 27.2 / iOS 27.2, actual **Release** app and tests, ad-hoc simulator signing, `ENABLE_TESTABILITY=YES`, two compiler jobs, parallel testing disabled. Only explicit simulator synthetic fixtures were used; no real Health data.
 
-Prepared native `compactOverviewKeepsConfiguredGoalAndBaselineDistinct` coverage for the real model (55 / 42, baseline 80, custom Unicode name, both workout metrics). Strengthened the existing accessibility XXXL test to assert reverse target 42 and baseline 80 separately. These native tests have **not** run for this revision. Existing French/large-type and density screenshot tests are ready for the later serial native run; actual wrapping, RTL layout and full-platform typechecking remain unverified.
+**One real small-phone regression was found and fixed.** At 375pt the new inline value's ideal width made `ViewThatFits` choose the stacked overview, growing the dashboard to 506.5pt and hiding Appearance. `small.xcresult` executed 2 tests: accessibility passed, ordinary density failed its existing first-screen Appearance assertion. The only production correction is `legend.frame(minWidth: 140, idealWidth: 140)` in `RingDashboard.swift`: the value wraps before the existing layout falls back to stacking. No type shrinking, goal/formula changes or weakened assertions. `small-fixed.xcresult` then passed 2/2; normal light/dark were rerun on this corrected source.
 
-**No Xcode build, simulator boot or screenshot was attempted:** KeineMagie integrator `sa-0-374f8e76` owns the sole heavy slot until the parent grants it. After that handoff, capture the actual updated Release overview (existing `--dashboard-density-fixture`, `testDashboardDensityEmptyAndSavedRows`) and inspect the large-type/locale cases. Show the new real capture to the user before any publication. The prior screenshots/measurements below predate the compact-label change and are **not proof of this revision**. No push, release or edit to the original dirty worktree is authorized.
+Evidence root: `/Users/tinyserve/.hermes/cache/scratch/compact-label-proof/`.
+
+| Final result bundle | Test identities passed / executed | Parameter-expanded device executions | Scope |
+|---|---:|---:|---|
+| `final-light.xcresult` | 88 / 88 | 96 | Entire unit/widget suite (84 identities), four UI tests: density lifecycle, XXXL, French normal/XXXL + keyboard, full configuration restoration/cold relaunch |
+| `final-dark.xcresult` | 2 / 2 | 2 | Ordinary empty/populated lifecycle and complete XXXL metric/footer visibility |
+| `small-fixed.xcresult` | 2 / 2 | 2 | SE 375×667pt ordinary empty/populated lifecycle and complete XXXL metric/footer visibility |
+
+All final rows have zero failures/skips. The real-model `compactOverviewKeepsConfiguredGoalAndBaselineDistinct` executes in the full suite: target 42 remains distinct from baseline 80, including Unicode custom name and workout minute targets. Native accessibility tests retain Goal/direction/baseline semantics while screenshots show none of that extra overview chrome. Save, rename, cancel/confirm delete, restore and relaunch remain exercised. Normal light/dark captures show `110 / 100 ms`, `5,100 / 15,000 steps`, `55 / 42 bpm` with muted suffix and one unit. At 375pt the steps suffix wraps cleanly; XXXL stacks naturally and scrolls, with complete per-metric/footer viewport assertions.
+
+`python3 -m unittest discover -s ci/tests -q`: **28/28 passed again after the fix**. Its actual Foundation presentation slice covers `en_US`, `fr_FR`, `ru_RU`, `ar_EG`, decimal precision, Unicode/grouping, reverse target/baseline and pending/error accessibility. Native French normal/XXXL runs cover layout and locale grouping, not full French app translation. Arabic RTL native pixels and actual VoiceOver spoken focus traversal remain unverified. `git diff --check` passes.
+
+#### Final runtime bounds and actual pixels
+
+CGRects below are XCTest attachments, not inferred source dimensions:
+
+| Ordinary state | iPhone 13 light and dark | iPhone SE |
+|---|---|---|
+| Dashboard x,y,w,h (pt) | 16,82,358,319.667 | 16,55,343,330.5 |
+| Empty saved row x,y,w,h (pt) | 16,401.667,358,74 | 16,385.5,343,74 |
+| Populated saved row height (pt) | 176.667 | 177 |
+| Populated Save control height (pt) | 44 | 44 |
+
+The empty AX button wraps its 74pt Form cell; the label's minimum target remains 44pt. The previous 204.333pt empty-row regression has not returned. Appearance is visible on the first ordinary screen on both sizes. Pixel-column inspection of the actual full PNGs (`pixel-column-proof.json`) finds the normal card's fill beginning at y=246 and ending at y=1427 exclusive in **both** light and dark (1170×2532 PNG), and small card y=110…919 exclusive (750×1334 PNG). Text/separator holes are retained in the recorded runs, not painted over.
+
+#### Send these actual final PNGs for user approval
+
+Under `/Users/tinyserve/.hermes/cache/documents/compact-label-proof/`:
+
+- `final-light/Density empty library synthetic.png`
+- `final-dark/Density empty library synthetic.png`
+- `final-light/Density saved library synthetic.png`
+- `small/Density empty library synthetic.png`
+- `final-dark/Density accessibility metric 2 synthetic.png`
+- `small/Density accessibility metric 1 synthetic.png`
+- `small/Density accessibility empty footer synthetic.png`
+
+Full-resolution unedited native attachments, visually inspected. Synthetic values/default colors, not the user's personal Health records or palette. **Parent must send the screenshots; user visual approval still gates publication. No push or deploy.** Earlier `light-retry`/`dark` bundles precede the small-layout correction and are retained as intermediate evidence only.
+
+Initial foreground build exceeded the tool's 420-second wall limit and was interrupted; it is not counted as acceptance. A background bounded retry compiled and passed. Serial fresh-device startup was slow but final results are complete. Only task-created devices were booted, one at a time; each was shut down, read back as Shutdown, and deleted to avoid disk accumulation. Owned UDIDs: `0BCC07E4-CC71-48A1-9412-B5960175FFA0`, `ED23E644-C2B3-4E82-8E28-E5C11975B278`, `653700FB-C3EE-433B-BF60-60B15BFF4D7F`. Other booted devices and KeineMagie worktrees were untouched. Original dirty worktree's 13 file hashes, HEAD and index rechecked unchanged. Only the layout fix and this document are changed in the candidate; no goal/baseline/provider/cache/persistence/Watch code changes.
 
 ## Earlier density proof (before inline labels)
 
