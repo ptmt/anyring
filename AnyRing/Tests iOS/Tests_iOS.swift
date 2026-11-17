@@ -66,8 +66,14 @@ final class Tests_iOS: XCTestCase {
         for (index, expected) in [(0, "HRV"), (1, "Step count"), (2, "Heart-rate")] {
             let metric = app.descendants(matching: .any)["metric.\(index)"]
             XCTAssertTrue(metric.waitForExistence(timeout: 10))
-            for _ in 0..<8 { if metric.isHittable { break }; app.swipeUp() }
+            for _ in 0..<8 {
+                if metric.isHittable && metric.frame.minY >= 70 && metric.frame.maxY <= app.frame.maxY - 20 { break }
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                    .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+            }
             XCTAssertTrue(metric.isHittable)
+            XCTAssertGreaterThanOrEqual(metric.frame.minY, 70)
+            XCTAssertLessThanOrEqual(metric.frame.maxY, app.frame.maxY - 20)
             XCTAssertTrue(metric.label.contains(expected))
             XCTAssertTrue(metric.label.contains("Goal"))
             XCTAssertGreaterThanOrEqual(metric.frame.minX, 0)
@@ -75,8 +81,14 @@ final class Tests_iOS: XCTestCase {
             capture(app, name: "Density accessibility metric \(index) synthetic")
         }
         let save = app.buttons["saveConfiguration"]
-        for _ in 0..<8 { if save.isHittable { break }; app.swipeUp() }
+        for _ in 0..<8 {
+            if save.isHittable && save.frame.minY >= 70 && save.frame.maxY <= app.frame.maxY - 20 { break }
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
         XCTAssertTrue(save.isHittable)
+        XCTAssertGreaterThanOrEqual(save.frame.minY, 70)
+        XCTAssertLessThanOrEqual(save.frame.maxY, app.frame.maxY - 20)
         XCTAssertEqual(save.label, "Save current setup")
         XCTAssertGreaterThanOrEqual(save.frame.height, 44)
         XCTAssertLessThanOrEqual(save.frame.maxX, app.frame.maxX)
