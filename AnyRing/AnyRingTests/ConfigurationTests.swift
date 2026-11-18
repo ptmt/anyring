@@ -249,6 +249,64 @@ struct ConfigurationTests {
         #expect(cold.savedConfigurations.isEmpty)
         #expect(cold.config == original)
     }
+    @Test func savedTemplateNameValidationPreservesCurrentAndExistingRecords() throws {
+        let suite = "SavedNameValidation.\(UUID())"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+        let model = AnyRingViewModel(persistence: store, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+        let original = model.config
+        let saved = try model.saveConfiguration(named: "  Recovery 🌿 \n")
+        #expect(saved.name == "Recovery 🌿")
+        let bytes = defaults.data(forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey)
+        for name in ["", " ", "\n\t"] {
+            #expect(throws: SavedConfigurationError.self) { try model.saveConfiguration(named: name) }
+            #expect(throws: SavedConfigurationError.self) { try model.renameConfiguration(id: saved.id, name: name) }
+            #expect(model.config == original)
+            #expect(model.savedConfigurations == [saved])
+            #expect(defaults.data(forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey) == bytes)
+        }
+        // Duplicate display names are allowed, but identity must remain unique.
+        let second = try model.saveConfiguration(named: saved.name)
+        #expect(second.id != saved.id)
+        #expect(model.savedConfigurations.count == 2)
+        #expect(model.config == original)
+    }
+
+    @Test func invalidSavedIdentitiesAndNilNamesFailClosedWithoutDeletingBytes() throws {
+        let suite = "SavedDecodeValidation.\(UUID())"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let config = UserDefaultsConfigurationPersistence.defaultConfig
+        let record = SavedConfiguration(id: UUID(), name: "Recovery", config: config)
+        let object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(record)) as? [String: Any])
+        var nilName = object; nilName["name"] = NSNull()
+        var missingName = object; missingName.removeValue(forKey: "name")
+        for objects in [[object, object], [nilName], [missingName]] {
+            let bytes = try JSONSerialization.data(withJSONObject: objects)
+            defaults.set(bytes, forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey)
+            let store = UserDefaultsConfigurationPersistence(userDefaults: defaults)
+            #expect(throws: (any Error).self) { try store.restoreSavedConfigurations() }
+            let model = AnyRingViewModel(persistence: store, dataSource: MockHealthKitDataSource(), requestAuthorization: false)
+            #expect(model.savedConfigurationsError != nil)
+            #expect(throws: (any Error).self) { try model.saveConfiguration(named: "Do not replace") }
+            #expect(throws: (any Error).self) { try model.selectConfiguration(id: record.id) }
+            #expect(model.config == config)
+            #expect(defaults.data(forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey) == bytes)
+        }
+        // Unknown additive fields and a legacy empty display name must not erase a library.
+        var compatible = object
+        compatible["futureField"] = true
+        compatible["name"] = ""
+        let bytes = try JSONSerialization.data(withJSONObject: [compatible])
+        defaults.set(bytes, forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey)
+        let restored = try UserDefaultsConfigurationPersistence(userDefaults: defaults).restoreSavedConfigurations()
+        #expect(restored.count == 1)
+        #expect(restored.first?.id == record.id)
+        #expect(restored.first?.config == config)
+        #expect(defaults.data(forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey) == bytes)
+    }
+
     @Test func unreadableSavedLibraryIsNeverReplacedByDefaultsOrSave() throws {
         let defaults = UserDefaults(suiteName: "AnyRingTemplates.\(UUID())")!
         let bytes = Data("unknown future or damaged records".utf8)

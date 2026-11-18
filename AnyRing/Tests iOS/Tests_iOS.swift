@@ -178,9 +178,19 @@ final class Tests_iOS: XCTestCase {
         let save = app.buttons["saveConfiguration"]
         XCTAssertTrue(save.waitForExistence(timeout: 10), "Saved configurations must be reachable beside the graph")
         guard save.exists else { return }
+        XCTAssertTrue(save.isHittable)
         save.tap()
-        app.textFields["Template name"].typeText("Recovery")
-        app.alerts.buttons["Save"].tap()
+        let naming = app.alerts["Save template"]
+        XCTAssertTrue(naming.waitForExistence(timeout: 5), "The actual plus control must open the naming dialog")
+        let name = naming.textFields["Template name"]
+        let saveName = naming.buttons["Save"]
+        XCTAssertFalse(saveName.isEnabled, "Empty names cannot create a template")
+        name.tap()
+        name.typeText("   ")
+        XCTAssertFalse(saveName.isEnabled, "Whitespace-only names cannot create a template")
+        name.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3) + "Recovery")
+        XCTAssertTrue(saveName.isEnabled, "Typing a valid name must enable Save immediately")
+        saveName.tap()
         let preset = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'savedConfiguration.'")).firstMatch
         XCTAssertTrue(preset.waitForExistence(timeout: 5))
         XCTAssertTrue(preset.isSelected)

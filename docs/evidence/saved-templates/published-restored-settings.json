@@ -1,0 +1,151 @@
+{
+  "Config.v3": {
+    "first": {
+      "appearance": {
+        "gradient": false,
+        "innerGlow": true,
+        "mainColor": "YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGjCwwdVSRudWxs2A0ODxAREhMUFRYXGBkaGxxfEBVVSUNvbG9yQ29tcG9uZW50Q291bnRXVUlHcmVlblZVSUJsdWVXVUlBbHBoYVVOU1JHQlYkY2xhc3NVVUlSZWRcTlNDb2xvclNwYWNlEAQiP0jIzSI/M7O3Ij+AAABNMCAwLjc4NCAwLjcwMoACIgAAAAAQAtMeHyAhIiRaJGNsYXNzbmFtZVgkY2xhc3Nlc1skY2xhc3NoaW50c1dVSUNvbG9yoiEjWE5TT2JqZWN0oSVXTlNDb2xvcgAIABEAGgAkACkAMgA3AEkATABRAFMAVwBdAG4AhgCOAJUAnQCjAKoAsAC9AL8AxADJAM4A3ADeAOMA5QDsAPcBAAEMARQBFwEgASIAAAAAAAACAQAAAAAAAAAmAAAAAAAAAAAAAAAAAAABKg==",
+        "outerGlow": true
+      },
+      "customName": "Resting",
+      "healthKitParams": {
+        "aggregation": "Min",
+        "description": "A quantity sample type that measures the user’s heart rate.",
+        "maxValue": 60,
+        "minValue": 35,
+        "name": "Heart-rate",
+        "reversed": true,
+        "sampleType": "heartRate",
+        "units": "countperminute"
+      },
+      "ring": 0
+    },
+    "global": {
+      "days": 5,
+      "shape": "rectangular"
+    },
+    "second": {
+      "appearance": {
+        "gradient": false,
+        "innerGlow": false,
+        "mainColor": "YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGjCwwcVSRudWxs2A0ODxAREhMUFRYXGBkaGBtfEBVVSUNvbG9yQ29tcG9uZW50Q291bnRXVUlHcmVlblZVSUJsdWVXVUlBbHBoYVVOU1JHQlYkY2xhc3NVVUlSZWRcTlNDb2xvclNwYWNlEAQiPjS00CI+qqqfIj+AAABNMSAwLjE3NiAwLjMzM4ACEALTHR4fICEjWiRjbGFzc25hbWVYJGNsYXNzZXNbJGNsYXNzaGludHNXVUlDb2xvcqIgIlhOU09iamVjdKEkV05TQ29sb3IACAARABoAJAApADIANwBJAEwAUQBTAFcAXQBuAIYAjgCVAJ0AowCqALAAvQC/AMQAyQDOANwA3gDgAOcA8gD7AQcBDwESARsBHQAAAAAAAAIBAAAAAAAAACUAAAAAAAAAAAAAAAAAAAEl",
+        "outerGlow": true
+      },
+      "healthKitParams": {
+        "aggregation": "Sum",
+        "description": "The number of steps recorded in Apple Health.",
+        "maxValue": 8000,
+        "minValue": 0,
+        "name": "Step count",
+        "reversed": false,
+        "sampleType": "stepCount",
+        "units": "count"
+      },
+      "ring": 1
+    },
+    "third": {
+      "appearance": {
+        "gradient": false,
+        "innerGlow": false,
+        "mainColor": "YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGjCwwcVSRudWxs2A0ODxAREhMUFRYXGBkaGBtfEBVVSUNvbG9yQ29tcG9uZW50Q291bnRXVUlHcmVlblZVSUJsdWVXVUlBbHBoYVVOU1JHQlYkY2xhc3NVVUlSZWRcTlNDb2xvclNwYWNlEAQiP0zMzSIAAAAAIj+AAABHMSAwLjggMIACEALTHR4fICEjWiRjbGFzc25hbWVYJGNsYXNzZXNbJGNsYXNzaGludHNXVUlDb2xvcqIgIlhOU09iamVjdKEkV05TQ29sb3IACAARABoAJAApADIANwBJAEwAUQBTAFcAXQBuAIYAjgCVAJ0AowCqALAAvQC/AMQAyQDOANYA2ADaAOEA7AD1AQEBCQEMARUBFwAAAAAAAAIBAAAAAAAAACUAAAAAAAAAAAAAAAAAAAEf",
+        "outerGlow": true
+      },
+      "healthKitParams": {
+        "aggregation": "Sum",
+        "description": "A quantity sample type that measures the amount of active energy the user has burned.",
+        "maxValue": 1500,
+        "minValue": 0,
+        "name": "Active Energy",
+        "reversed": false,
+        "sampleType": "activeEnergyBurned",
+        "units": "kilocalorie"
+      },
+      "ring": 2
+    }
+  },
+  "SavedConfigurations.v1": [
+    {
+      "config": {
+        "first": {
+          "appearance": {
+            "gradient": false,
+            "innerGlow": true,
+            "mainColor": {
+              "alpha": 1,
+              "blue": 0.701961,
+              "green": 0.784314,
+              "red": 0
+            },
+            "outerGlow": true
+          },
+          "customName": "Resting",
+          "healthKitParams": {
+            "aggregation": "Min",
+            "description": "A quantity sample type that measures the user’s heart rate.",
+            "maxValue": 60,
+            "minValue": 35,
+            "name": "Heart-rate",
+            "reversed": true,
+            "sampleType": "heartRate",
+            "units": "countperminute"
+          },
+          "ring": 0
+        },
+        "global": {
+          "days": 5,
+          "shape": "rectangular"
+        },
+        "second": {
+          "appearance": {
+            "gradient": false,
+            "innerGlow": false,
+            "mainColor": {
+              "alpha": 1,
+              "blue": 0.333333,
+              "green": 0.176471,
+              "red": 1
+            },
+            "outerGlow": true
+          },
+          "healthKitParams": {
+            "aggregation": "Sum",
+            "description": "The number of steps recorded in Apple Health.",
+            "maxValue": 8000,
+            "minValue": 0,
+            "name": "Step count",
+            "reversed": false,
+            "sampleType": "stepCount",
+            "units": "count"
+          },
+          "ring": 1
+        },
+        "third": {
+          "appearance": {
+            "gradient": false,
+            "innerGlow": false,
+            "mainColor": {
+              "alpha": 1,
+              "blue": 0,
+              "green": 0.8,
+              "red": 1
+            },
+            "outerGlow": true
+          },
+          "healthKitParams": {
+            "aggregation": "Sum",
+            "description": "A quantity sample type that measures the amount of active energy the user has burned.",
+            "maxValue": 1500,
+            "minValue": 0,
+            "name": "Active Energy",
+            "reversed": false,
+            "sampleType": "activeEnergyBurned",
+            "units": "kilocalorie"
+          },
+          "ring": 2
+        }
+      },
+      "id": "3E756458-BE63-426A-A98C-6AB7A8120792",
+      "name": "Recovery"
+    }
+  ]
+}
