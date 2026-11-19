@@ -1,5 +1,9 @@
 # Saved templates — failure not reproduced
 
+## Publication — November 19, 2026
+
+The owner subsequently authorized release. Source `add04f83094c5f671842bb309843435aec9e7af4`, including the unchanged density/inline-target/week-background candidate and these tests, was uploaded as **2.0 (43.2)**. Apple confirmed upload at **2026-11-19T21:06:23Z**; full hosted Debug and targeted Release validation passed. See [release evidence](../ci/RELEASE.md). The reported saved-template failure is still **not reproduced**; no functional saved-template or glow fix is claimed. Historical unpublished/no-remote-action statements below describe the November 18 investigation only. Apple processing completion and tester availability remain unverified.
+
 ## Outcome, November 18, 2026
 
 The strengthened native **Release** flow passes on both the local candidate and the published source. The reported functional failure is **not reproduced**; no new root cause or functional fix is claimed. Only tests, this report and synthetic evidence are added. The candidate's previously implemented density, inline current/target labels, small-phone layout and rounded neutral week range remain unchanged and unpublished by this investigation.

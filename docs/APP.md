@@ -4,6 +4,10 @@ Three configurable Apple Health progress rings for iPhone, Apple Watch, and widg
 
 Requires iOS 26+, watchOS 26+, and Swift 6. The retained macOS target requires macOS 26; it shows an unavailable-data screen where Apple Health is unavailable. Open `AnyRing/AnyRing.xcodeproj` in Xcode 26 or later and select the `AnyRing (iOS)` scheme. Configure your development team for all app and widget targets before installing on devices.
 
+## Current release
+
+**2.0 (43.2)** was uploaded successfully to Apple on November 19, 2026, source `add04f83094c5f671842bb309843435aec9e7af4`. The iPhone dashboard now has a compact empty Save action and populated template strip, inline current/configured-target readings beside the rings, and a rounded neutral included-week background. Complete saved configurations remain distinct from appearance palettes. Saving, restoring and cold-launch persistence passed on both the previous published source and this candidate; the reported template failure was not reproduced, and no functional template/glow fix is claimed. Full hosted validation and all four signed targets passed. Processing completion, tester availability and physical HealthKit/Watch acceptance remain unverified; see [release receipts](../ci/RELEASE.md).
+
 ## Architecture
 
 - `Shared/Connectivity/AppController.swift` owns the model and connectivity service for the app's lifetime. Scene activation refreshes health values and settings independently of which screen is visible.

@@ -1,4 +1,8 @@
-# Dashboard density — native candidate verified, visual approval pending
+# Dashboard density — released in 2.0 (43.2)
+
+## Publication — November 19, 2026
+
+The owner's explicit release authorization supersedes the historical approval-pending notes below. Source `add04f83094c5f671842bb309843435aec9e7af4` includes this unchanged production candidate and strengthened saved-template tests. Apple upload of **2.0 (43.2)** succeeded at **2026-11-19T21:06:23Z**, run **44604949035**, attempt 2; full hosted validation passed. See [release evidence](../ci/RELEASE.md). Processing completion, tester availability and physical HealthKit/Watch acceptance remain unverified. The following sections retain the original investigation chronology; their no-publication statements describe those earlier stages, not current status.
 
 ## Latest: subtle background behind the included calendar range
 
