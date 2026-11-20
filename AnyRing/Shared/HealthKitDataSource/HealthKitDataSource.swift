@@ -54,7 +54,7 @@ enum WorkoutZoneError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unavailable: "Workout zones require iOS 27 or watchOS 27."
-        case .noReadableZones: "No readable workout zones. Check Workouts and Heart Rate access."
+        case .noReadableZones: "No data"
         case .incompleteCoverage: "Incomplete workout zones: missing data, overlapping workouts or a period boundary."
         }
     }
