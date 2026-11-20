@@ -1,5 +1,12 @@
 # AnyProgress releases
 
+## Neutral missing workout-zone copy — 2.0 (45.3)
+
+- Source `84fccfaa1ae8c1958d29c82a1c5691711e6df58c`, based on `7eaf9de0e971e45c6594b00da5db779caf02246a`. Only production change: `WorkoutZoneError.noReadableZones` now says **No data**. Added focused offline copy regression; readings, sources, formulas, goals, glow and all identifiers/signing configuration unchanged.
+- [Publication 44815388698, attempt 3](https://github.com/ptmt/anyring/actions/runs/44815388698): **success**; validation **136587144712**, upload **136601129412**. Archive build **45.3**, marketing **2.0** unchanged. Apple explicitly reported **Uploaded package is processing.** and **Upload succeeded.** at **2026-11-20T22:13:51Z**, with **ARCHIVE SUCCEEDED** and **EXPORT SUCCEEDED**. All four original phone/Watch app/widget profiles validated and targets signed; credential cleanup succeeded, zero GitHub artifacts. Processing completion and tester availability remain unverified; no App Review submission.
+- Local **29 offline tests**, Swift parse, shell syntax and diff checks passed. Hosted simulator build, unsigned Release archive, full Debug app/widget/navigation tests and targeted Release checks passed on final attempt. One publish dispatch only. Attempt 1 failed Xcode application launch at `Tests_iOS.swift:356`; attempt 2 failed preparing the UI runner (Simulator service-hub interruption / stalled waiter). Retried failed jobs on unchanged SHA without weakening tests. Push-only run **44815376230** separately failed a no-process-ID UI launch at `Tests_iOS.swift:440`; it is not claimed green. Failed attempts never uploaded.
+- Normal non-force push from `anyring-saved-templates`; original `anyring` HEAD, exact status, index bytes and all **13** dirty-file hashes preserved. No local simulator use or DerivedData created; no unrelated app changes. Concise receipts and failure excerpts: `~/.hermes/cache/scratch/anyring-no-data-*`.
+
 ## Compact density, inline targets and rounded week range — 2.0 (43.2)
 
 - Published November 19, 2026 under the owner's explicit release authorization. Source **`add04f83094c5f671842bb309843435aec9e7af4`**, production-identical to `20d261fe092dcf794ae397ec71e6c128ef544271` plus saved-template tests/evidence. Fresh remote remained `5e7d424d25e4863657279ac8804e8c23ab9f777f`; normal non-force push from clean `/Users/tinyserve/Projects/anyring-density-templates-release`. No integration or production change was needed.
