@@ -1,6 +1,12 @@
-# Metric information — local candidate, not published
+# Metric information — published 2.0 (49.1)
 
-November 21, 2026. Isolated worktree `/Users/tinyserve/Projects/anyring-metric-info`, branch `fix/metric-info`, based on freshly fetched `origin/main` **3badeda1225b765185b9e4c17a06adbca45b13b4**. The latest released source remains **ffa4103dac3d30716a1f041d001abbed7e52bfcc / 2.0 (47.1)**. No push, upload, release dispatch or version change was performed.
+November 21, 2026. Approved source **1cdf725e97078ac3d52c6498b390858c3e4c8197**, from isolated worktree `/Users/tinyserve/Projects/anyring-metric-info`, branch `fix/metric-info`, based on freshly fetched `origin/main` **3badeda1225b765185b9e4c17a06adbca45b13b4**. Published unchanged after the owner's approval of the native preview; supersedes **ffa4103dac3d30716a1f041d001abbed7e52bfcc / 2.0 (47.1)**.
+
+## Publication
+
+One normal non-force push, remote SHA read-back, then exactly one `testflight.yml` dispatch on `main` with `publish=true`. [Run 44893826913](https://github.com/ptmt/anyring/actions/runs/44893826913), attempt 1, succeeded: hosted validation **136815129093**, upload **136822703009**. Full hosted Debug app/widget/navigation and targeted Release gates, simulator build and unsigned archive passed. All four original profiles validated and all four targets signed; **ARCHIVE SUCCEEDED**, **Upload succeeded.** / **Uploaded package is processing.** at **2026-11-21T10:55:20Z**, then **EXPORT SUCCEEDED**. Logged build **49.1**, marketing **2.0** retained. Credential cleanup succeeded; GitHub artifacts count **0**. No retry, duplicate upload or App Review submission. Apple processing completion and tester availability are not verified.
+
+Before publication, all seven changed-source SHA-256 values matched the existing source receipt; all six actual xcresults were re-read (**112 passing executions**) without repeating simulator work. Fresh offline discovery passed **29/29**, shell syntax and diff checks passed. No local simulator/device mutation or new DerivedData was needed. Concise hosted receipts: `~/.hermes/cache/scratch/anyring-metric-info/publication-receipt.json`.
 
 ## Scope
 
@@ -46,4 +52,4 @@ Full logs, xcresults, all three sheet/AX captures, negative runs and the sequent
 
 Borrowed devices `93E1113F-6736-4CCB-827D-0E2F1C3876EA` and `56A70197-59DE-4410-9E76-25272244E9C8` were reused serially, restored to dark/light respectively and read back **Shutdown**. No device was created, cloned, erased or deleted. Original dirty `/Users/tinyserve/Projects/anyring` retains HEAD `2552ee52e2339f00828e82615aaa63903af4cede`, index SHA-256 `9ee10522452e120287eb650fd65f92e97b075cf26f6d34beafe6594a368e1472` and the same exact 13-entry status. All 13 dirty-file SHA-256 hashes, exact NUL-delimited status, index and HEAD also match the preserved pre-task release snapshot at `/Users/tinyserve/.hermes/cache/scratch/anyring-selection/publish-original-snapshot.json`. The source worktree remains clean; KeineMagie project files were not touched.
 
-This is local UI/build acceptance with explicitly synthetic data, not real Health permissions, physical Watch behavior, or publication. The local app artifact is `build/Build/Products/Release-iphonesimulator/AnyProgress.app` beneath the scratch directory above.
+The local UI/build acceptance above uses explicitly synthetic data, not real Health permissions or physical Watch behavior. Publication is separately verified above. The local app artifact is `build/Build/Products/Release-iphonesimulator/AnyProgress.app` beneath the scratch directory above.
