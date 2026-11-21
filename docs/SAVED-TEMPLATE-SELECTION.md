@@ -1,6 +1,12 @@
-# Saved-template selection — local candidate
+# Saved-template selection — released 2.0 (47.1)
 
-November 21, 2026. Base: `5773c6b20d5088c9ccfe071f798a6be1fd6be1e9`, verified against remote main before creating the isolated `fix/saved-template-selection` worktree. No push, upload or release was performed; the released **45.3 / No data** work remains unchanged.
+November 21, 2026. Base: `5773c6b20d5088c9ccfe071f798a6be1fd6be1e9`, verified against remote main before creating the isolated `fix/saved-template-selection` worktree. After the real preview and the owner's explicit publication approval, unchanged source `ffa4103dac3d30716a1f041d001abbed7e52bfcc` was uploaded as **2.0 (47.1)**. The released **45.3 / No data** behavior is preserved.
+
+## Publication
+
+[Run 44882710387](https://github.com/ptmt/anyring/actions/runs/44882710387), attempt 1, succeeded: validation **136781294719**, upload **136789344053**. All four original profiles validated and targets signed; archive and export succeeded. Apple explicitly reported **Uploaded package is processing.** and **Upload succeeded.** at **2026-11-21T08:36:31Z**. Signing credential cleanup succeeded; zero GitHub artifacts. Processing completion and tester availability remain unverified; no App Review submission.
+
+Exactly one publish dispatch; no retries or source changes. Existing final xcresults below were re-read and all three changed-source SHA-256 hashes matched `source-receipt.json`; the local simulator matrix was reused, not rerun. Fresh 29 offline tests, ShellCheck, shell syntax, actionlint and diff checks passed. Hosted simulator build, unsigned Release archive, full Debug app/widget/navigation and targeted Release tests passed. Publication used a normal non-force push from the isolated worktree; original dirty main was never checked out or reset. No local simulator or new DerivedData was needed for publication; existing acceptance evidence is retained.
 
 ## Change
 
@@ -50,4 +56,4 @@ All PNGs below are unmodified, inspected, real native runtime captures under `do
 
 Full logs, xcresults, all three selection screenshots and exported attachments: `/Users/tinyserve/.hermes/cache/scratch/anyring-selection/`. `run_acceptance.py` records the exact sequential commands. Builds use `AnyRing/AnyRing.xcodeproj`, scheme `AnyRing (iOS)`, `-configuration Release`, `-parallel-testing-enabled NO`, `-maximum-concurrent-test-simulator-destinations 1`, `CODE_SIGNING_ALLOWED=NO ENABLE_TESTABILITY=YES ONLY_ACTIVE_ARCH=YES` and explicit `-only-testing` filters.
 
-Borrowed devices `93E1113F-6736-4CCB-827D-0E2F1C3876EA` and `56A70197-59DE-4410-9E76-25272244E9C8` were restored to dark/light appearance respectively and read back **Shutdown**. No simulator was created, cloned, erased or deleted. Other worktrees were not touched. Original `/Users/tinyserve/Projects/anyring` HEAD, index hash, exact status and all 13 dirty-file hashes were verified unchanged. Local candidate awaiting visual approval; publication still requires owner approval.
+Borrowed devices `93E1113F-6736-4CCB-827D-0E2F1C3876EA` and `56A70197-59DE-4410-9E76-25272244E9C8` were restored to dark/light appearance respectively and read back **Shutdown** during local acceptance. No simulator was created, cloned, erased or deleted locally. Other worktrees were not touched. Original `/Users/tinyserve/Projects/anyring` HEAD, index hash, exact status and all 13 dirty-file hashes were verified unchanged before and after publication. Physical installation and real Health/Watch behavior are not established by these synthetic tests or the upload.

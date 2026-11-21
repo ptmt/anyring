@@ -1,5 +1,12 @@
 # AnyProgress releases
 
+## Stable selected-template highlight — 2.0 (47.1)
+
+- Source **`ffa4103dac3d30716a1f041d001abbed7e52bfcc`**, atop `5773c6b20d5088c9ccfe071f798a6be1fd6be1e9`; approved after real native preview. Quiet neutral rounded fill/border encloses selected preview and name, with no lower checkmark and **0pt selection-induced layout delta**. No data copy, goals, sources, formulas, renderer, team, App Group and all four shipping IDs are unchanged. [Scope and local receipts](../docs/SAVED-TEMPLATE-SELECTION.md).
+- [Publication 44882710387, attempt 1](https://github.com/ptmt/anyring/actions/runs/44882710387): **success**. Validation **136781294719**, upload **136789344053**. Logged archive build **47.1**, marketing **2.0** unchanged. All four original profiles validated and targets signed; **ARCHIVE SUCCEEDED**, Apple **Uploaded package is processing.** / **Upload succeeded.** at **2026-11-21T08:36:31Z**, then **EXPORT SUCCEEDED**. Credential cleanup succeeded; zero GitHub artifacts. Processing completion and tester availability unverified; no App Review submission.
+- Exactly one publish dispatch; no retry or source change. Actual unchanged-source xcresults re-read: normal light **91/91**, dark **2/2**, small light **5/5**, dark **2/2**; all changed-source SHA-256 values verified. Fresh **29 offline tests**, ShellCheck, actionlint, shell syntax and diff checks passed. Hosted full Debug app/widget/navigation, targeted Release, simulator build and unsigned archive passed. Push-only run **44882701947** also succeeded and skipped upload. Local matrix was reused rather than repeated.
+- Normal non-force push from `anyring-template-selection`. Original `anyring` HEAD, index, exact status and all **13** dirty-file hashes preserved. No local simulator use or new DerivedData; retained acceptance evidence and concise publication receipts under `~/.hermes/cache/scratch/anyring-selection/`. No real Health/provider calls or unrelated application changes.
+
 ## Neutral missing workout-zone copy — 2.0 (45.3)
 
 - Source `84fccfaa1ae8c1958d29c82a1c5691711e6df58c`, based on `7eaf9de0e971e45c6594b00da5db779caf02246a`. Only production change: `WorkoutZoneError.noReadableZones` now says **No data**. Added focused offline copy regression; readings, sources, formulas, goals, glow and all identifiers/signing configuration unchanged.
