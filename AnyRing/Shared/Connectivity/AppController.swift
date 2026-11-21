@@ -31,6 +31,32 @@ final class AppController: ObservableObject {
                     defaults.set(data, forKey: UserDefaultsConfigurationPersistence.key)
                 }
             }
+            if ProcessInfo.processInfo.arguments.contains("--saved-selection-fixture") {
+                // Synthetic settings only: reproduce the three supplied thumbnail designs.
+                let names = ["hrv/steps/hr", "zones", "swim"]
+                let shapes: [RingShape] = [.squircle, .capsule, .hexagon]
+                let palettes = ["Arctic", "Sunset", "Candy"]
+                let records = names.indices.map { index in
+                    var config = UserDefaultsConfigurationPersistence.defaultConfig
+                    config.global = GlobalConfiguration(days: [3, 5, 7][index], shape: shapes[index])
+                    let palette = RingPalette.all.first { $0.name == palettes[index] }!
+                    for ring in config.configs.indices {
+                        let snapshot = palette.snapshots.list[ring]
+                        config.configs[ring].appearance = RingAppearance(mainColor: snapshot.mainColor,
+                            gradient: snapshot.gradient, secondaryColor: snapshot.secondaryColor,
+                            outerGlow: snapshot.outerGlow, innerGlow: snapshot.innerGlow)
+                        config.configs[ring].customName = "Synthetic \(index)-\(ring)"
+                        config.configs[ring].maxValue += Double(index * 10 + ring)
+                    }
+                    return SavedConfiguration(id: UUID(uuidString: "00000000-0000-0000-0000-00000000000\(index + 1)")!,
+                                              name: names[index], config: config)
+                }
+                if let library = try? JSONEncoder().encode(records),
+                   let current = try? JSONEncoder().encode(records[2].config) {
+                    defaults.set(library, forKey: UserDefaultsConfigurationPersistence.savedConfigurationsKey)
+                    defaults.set(current, forKey: UserDefaultsConfigurationPersistence.key)
+                }
+            }
             if ProcessInfo.processInfo.arguments.contains("--legacy-template-fixture") {
                 // Synthetic Config.v3 archive, not a fabricated pre-existing template library.
                 var fixture = UserDefaultsConfigurationPersistence.defaultConfig

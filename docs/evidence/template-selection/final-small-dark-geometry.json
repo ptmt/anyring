@@ -1,0 +1,269 @@
+{
+  "maximumFrameDeltaPoints": 0,
+  "captures": [
+    {
+      "timestamp": 1795245714.669,
+      "text": "selected=swim row=(16.0, 375.0, 343.0, 169.5) frames={\"item.hrv\\/steps\\/hr\":[36,444,80,81.5],\"title.swim\":[242.5,508,27,13.5],\"content\":[36,390,303,139.5],\"title.hrv\\/steps\\/hr\":[44.5,508,63,13.5],\"item.swim\":[216,444,80,81.5],\"preview.hrv\\/steps\\/hr\":[48,448,56,56],\"title.zones\":[150.25,508,31.5,13.5],\"preview.swim\":[228,448,56,56],\"item.zones\":[126,444,80,81.5],\"preview.zones\":[138,448,56,56]}",
+      "frames": {
+        "item.hrv/steps/hr": [
+          36,
+          444,
+          80,
+          81.5
+        ],
+        "title.swim": [
+          242.5,
+          508,
+          27,
+          13.5
+        ],
+        "content": [
+          36,
+          390,
+          303,
+          139.5
+        ],
+        "title.hrv/steps/hr": [
+          44.5,
+          508,
+          63,
+          13.5
+        ],
+        "item.swim": [
+          216,
+          444,
+          80,
+          81.5
+        ],
+        "preview.hrv/steps/hr": [
+          48,
+          448,
+          56,
+          56
+        ],
+        "title.zones": [
+          150.25,
+          508,
+          31.5,
+          13.5
+        ],
+        "preview.swim": [
+          228,
+          448,
+          56,
+          56
+        ],
+        "item.zones": [
+          126,
+          444,
+          80,
+          81.5
+        ],
+        "preview.zones": [
+          138,
+          448,
+          56,
+          56
+        ]
+      }
+    },
+    {
+      "timestamp": 1795245721.26,
+      "text": "selected=hrv/steps/hr row=(16.0, 375.0, 343.0, 169.5) frames={\"preview.swim\":[228,448,56,56],\"preview.hrv\\/steps\\/hr\":[48,448,56,56],\"item.hrv\\/steps\\/hr\":[36,444,80,81.5],\"title.swim\":[242.5,508,27,13.5],\"content\":[36,390,303,139.5],\"preview.zones\":[138,448,56,56],\"title.hrv\\/steps\\/hr\":[44.5,508,63,13.5],\"item.zones\":[126,444,80,81.5],\"item.swim\":[216,444,80,81.5],\"title.zones\":[150.25,508,31.5,13.5]}",
+      "frames": {
+        "preview.swim": [
+          228,
+          448,
+          56,
+          56
+        ],
+        "preview.hrv/steps/hr": [
+          48,
+          448,
+          56,
+          56
+        ],
+        "item.hrv/steps/hr": [
+          36,
+          444,
+          80,
+          81.5
+        ],
+        "title.swim": [
+          242.5,
+          508,
+          27,
+          13.5
+        ],
+        "content": [
+          36,
+          390,
+          303,
+          139.5
+        ],
+        "preview.zones": [
+          138,
+          448,
+          56,
+          56
+        ],
+        "title.hrv/steps/hr": [
+          44.5,
+          508,
+          63,
+          13.5
+        ],
+        "item.zones": [
+          126,
+          444,
+          80,
+          81.5
+        ],
+        "item.swim": [
+          216,
+          444,
+          80,
+          81.5
+        ],
+        "title.zones": [
+          150.25,
+          508,
+          31.5,
+          13.5
+        ]
+      }
+    },
+    {
+      "timestamp": 1795245727.879,
+      "text": "selected=zones row=(16.0, 375.0, 343.0, 169.5) frames={\"preview.swim\":[228,448,56,56],\"item.hrv\\/steps\\/hr\":[36,444,80,81.5],\"item.zones\":[126,444,80,81.5],\"title.hrv\\/steps\\/hr\":[44.5,508,63,13.5],\"title.swim\":[242.5,508,27,13.5],\"content\":[36,390,303,139.5],\"item.swim\":[216,444,80,81.5],\"preview.hrv\\/steps\\/hr\":[48,448,56,56],\"preview.zones\":[138,448,56,56],\"title.zones\":[150.25,508,31.5,13.5]}",
+      "frames": {
+        "preview.swim": [
+          228,
+          448,
+          56,
+          56
+        ],
+        "item.hrv/steps/hr": [
+          36,
+          444,
+          80,
+          81.5
+        ],
+        "item.zones": [
+          126,
+          444,
+          80,
+          81.5
+        ],
+        "title.hrv/steps/hr": [
+          44.5,
+          508,
+          63,
+          13.5
+        ],
+        "title.swim": [
+          242.5,
+          508,
+          27,
+          13.5
+        ],
+        "content": [
+          36,
+          390,
+          303,
+          139.5
+        ],
+        "item.swim": [
+          216,
+          444,
+          80,
+          81.5
+        ],
+        "preview.hrv/steps/hr": [
+          48,
+          448,
+          56,
+          56
+        ],
+        "preview.zones": [
+          138,
+          448,
+          56,
+          56
+        ],
+        "title.zones": [
+          150.25,
+          508,
+          31.5,
+          13.5
+        ]
+      }
+    },
+    {
+      "timestamp": 1795245734.44,
+      "text": "selected=swim row=(16.0, 375.0, 343.0, 169.5) frames={\"item.swim\":[216,444,80,81.5],\"preview.swim\":[228,448,56,56],\"content\":[36,390,303,139.5],\"preview.zones\":[138,448,56,56],\"title.hrv\\/steps\\/hr\":[44.5,508,63,13.5],\"item.zones\":[126,444,80,81.5],\"preview.hrv\\/steps\\/hr\":[48,448,56,56],\"item.hrv\\/steps\\/hr\":[36,444,80,81.5],\"title.swim\":[242.5,508,27,13.5],\"title.zones\":[150.25,508,31.5,13.5]}",
+      "frames": {
+        "item.swim": [
+          216,
+          444,
+          80,
+          81.5
+        ],
+        "preview.swim": [
+          228,
+          448,
+          56,
+          56
+        ],
+        "content": [
+          36,
+          390,
+          303,
+          139.5
+        ],
+        "preview.zones": [
+          138,
+          448,
+          56,
+          56
+        ],
+        "title.hrv/steps/hr": [
+          44.5,
+          508,
+          63,
+          13.5
+        ],
+        "item.zones": [
+          126,
+          444,
+          80,
+          81.5
+        ],
+        "preview.hrv/steps/hr": [
+          48,
+          448,
+          56,
+          56
+        ],
+        "item.hrv/steps/hr": [
+          36,
+          444,
+          80,
+          81.5
+        ],
+        "title.swim": [
+          242.5,
+          508,
+          27,
+          13.5
+        ],
+        "title.zones": [
+          150.25,
+          508,
+          31.5,
+          13.5
+        ]
+      }
+    }
+  ]
+}

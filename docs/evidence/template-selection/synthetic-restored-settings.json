@@ -1,0 +1,358 @@
+{
+  "savedConfigurations": [
+    {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "config": {
+        "second": {
+          "healthKitParams": {
+            "description": "The number of steps recorded in Apple Health.",
+            "sampleType": "stepCount",
+            "units": "count",
+            "maxValue": 8001,
+            "reversed": false,
+            "name": "Step count",
+            "minValue": 0,
+            "aggregation": "Sum"
+          },
+          "customName": "Synthetic 0-1",
+          "appearance": {
+            "gradient": false,
+            "innerGlow": false,
+            "outerGlow": false,
+            "mainColor": {
+              "alpha": 1,
+              "blue": 0.909804,
+              "green": 0.537255,
+              "red": 0.407843
+            }
+          },
+          "ring": 1
+        },
+        "third": {
+          "healthKitParams": {
+            "description": "A quantity sample type that measures the amount of active energy the user has burned.",
+            "sampleType": "activeEnergyBurned",
+            "units": "kilocalorie",
+            "maxValue": 1502,
+            "reversed": false,
+            "minValue": 0,
+            "name": "Active Energy",
+            "aggregation": "Sum"
+          },
+          "customName": "Synthetic 0-2",
+          "appearance": {
+            "outerGlow": false,
+            "gradient": false,
+            "mainColor": {
+              "blue": 0.92549,
+              "red": 0.713726,
+              "alpha": 1,
+              "green": 0.643137
+            },
+            "innerGlow": false
+          },
+          "ring": 2
+        },
+        "first": {
+          "healthKitParams": {
+            "description": "A quantity sample type that measures the standard deviation of heartbeat intervals.",
+            "sampleType": "heartRateVariabilitySDNN",
+            "units": "millisecond",
+            "maxValue": 100,
+            "reversed": false,
+            "name": "HRV",
+            "minValue": 0,
+            "aggregation": "Max"
+          },
+          "customName": "Synthetic 0-0",
+          "appearance": {
+            "outerGlow": false,
+            "gradient": false,
+            "innerGlow": false,
+            "mainColor": {
+              "red": 0.384314,
+              "blue": 0.87451,
+              "alpha": 1,
+              "green": 0.796078
+            }
+          },
+          "ring": 0
+        },
+        "global": {
+          "days": 3,
+          "shape": "squircle"
+        }
+      },
+      "name": "hrv/steps/hr"
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000002",
+      "config": {
+        "global": {
+          "shape": "capsule",
+          "days": 5
+        },
+        "third": {
+          "ring": 2,
+          "appearance": {
+            "innerGlow": false,
+            "gradient": true,
+            "mainColor": {
+              "green": 0.772549,
+              "red": 0.968628,
+              "alpha": 1,
+              "blue": 0.352941
+            },
+            "secondaryColor": {
+              "green": 0.572549,
+              "red": 0.768628,
+              "alpha": 1,
+              "blue": 0.152941
+            },
+            "outerGlow": false
+          },
+          "customName": "Synthetic 1-2",
+          "healthKitParams": {
+            "description": "A quantity sample type that measures the amount of active energy the user has burned.",
+            "sampleType": "activeEnergyBurned",
+            "units": "kilocalorie",
+            "maxValue": 1512,
+            "reversed": false,
+            "name": "Active Energy",
+            "minValue": 0,
+            "aggregation": "Sum"
+          }
+        },
+        "second": {
+          "customName": "Synthetic 1-1",
+          "healthKitParams": {
+            "description": "The number of steps recorded in Apple Health.",
+            "sampleType": "stepCount",
+            "units": "count",
+            "maxValue": 8011,
+            "reversed": false,
+            "minValue": 0,
+            "name": "Step count",
+            "aggregation": "Sum"
+          },
+          "appearance": {
+            "mainColor": {
+              "alpha": 1,
+              "blue": 0.341176,
+              "green": 0.572549,
+              "red": 1
+            },
+            "outerGlow": false,
+            "secondaryColor": {
+              "alpha": 1,
+              "blue": 0.141176,
+              "green": 0.372549,
+              "red": 0.8
+            },
+            "gradient": true,
+            "innerGlow": false
+          },
+          "ring": 1
+        },
+        "first": {
+          "customName": "Synthetic 1-0",
+          "healthKitParams": {
+            "description": "A quantity sample type that measures the standard deviation of heartbeat intervals.",
+            "sampleType": "heartRateVariabilitySDNN",
+            "units": "millisecond",
+            "maxValue": 110,
+            "reversed": false,
+            "name": "HRV",
+            "minValue": 0,
+            "aggregation": "Max"
+          },
+          "appearance": {
+            "mainColor": {
+              "alpha": 1,
+              "blue": 0.572549,
+              "red": 0.952941,
+              "green": 0.368627
+            },
+            "secondaryColor": {
+              "alpha": 1,
+              "blue": 0.372549,
+              "red": 0.752941,
+              "green": 0.168627
+            },
+            "innerGlow": false,
+            "outerGlow": false,
+            "gradient": true
+          },
+          "ring": 0
+        }
+      },
+      "name": "zones"
+    },
+    {
+      "config": {
+        "first": {
+          "customName": "Synthetic 2-0",
+          "ring": 0,
+          "appearance": {
+            "innerGlow": false,
+            "mainColor": {
+              "alpha": 1,
+              "red": 0.941176,
+              "green": 0.560784,
+              "blue": 0.752941
+            },
+            "gradient": false,
+            "outerGlow": false
+          },
+          "healthKitParams": {
+            "description": "A quantity sample type that measures the standard deviation of heartbeat intervals.",
+            "sampleType": "heartRateVariabilitySDNN",
+            "units": "millisecond",
+            "maxValue": 120,
+            "reversed": false,
+            "minValue": 0,
+            "name": "HRV",
+            "aggregation": "Max"
+          }
+        },
+        "second": {
+          "customName": "Synthetic 2-1",
+          "ring": 1,
+          "appearance": {
+            "outerGlow": false,
+            "innerGlow": false,
+            "mainColor": {
+              "green": 0.737255,
+              "blue": 0.921569,
+              "red": 0.478431,
+              "alpha": 1
+            },
+            "gradient": false
+          },
+          "healthKitParams": {
+            "description": "The number of steps recorded in Apple Health.",
+            "sampleType": "stepCount",
+            "units": "count",
+            "maxValue": 8021,
+            "reversed": false,
+            "minValue": 0,
+            "name": "Step count",
+            "aggregation": "Sum"
+          }
+        },
+        "third": {
+          "customName": "Synthetic 2-2",
+          "ring": 2,
+          "appearance": {
+            "innerGlow": false,
+            "mainColor": {
+              "green": 0.627451,
+              "blue": 0.909804,
+              "red": 0.713726,
+              "alpha": 1
+            },
+            "outerGlow": false,
+            "gradient": false
+          },
+          "healthKitParams": {
+            "description": "A quantity sample type that measures the amount of active energy the user has burned.",
+            "sampleType": "activeEnergyBurned",
+            "units": "kilocalorie",
+            "maxValue": 1522,
+            "reversed": false,
+            "name": "Active Energy",
+            "minValue": 0,
+            "aggregation": "Sum"
+          }
+        },
+        "global": {
+          "days": 7,
+          "shape": "hexagon"
+        }
+      },
+      "id": "00000000-0000-0000-0000-000000000003",
+      "name": "swim"
+    }
+  ],
+  "restoredConfiguration": {
+    "first": {
+      "appearance": {
+        "gradient": false,
+        "innerGlow": false,
+        "mainColor": {
+          "alpha": 1,
+          "blue": 0.752941,
+          "green": 0.560784,
+          "red": 0.941176
+        },
+        "outerGlow": false
+      },
+      "customName": "Synthetic 2-0",
+      "healthKitParams": {
+        "aggregation": "Max",
+        "description": "A quantity sample type that measures the standard deviation of heartbeat intervals.",
+        "maxValue": 120,
+        "minValue": 0,
+        "name": "HRV",
+        "reversed": false,
+        "sampleType": "heartRateVariabilitySDNN",
+        "units": "millisecond"
+      },
+      "ring": 0
+    },
+    "global": {
+      "days": 7,
+      "shape": "hexagon"
+    },
+    "second": {
+      "appearance": {
+        "gradient": false,
+        "innerGlow": false,
+        "mainColor": {
+          "alpha": 1,
+          "blue": 0.921569,
+          "green": 0.737255,
+          "red": 0.478431
+        },
+        "outerGlow": false
+      },
+      "customName": "Synthetic 2-1",
+      "healthKitParams": {
+        "aggregation": "Sum",
+        "description": "The number of steps recorded in Apple Health.",
+        "maxValue": 8021,
+        "minValue": 0,
+        "name": "Step count",
+        "reversed": false,
+        "sampleType": "stepCount",
+        "units": "count"
+      },
+      "ring": 1
+    },
+    "third": {
+      "appearance": {
+        "gradient": false,
+        "innerGlow": false,
+        "mainColor": {
+          "alpha": 1,
+          "blue": 0.909804,
+          "green": 0.627451,
+          "red": 0.713726
+        },
+        "outerGlow": false
+      },
+      "customName": "Synthetic 2-2",
+      "healthKitParams": {
+        "aggregation": "Sum",
+        "description": "A quantity sample type that measures the amount of active energy the user has burned.",
+        "maxValue": 1522,
+        "minValue": 0,
+        "name": "Active Energy",
+        "reversed": false,
+        "sampleType": "activeEnergyBurned",
+        "units": "kilocalorie"
+      },
+      "ring": 2
+    }
+  }
+}

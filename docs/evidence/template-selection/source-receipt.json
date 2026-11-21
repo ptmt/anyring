@@ -1,0 +1,41 @@
+{
+  "base": "5773c6b20d5088c9ccfe071f798a6be1fd6be1e9",
+  "sourceSHA256": {
+    "AnyRing/Shared/Views/TemplateView.swift": "a8b272ba57a765999279c48f62439e698347aa31e5c567c32da12552fecbe703",
+    "AnyRing/Shared/Connectivity/AppController.swift": "d445bca53794d235cd5f6dccdde0b767d206497d4db1f5278ba1c18f12934f41",
+    "AnyRing/Tests iOS/Tests_iOS.swift": "0782b56606a465b32b9238dfce84934e3ba84d3061168e8e33b315a6322f3a43"
+  },
+  "fixtures": "explicit simulator-only synthetic configurations and mock readings",
+  "runs": {
+    "final-normal-light": {
+      "totalTestCount": 91,
+      "passedTests": 91,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "final-normal-dark": {
+      "totalTestCount": 2,
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "final-small-light": {
+      "totalTestCount": 5,
+      "passedTests": 5,
+      "failedTests": 0,
+      "skippedTests": 0
+    },
+    "final-small-dark": {
+      "totalTestCount": 2,
+      "passedTests": 2,
+      "failedTests": 0,
+      "skippedTests": 0
+    }
+  },
+  "originalWorktreePreserved": {
+    "head": "2552ee52e2339f00828e82615aaa63903af4cede",
+    "dirtyFiles": 13,
+    "indexSHA256": "9ee10522452e120287eb650fd65f92e97b075cf26f6d34beafe6594a368e1472",
+    "exactStatusAndHashesUnchanged": true
+  }
+}

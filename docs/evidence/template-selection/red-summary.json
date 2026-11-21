@@ -1,0 +1,62 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "deviceId": "93E1113F-6736-4CCB-827D-0E2F1C3876EA",
+        "deviceName": "KeineMagie Dictation final isolated",
+        "modelName": "iPhone 17",
+        "osBuildNumber": "24B8117",
+        "osVersion": "27.2",
+        "platform": "iOS Simulator"
+      },
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "passedTests": 0,
+      "skippedTests": 0,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "AnyRing (iOS) \u00b7 Built with macOS 27.2.1",
+  "expectedFailures": 0,
+  "failedTests": 1,
+  "finishTime": 1795243887.586,
+  "passedTests": 0,
+  "result": "Failed",
+  "runtimeWarnings": [],
+  "skippedTests": 0,
+  "startTime": 1795243747.938,
+  "statistics": [],
+  "testFailures": [
+    {
+      "failureText": "XCTAssertEqualWithAccuracy failed: (\"485.6666666666667\") is not equal to (\"493.33333333333337\") +/- (\"0.34\")",
+      "targetName": "Tests iOS",
+      "testIdentifier": 1,
+      "testIdentifierString": "Tests_iOS/testSavedSelectionKeepsNativeGeometry()",
+      "testIdentifierURL": "test://com.apple.xcode/AnyRing/Tests%20iOS/Tests_iOS/testSavedSelectionKeepsNativeGeometry",
+      "testName": "testSavedSelectionKeepsNativeGeometry()"
+    }
+  ],
+  "title": "Test - AnyRing (iOS)",
+  "topInsights": [
+    {
+      "category": "Common Failures",
+      "impact": "100% of failures",
+      "text": "3 runs of 1 test failed with XCTAssertEqualWithAccuracy failed: (\"545.6666666666667\") is not equal to (\"553.3333333333334\") +/- (\"0.34\")"
+    },
+    {
+      "category": "Common Failures",
+      "impact": "100% of failures",
+      "text": "3 runs of 1 test failed with XCTAssertEqualWithAccuracy failed: (\"485.6666666666667\") is not equal to (\"493.33333333333337\") +/- (\"0.34\")"
+    },
+    {
+      "category": "Common Failures",
+      "impact": "100% of failures",
+      "text": "2 runs of 1 test failed with XCTAssertEqualWithAccuracy failed: (\"73.33333333333337\") is not equal to (\"88.66666666666669\") +/- (\"0.34\") - item.swim axis 3 moved on selection"
+    }
+  ],
+  "totalTestCount": 1
+}

@@ -3,6 +3,120 @@ import UIKit
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testSavedSelectionKeepsNativeGeometry() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--saved-selection-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let names = ["hrv/steps/hr", "zones", "swim"]
+        let cards = names.indices.map { app.buttons["savedConfiguration.00000000-0000-0000-0000-00000000000\($0 + 1)"] }
+        XCTAssertTrue(cards[2].waitForExistence(timeout: 10))
+        let probe = app.staticTexts["savedSelectionGeometry"]
+        XCTAssertTrue(probe.waitForExistence(timeout: 5))
+        func frames() throws -> [String: [Double]] {
+            try JSONDecoder().decode([String: [Double]].self, from: Data(probe.label.utf8))
+        }
+        let initial = try frames()
+        XCTAssertEqual(initial.count, 10)
+        let row = app.cells.containing(.button, identifier: "saveConfiguration").firstMatch
+        let initialRow = row.frame
+        let saveFrame = app.buttons["saveConfiguration"].frame
+        for selected in [2, 0, 1, 2] {
+            cards[selected].tap()
+            XCTAssertTrue(cards[selected].isSelected, "Selection must compare the entire saved configuration")
+            XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'savedConfiguration.'")).count, 3)
+            let current = try frames()
+            let attachment = XCTAttachment(string: "selected=\(names[selected]) row=\(row.frame) frames=\(probe.label)")
+            attachment.name = "Saved selection geometry \(names[selected])"; attachment.lifetime = .keepAlways; add(attachment)
+            capture(app, name: "Saved selection \(names[selected]) synthetic")
+            XCTAssertEqual(row.frame, initialRow, "Selection cannot resize or move its Form row")
+            XCTAssertEqual(app.buttons["saveConfiguration"].frame, saveFrame)
+            XCTAssertLessThanOrEqual(row.frame.height, 177)
+            for name in names {
+                for part in ["item", "preview", "title"] {
+                    let key = "\(part).\(name)"
+                    let before = try XCTUnwrap(initial[key]); let after = try XCTUnwrap(current[key])
+                    for axis in 0..<4 { XCTAssertEqual(after[axis], before[axis], accuracy: 0.34, "\(key) axis \(axis) moved on selection") }
+                }
+                let item = try XCTUnwrap(current["item.\(name)"])
+                XCTAssertGreaterThanOrEqual(item[2], 44); XCTAssertGreaterThanOrEqual(item[3], 44)
+                XCTAssertEqual(try XCTUnwrap(current["preview.\(name)"])[1], try XCTUnwrap(current["preview.hrv/steps/hr"])[1], accuracy: 0.34)
+                XCTAssertEqual(try XCTUnwrap(current["title.\(name)"])[1], try XCTUnwrap(current["title.hrv/steps/hr"])[1], accuracy: 0.34)
+            }
+            for i in names.indices {
+                XCTAssertEqual(cards[i].isSelected, i == selected)
+                XCTAssertGreaterThanOrEqual(cards[i].frame.width, 44)
+                XCTAssertGreaterThanOrEqual(cards[i].frame.height, 44)
+            }
+            app.terminate()
+            if !app.launchArguments.contains("--preserve-test-settings") { app.launchArguments += ["--preserve-test-settings"] }
+            app.launch()
+            XCTAssertTrue(cards[selected].waitForExistence(timeout: 10))
+            XCTAssertTrue(cards[selected].isSelected, "Full configuration and saved identity must survive cold launch")
+        }
+    }
+
+    @MainActor
+    func testSavedSelectionAccessibilityTitlesFit() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--saved-selection-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        let save = app.buttons["saveConfiguration"]
+        for _ in 0..<12 {
+            if save.exists { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        let row = app.cells.containing(.button, identifier: "saveConfiguration").firstMatch
+        for _ in 0..<20 {
+            if row.frame.minY >= 70 && row.frame.maxY <= app.frame.maxY - 20 { break }
+            let up = row.frame.maxY > app.frame.maxY - 20
+            let distance = min(180, max(30, (up ? row.frame.maxY - (app.frame.maxY - 24) : 74 - row.frame.minY) + 10))
+            let y = app.frame.height * (up ? 0.7 : 0.35)
+            app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: app.frame.midX, dy: y))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: .zero)
+                    .withOffset(CGVector(dx: app.frame.midX, dy: y + (up ? -distance : distance))),
+                       withVelocity: .slow, thenHoldForDuration: 0.5)
+        }
+        XCTAssertGreaterThanOrEqual(row.frame.minY, 70)
+        XCTAssertLessThanOrEqual(row.frame.maxY, app.frame.maxY - 20)
+        let names = ["hrv/steps/hr", "zones", "swim"]
+        let probe = app.staticTexts["savedSelectionGeometry"]
+        for i in names.indices {
+            let card = app.buttons["savedConfiguration.00000000-0000-0000-0000-00000000000\(i + 1)"]
+            for _ in 0..<8 {
+                if card.frame.minX >= 32 && card.frame.maxX <= app.frame.maxX - 32 { break }
+                let right = card.frame.minX < 32
+                // Account for the native pan recognizer's movement threshold; a
+                // 10pt correction can be treated as a stationary press.
+                let distance = min(180, max(30, (right ? 36 - card.frame.minX : card.frame.maxX - (app.frame.maxX - 36)) + 10))
+                let start = CGPoint(x: right ? 80 : app.frame.width - 80, y: card.frame.midY)
+                let end = CGPoint(x: start.x + (right ? distance : -distance), y: start.y)
+                app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: start.x, dy: start.y))
+                    .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: end.x, dy: end.y)),
+                           withVelocity: .slow, thenHoldForDuration: 0.5)
+            }
+            XCTAssertTrue(card.isHittable)
+            XCTAssertGreaterThanOrEqual(card.frame.minX, 32)
+            XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX - 32)
+            card.tap()
+            XCTAssertTrue(card.isSelected)
+            let frames = try JSONDecoder().decode([String: [Double]].self, from: Data(probe.label.utf8))
+            let item = try XCTUnwrap(frames["item.\(names[i])"])
+            let title = try XCTUnwrap(frames["title.\(names[i])"])
+            let font = UIFont.preferredFont(forTextStyle: .caption2, compatibleWith: UITraitCollection(preferredContentSizeCategory: .accessibilityExtraExtraExtraLarge))
+            let measured = (names[i] as NSString).boundingRect(with: CGSize(width: title[2], height: 1000),
+                options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [.font: font], context: nil)
+            XCTAssertLessThanOrEqual(measured.height, title[3] + 1, "The complete template name must fit")
+            XCTAssertGreaterThanOrEqual(title[0], item[0]); XCTAssertGreaterThanOrEqual(title[1], item[1])
+            XCTAssertLessThanOrEqual(title[0] + title[2], item[0] + item[2])
+            XCTAssertLessThanOrEqual(title[1] + title[3], item[1] + item[3])
+            XCTAssertGreaterThanOrEqual(card.frame.height, 44)
+            capture(app, name: "Saved selection accessibility \(i) synthetic")
+        }
+    }
+
+    @MainActor
     func testIncludedWeekRangeBackgroundPresets() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

@@ -145,7 +145,7 @@ struct SavedConfigurationsView: View {
             }
             if !model.savedConfigurations.isEmpty {
                 ScrollView(.horizontal) {
-                    HStack(spacing: 10) {
+                    HStack(alignment: .top, spacing: 10) {
                         ForEach(model.savedConfigurations) { record in
                             Button {
                                 guard record.config != model.config else { return }
@@ -159,11 +159,22 @@ struct SavedConfigurationsView: View {
                                     TripleRingView(size: 44, ring1: snapshots.first, ring2: snapshots.second,
                                         ring3: snapshots.third, simplified: true, shape: record.config.global.shape)
                                         .padding(6)
+                                        .savedSelectionFrame("preview.\(record.name)")
                                     Text(record.name).font(.caption2).lineLimit(2)
-                                    if record.config == model.config {
-                                        Image(systemName: "checkmark").font(.caption2)
-                                    }
+                                        .savedSelectionFrame("title.\(record.name)")
                                 }.frame(width: thumbnailWidth, alignment: .top)
+                                .padding(4)
+                                .background {
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .fill(.primary.opacity(record.config == model.config ? 0.06 : 0))
+                                }
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .strokeBorder(.primary.opacity(record.config == model.config ? 0.22 : 0), lineWidth: 1)
+                                }
+                                .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                .transaction { $0.animation = nil }
+                                .savedSelectionFrame("item.\(record.name)")
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel(record.name)
@@ -183,6 +194,18 @@ struct SavedConfigurationsView: View {
                 }.scrollIndicators(.hidden)
                 .fixedSize(horizontal: false, vertical: true)
             }
+        }
+        .savedSelectionFrame("content")
+        .overlayPreferenceValue(SavedSelectionFrames.self) { frames in
+            #if targetEnvironment(simulator)
+            if ProcessInfo.processInfo.arguments.contains("--saved-selection-fixture"),
+               let data = try? JSONEncoder().encode(frames), let value = String(data: data, encoding: .utf8) {
+                Text(verbatim: value).font(.system(size: 1)).frame(width: 1, height: 1).clipped()
+                    .accessibilityIdentifier("savedSelectionGeometry")
+                    .accessibilityLabel(value)
+                    .allowsHitTesting(false)
+            }
+            #endif
         }
         .fixedSize(horizontal: false, vertical: true)
         .alert(renaming == nil ? "Save template" : "Rename template", isPresented: $naming) {
@@ -230,6 +253,29 @@ struct SavedConfigurationsView: View {
                 gradient: ring.appearance.gradient, secondaryColor: ring.appearance.secondaryColor,
                 outerGlow: ring.appearance.outerGlow, innerGlow: ring.appearance.innerGlow)
         })
+    }
+}
+
+private struct SavedSelectionFrames: PreferenceKey {
+    static var defaultValue: [String: [CGFloat]] { [:] }
+    static func reduce(value: inout [String: [CGFloat]], nextValue: () -> [String: [CGFloat]]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, next in next })
+    }
+}
+
+private extension View {
+    @ViewBuilder func savedSelectionFrame(_ name: String) -> some View {
+        #if targetEnvironment(simulator)
+        if ProcessInfo.processInfo.arguments.contains("--saved-selection-fixture") {
+            background(GeometryReader { geometry in
+                let frame = geometry.frame(in: .global)
+                Color.clear.preference(key: SavedSelectionFrames.self,
+                    value: [name: [frame.minX, frame.minY, frame.width, frame.height]])
+            })
+        } else { self }
+        #else
+        self
+        #endif
     }
 }
 
