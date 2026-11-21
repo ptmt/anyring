@@ -1,0 +1,12 @@
+{
+  "base": "3badeda1225b765185b9e4c17a06adbca45b13b4",
+  "files": {
+    "AnyRing/Shared/Connectivity/AppController.swift": "a200baba75b65fbddb146a8c5777c6ba762d5b006097bbe6e93f476ffa17ea47",
+    "AnyRing/Shared/Views/Common/RingLabel.swift": "0d14e28ce5de3cb5462a2ff10bb6e14e6e5972a26898a608de348502d51e5b30",
+    "AnyRing/Shared/Views/MainScreen.swift": "25d8ec0fdc1e83e89c1afb00d810dac03988658e56d45b2611d3e3afa873c20a",
+    "AnyRing/Shared/Views/RingDashboard.swift": "420224633a7ed4234319d9b8c076bbcca7145bba3a9a3527566d8de95a2d30f3",
+    "AnyRing/Shared/Views/ViewModels/RingViewModel.swift": "4b75a6643834f13a92dfaeec3a1c67786fc9adebe4c4b0b779e9b4d779eea373",
+    "AnyRing/Tests iOS/Tests_iOS.swift": "51e734eaa4445f8f98c67fbc3abdbf76e4758403a316b93391ffd969d4ae5f29",
+    "ci/tests/test_compact_metric_labels.py": "e81df092b27523d9ab256579b2670427bdebdd6ac7c46570a02a46dda61657f3"
+  }
+}

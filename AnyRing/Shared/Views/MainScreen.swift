@@ -12,7 +12,8 @@ struct MainScreen: View {
             Section {
                 RingDashboard(size: 250, ring1: rings.first, ring2: rings.second,
                               ring3: rings.third, days: viewModel.globalConfig.days, shape: viewModel.globalConfig.shape,
-                              updatePeriod: viewModel.updatePeriod, refresh: viewModel.refresh)
+                              updatePeriod: viewModel.updatePeriod, refresh: viewModel.refresh,
+                              showsMetricInformation: metricInformationAvailable)
                     .padding(.vertical, 8)
                 #if os(iOS)
                 SavedConfigurationsView()
@@ -65,6 +66,18 @@ struct MainScreen: View {
         }
         .formStyle(.grouped)
         #if targetEnvironment(simulator)
+        .overlay(alignment: .bottomLeading) {
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+               ProcessInfo.processInfo.arguments.contains("--metric-info-fixture"),
+               !ProcessInfo.processInfo.arguments.contains("--metric-info-preview") {
+                HStack {
+                    ForEach(["error", "loading", "ready"], id: \.self) { state in
+                        Button(state) { rings.list.forEach { $0.setMetricInfoFixture(state) } }
+                            .accessibilityIdentifier("fixture.\(state)")
+                    }
+                }.buttonStyle(.bordered).dynamicTypeSize(.medium).background(.regularMaterial)
+            }
+        }
         .overlay(alignment: .bottomTrailing) {
             if ProcessInfo.processInfo.arguments.contains("--refresh-probe"),
                let source = viewModel.dataSource as? MockHealthKitDataSource {
@@ -79,6 +92,14 @@ struct MainScreen: View {
                 }
             }
         }
+        #endif
+    }
+
+    private var metricInformationAvailable: Bool {
+        #if os(iOS)
+        true
+        #else
+        false
         #endif
     }
 

@@ -31,6 +31,22 @@ final class AppController: ObservableObject {
                     defaults.set(data, forKey: UserDefaultsConfigurationPersistence.key)
                 }
             }
+            if ProcessInfo.processInfo.arguments.contains("--metric-info-fixture") {
+                var fixture = UserDefaultsConfigurationPersistence.defaultConfig
+                fixture.global = GlobalConfiguration(days: 3, shape: .hexagon)
+                let parameters = [distanceSwimming, flightsClimbed, hrConfiguration]
+                let palette = RingPalette.all.first { $0.name == "Candy" }!
+                for index in fixture.configs.indices {
+                    fixture.configs[index] = HealthKitProvider.Configuration(ring: RingID.allWidgetIDs[index],
+                        healthKitParams: parameters[index], appearance: fixture.configs[index].appearance)
+                    fixture.configs[index].appearance.mainColor = palette.snapshots.list[index].mainColor
+                    fixture.configs[index].maxValue = index == 2 ? 80 : 2_000
+                    fixture.configs[index].minValue = index == 2 ? 42 : 0
+                }
+                if let data = try? JSONEncoder().encode(fixture) {
+                    defaults.set(data, forKey: UserDefaultsConfigurationPersistence.key)
+                }
+            }
             if ProcessInfo.processInfo.arguments.contains("--saved-selection-fixture") {
                 // Synthetic settings only: reproduce the three supplied thumbnail designs.
                 let names = ["hrv/steps/hr", "zones", "swim"]

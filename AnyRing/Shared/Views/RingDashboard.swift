@@ -131,6 +131,7 @@ struct RingDashboard: View {
     var shape: RingShape = .roundedSquare
     var updatePeriod: ((Int) -> Void)?
     var refresh: () -> Void = {}
+    var showsMetricInformation = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -142,9 +143,9 @@ struct RingDashboard: View {
 
     private var legend: some View {
         VStack(alignment: .leading, spacing: 12) {
-            RingDashboardLegend(ring: ring1)
-            RingDashboardLegend(ring: ring2)
-            RingDashboardLegend(ring: ring3)
+            RingDashboardLegend(ring: ring1, showsInformation: showsMetricInformation)
+            RingDashboardLegend(ring: ring2, showsInformation: showsMetricInformation)
+            RingDashboardLegend(ring: ring3, showsInformation: showsMetricInformation)
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -166,7 +167,7 @@ struct RingDashboard: View {
             #if os(iOS)
             if let updatePeriod { TrackingWeekView(days: days, updatePeriod: updatePeriod, refresh: refresh) }
             #endif
-            if [ring1, ring2, ring3].allSatisfy({ $0.progress.empty && !$0.isRefreshing }) {
+            if !showsMetricInformation && [ring1, ring2, ring3].allSatisfy({ $0.progress.empty && !$0.isRefreshing }) {
                 Text("No health data yet. If you expected data, check AnyProgress’s access in Apple Health.")
                     .font(.footnote).foregroundStyle(.secondary)
                 #if os(iOS)

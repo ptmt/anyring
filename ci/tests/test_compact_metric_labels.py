@@ -16,7 +16,7 @@ MODEL = ROOT / "AnyRing/Shared/Views/ViewModels/RingViewModel.swift"
 class CompactMetricLabels(unittest.TestCase):
     def test_overview_uses_inline_target_without_visible_goal_or_baseline(self):
         source = (ROOT / "AnyRing/Shared/Views/Common/RingLabel.swift").read_text()
-        overview = source.split("struct RingDashboardLegend: View", 1)[1].split("struct RingMetricView", 1)[0]
+        overview = source.split("struct RingDashboardLegend: View", 1)[1].split("private struct RingInformationSheet", 1)[0]
         self.assertIn('Text(" / \\(ring.targetText) \\(ring.units)")', overview)
         self.assertNotIn('Text("Goal ', overview)
         self.assertNotIn('ring.startingValueText', overview)

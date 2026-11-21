@@ -17,18 +17,60 @@ struct RingLabel: View {
 /// A compact semantic legend; the graphic already represents progress.
 struct RingDashboardLegend: View {
     @ObservedObject var ring: RingViewModel
+    var showsInformation = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    #if os(iOS)
+    @State private var informationPresented = false
+    @AccessibilityFocusState private var informationFocused: Bool
+    #endif
+
     var body: some View {
+        HStack(alignment: .center, spacing: 0) {
+            summary.frame(maxWidth: .infinity, alignment: .leading)
+            #if os(iOS)
+            if showsInformation {
+                Button { informationPresented = true } label: {
+                    Image(systemName: "info.circle")
+                        .font(.body).dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, height: 44).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(ring.name) information")
+                .accessibilityHint("Shows reading status, source and period")
+                .accessibilityIdentifier("metricInfo.\(ring.configuration.ring.rawValue)")
+                .accessibilityFocused($informationFocused)
+                .sheet(isPresented: $informationPresented, onDismiss: { informationFocused = true }) {
+                    RingInformationSheet(ring: ring)
+                }
+            }
+            #endif
+        }
+    }
+
+    private var summary: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Circle().fill(ring.configuration.appearance.mainColor.color).frame(width: 6, height: 6)
                     .accessibilityHidden(true)
                 Text(ring.name).font(.caption).foregroundStyle(.primary)
             }
-            // One wrapping Text keeps the shared unit once without shrinking type.
-            Text("\(Text(ring.valueText).fontWeight(.semibold))\(Text(" / \(ring.targetText) \(ring.units)").foregroundColor(.secondary))")
-                .font(.subheadline).monospacedDigit()
-                .foregroundStyle(.primary)
-            if let error = ring.error { Text(error.localizedDescription).font(.caption).foregroundStyle(.secondary) }
+            if showsInformation && dynamicTypeSize.isAccessibilitySize {
+                // Fixed semantic lines keep an unknown value from pulling the
+                // target onto a different line during loading/error transitions.
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(ring.valueText).fontWeight(.semibold).foregroundStyle(.primary)
+                    Text("/ \(ring.targetText) \(ring.units)").foregroundStyle(.secondary)
+                }.font(.subheadline).monospacedDigit()
+            } else {
+                // Preserve the compact, shared-unit reading at ordinary sizes.
+                Text("\(Text(ring.valueText).fontWeight(.semibold))\(Text(" / \(ring.targetText) \(ring.units)").foregroundColor(.secondary))")
+                    .font(.subheadline).monospacedDigit().foregroundStyle(.primary)
+            }
+            // Noninteractive shared consumers retain their existing diagnostic text.
+            if !showsInformation, let error = ring.error {
+                Text(error.localizedDescription).font(.caption).foregroundStyle(.secondary)
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .ignore)
@@ -36,6 +78,60 @@ struct RingDashboardLegend: View {
         .accessibilityIdentifier("metric.\(ring.configuration.ring.rawValue)")
     }
 }
+
+#if os(iOS)
+/// Observes the selected model directly: opening this sheet performs no reads.
+private struct RingInformationSheet: View {
+    @ObservedObject var ring: RingViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Reading") {
+                    Text("\(ring.valueText) / \(ring.targetText) \(ring.units)")
+                    if ring.isRefreshing { Text("Updating…") }
+                    if let error = ring.error { Text(error.localizedDescription) }
+                    if let error = ring.error as? HealthDataError, case .noSamples = error {
+                        Link("Open Apple Health", destination: URL(string: "x-apple-health://")!)
+                    }
+                    Text(ring.direction)
+                    if let start = ring.startingValueText { Text(start) }
+                }
+                Section("Source") {
+                    Text(ring.fullName)
+                    if ring.metricName != ring.name { Text(ring.metricName) }
+                    Text(ring.providerDescription).foregroundStyle(.secondary)
+                }
+                Section("Period") {
+                    Text(ring.globalConfig.days == 1 ? "Today" : "Today and the previous \(ring.globalConfig.days - 1) days")
+                }
+            }
+            .navigationTitle(ring.name)
+            .navigationBarTitleDisplayMode(.inline)
+            #if targetEnvironment(simulator)
+            .overlay(alignment: .bottomLeading) {
+                if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+                   ProcessInfo.processInfo.arguments.contains("--metric-info-fixture"),
+                   !ProcessInfo.processInfo.arguments.contains("--metric-info-preview") {
+                    HStack {
+                        ForEach(["error", "loading", "ready"], id: \.self) { state in
+                            Button(state) { ring.setMetricInfoFixture(state) }
+                                .accessibilityIdentifier("sheetFixture.\(state)")
+                        }
+                    }.buttonStyle(.bordered).dynamicTypeSize(.medium).background(.regularMaterial)
+                }
+            }
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }.accessibilityIdentifier("metricInfoDone")
+                }
+            }
+        }
+    }
+}
+#endif
 
 struct RingMetricView: View {
     @ObservedObject var ring: RingViewModel

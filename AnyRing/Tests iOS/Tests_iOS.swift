@@ -3,6 +3,122 @@ import UIKit
 
 final class Tests_iOS: XCTestCase {
     @MainActor
+    func testMetricInfoStableStatusGeometry() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "--metric-info-fixture", "--refresh-probe",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["fixture.ready"].waitForExistence(timeout: 10))
+        var baseline: [CGRect] = []
+        for state in ["ready", "error", "loading", "ready"] {
+            app.buttons["fixture.\(state)"].tap()
+            let metrics = (0..<3).map { app.descendants(matching: .any)["metric.\($0)"].firstMatch }
+            let card = app.cells.containing(.button, identifier: "trackingPeriod").firstMatch
+            let frames = metrics.map(\.frame) + [card.frame, app.buttons["saveConfiguration"].frame]
+            let receipt = XCTAttachment(string: "\(state): \(frames)")
+            receipt.name = "Metric geometry \(state)"; receipt.lifetime = .keepAlways; add(receipt)
+            capture(app, name: "Metric info \(state) synthetic")
+            if baseline.isEmpty { baseline = frames }
+            for i in frames.indices {
+                XCTAssertEqual(frames[i].minY, baseline[i].minY, accuracy: 0.34, "\(state) frame \(i) moved")
+                XCTAssertEqual(frames[i].height, baseline[i].height, accuracy: 0.34, "\(state) frame \(i) resized")
+            }
+        }
+    }
+
+    @MainActor
+    func testMetricInfoOpensCorrectLiveDetails() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--dashboard-density-fixture", "--metric-info-fixture", "--refresh-probe",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["fixture.error"].waitForExistence(timeout: 10))
+        app.buttons["fixture.error"].tap()
+        for index in 0..<3 {
+            let button = app.buttons["metricInfo.\(index)"]
+            XCTAssertTrue(button.waitForExistence(timeout: 3))
+            guard button.exists else { return }
+            XCTAssertGreaterThanOrEqual(button.frame.width, 44)
+            XCTAssertGreaterThanOrEqual(button.frame.height, 44)
+            let name = button.label.replacingOccurrences(of: " information", with: "")
+            let before = app.descendants(matching: .any)["refreshVerification"].firstMatch.value as? String
+            button.tap()
+            XCTAssertTrue(app.navigationBars[name].waitForExistence(timeout: 3))
+            XCTAssertTrue(app.staticTexts["No readable health samples. Open AnyProgress to check Health access."].exists)
+            XCTAssertTrue(app.staticTexts["Source"].exists)
+            XCTAssertTrue(app.staticTexts["Period"].exists)
+            capture(app, name: "Metric info sheet \(index) synthetic")
+            app.buttons["sheetFixture.loading"].tap()
+            XCTAssertTrue(app.staticTexts["Updating…"].exists)
+            XCTAssertFalse(app.staticTexts["No readable health samples. Open AnyProgress to check Health access."].exists)
+            app.buttons["sheetFixture.ready"].tap()
+            XCTAssertFalse(app.staticTexts["Updating…"].exists)
+            app.buttons["sheetFixture.error"].tap()
+            XCTAssertTrue(app.staticTexts["No readable health samples. Open AnyProgress to check Health access."].exists)
+            app.buttons["metricInfoDone"].tap()
+            XCTAssertTrue(button.waitForExistence(timeout: 3))
+            XCTAssertTrue(button.isHittable)
+            XCTAssertEqual(app.descendants(matching: .any)["refreshVerification"].firstMatch.value as? String, before,
+                           "Opening and closing information must not fetch Health data")
+        }
+    }
+
+    @MainActor
+    func testMetricInfoCleanPreview() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--metric-info-fixture", "--metric-info-preview",
+                               "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let info = app.buttons["metricInfo.0"]
+        XCTAssertTrue(info.waitForExistence(timeout: 10))
+        capture(app, name: "Metric info clean overview synthetic")
+        info.tap()
+        XCTAssertTrue(app.navigationBars["Swim"].waitForExistence(timeout: 3))
+        capture(app, name: "Metric info clean Swim sheet synthetic")
+        app.buttons["metricInfoDone"].tap()
+        XCTAssertTrue(info.isHittable)
+    }
+
+    @MainActor
+    func testMetricInfoAccessibilityGeometryAndSheets() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--metric-info-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        app.launch()
+        XCTAssertTrue(app.buttons["fixture.ready"].waitForExistence(timeout: 10))
+        app.buttons["fixture.ready"].tap()
+        for index in 0..<3 {
+            let metric = app.descendants(matching: .any)["metric.\(index)"].firstMatch
+            let button = app.buttons["metricInfo.\(index)"]
+            for _ in 0..<15 {
+                if metric.exists && metric.frame.minY >= 80 && metric.frame.maxY < app.frame.maxY - 100 { break }
+                let upward = !metric.exists || metric.frame.maxY >= app.frame.maxY - 100
+                let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: upward ? 0.65 : 0.3))
+                start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 0, dy: upward ? -80 : 80)),
+                            withVelocity: .slow, thenHoldForDuration: 0.3)
+            }
+            XCTAssertGreaterThanOrEqual(metric.frame.minY, 80)
+            XCTAssertLessThan(metric.frame.maxY, app.frame.maxY - 100)
+            XCTAssertGreaterThanOrEqual(button.frame.width, 44)
+            XCTAssertGreaterThanOrEqual(button.frame.height, 44)
+            let frame = metric.frame
+            for state in ["error", "loading", "ready", "error"] {
+                app.buttons["fixture.\(state)"].tap()
+                XCTAssertEqual(metric.frame.minY, frame.minY, accuracy: 0.34)
+                XCTAssertEqual(metric.frame.height, frame.height, accuracy: 0.34)
+            }
+            capture(app, name: "Metric info accessibility \(index) synthetic")
+            button.tap()
+            XCTAssertTrue(app.buttons["metricInfoDone"].waitForExistence(timeout: 3))
+            let error = app.staticTexts["No readable health samples. Open AnyProgress to check Health access."]
+            XCTAssertTrue(error.exists)
+            capture(app, name: "Metric info accessibility sheet \(index) synthetic")
+            app.buttons["metricInfoDone"].tap()
+            XCTAssertTrue(button.waitForExistence(timeout: 3))
+        }
+    }
+
+    @MainActor
     func testSavedSelectionKeepsNativeGeometry() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--saved-selection-fixture", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]

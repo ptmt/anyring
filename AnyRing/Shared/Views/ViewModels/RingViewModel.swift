@@ -48,6 +48,14 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
     }
 
     func refresh() {
+        #if targetEnvironment(simulator)
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+           ProcessInfo.processInfo.arguments.contains("--metric-info-fixture"),
+           ProcessInfo.processInfo.arguments.contains("--metric-info-preview") {
+            setMetricInfoFixture(configuration.ring == .first ? "error" : "ready")
+            return
+        }
+        #endif
         refreshTask?.cancel()
         refreshGeneration += 1
         let generation = refreshGeneration
@@ -70,6 +78,20 @@ final class RingViewModel: ObservableObject, @preconcurrency CustomStringConvert
             }
         }
     }
+
+    #if targetEnvironment(simulator)
+    /// Explicit synthetic presentation fixture; never compiled into device builds.
+    func setMetricInfoFixture(_ state: String) {
+        guard ProcessInfo.processInfo.arguments.contains("--metric-info-fixture"),
+              ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return }
+        refreshTask?.cancel()
+        refreshGeneration += 1
+        isRefreshing = state == "loading"
+        error = state == "error" ? HealthDataError.noSamples : nil
+        progress = state == "ready" ? Progress(absolute: configuration.ring == .third ? 52 : 12, maxAbsolute: configuration.maxValue,
+                                               minAbsolute: configuration.minValue) : .Empty
+    }
+    #endif
 
     deinit { refreshTask?.cancel() }
 

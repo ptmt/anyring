@@ -1,0 +1,60 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "93E1113F-6736-4CCB-827D-0E2F1C3876EA",
+        "deviceName" : "KeineMagie Dictation final isolated",
+        "modelName" : "iPhone 17",
+        "osBuildNumber" : "24B8117",
+        "osVersion" : "27.2",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 2,
+      "passedTests" : 0,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "AnyRing (iOS) · Built with macOS 27.2.1",
+  "expectedFailures" : 0,
+  "failedTests" : 2,
+  "finishTime" : 1795250799.652,
+  "passedTests" : 0,
+  "result" : "Failed",
+  "runtimeWarnings" : [
+
+  ],
+  "skippedTests" : 0,
+  "startTime" : 1795250686.704,
+  "statistics" : [
+
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "XCTAssertTrue failed",
+      "targetName" : "Tests iOS",
+      "testIdentifier" : 1,
+      "testIdentifierString" : "Tests_iOS/testMetricInfoOpensCorrectLiveDetails()",
+      "testIdentifierURL" : "test://com.apple.xcode/AnyRing/Tests%20iOS/Tests_iOS/testMetricInfoOpensCorrectLiveDetails",
+      "testName" : "testMetricInfoOpensCorrectLiveDetails()"
+    },
+    {
+      "failureText" : "XCTAssertEqualWithAccuracy failed: (\"124.5\") is not equal to (\"125.0\") +/- (\"0.34\") - error frame 0 moved",
+      "targetName" : "Tests iOS",
+      "testIdentifier" : 2,
+      "testIdentifierString" : "Tests_iOS/testMetricInfoStableStatusGeometry()",
+      "testIdentifierURL" : "test://com.apple.xcode/AnyRing/Tests%20iOS/Tests_iOS/testMetricInfoStableStatusGeometry",
+      "testName" : "testMetricInfoStableStatusGeometry()"
+    }
+  ],
+  "title" : "Test - AnyRing (iOS)",
+  "topInsights" : [
+
+  ],
+  "totalTestCount" : 2
+}
